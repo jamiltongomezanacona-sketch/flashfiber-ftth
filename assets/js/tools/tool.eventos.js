@@ -95,13 +95,6 @@
     const SOURCE_ID = "eventos-src";
     const LAYER_ID  = "eventos-layer";
 
-    function colorByEstado(estado) {
-      if (estado === "CRITICO") return "#e53935";
-      if (estado === "PROVISIONAL") return "#fbc02d";
-      if (estado === "RESUELTO") return "#43a047";
-      return "#9e9e9e";
-    }
-
     function initLayer() {
       if (App.map.getSource(SOURCE_ID)) return;
 
@@ -129,67 +122,9 @@
         }
       });
 
-      // Click evento = popup info + botón editar
-      App.map.on("click", LAYER_ID, (e) => {
-        const f = e.features?.[0];
-        if (!f) return;
-
-        const p = f.properties || {};
-        const lngLat = e.lngLat;
-
-        const fecha = p.createdAt ? new Date(p.createdAt).toLocaleString() : "Sin fecha";
-
-        const html = `
-  <div class="popup" style="min-width:240px;font-size:13px">
-    <b>🚨 Evento:</b> ${p.tipo || "N/A"}<br>
-    <b>🔧 Acción:</b> ${p.accion || "N/A"}<br>
-    <b>⏱ Estado:</b> ${p.estado || "N/A"}<br>
-
-    <b>🏢 Central:</b> ${p.central || "N/A"}<br>
-    <b>🧬 Molécula:</b> ${p.molecula || "N/A"}<br>
-
-    <b>📍 Impacto:</b> ${p.impacto || "N/A"}<br>
-    <b>👤 Técnico:</b> ${p.tecnico || "N/A"}<br>
-    <b>📅 Creado:</b> ${fecha}<br>
-
-    <b>📝 Notas:</b>
-    <div style="margin:4px 0 6px 0">${p.notas || "Sin notas"}</div>
-
-    <hr>
-    <button id="btnEditEventoPopup" class="popup-btn">
-      ✏️ Editar evento
-    </button>
-  </div>
-`;
-
-        const popup = new mapboxgl.Popup({ closeButton: true })
-          .setLngLat(lngLat)
-          .setHTML(html)
-          .addTo(App.map);
-
-        setTimeout(() => {
-          const btn = document.getElementById("btnEditEventoPopup");
-          btn?.addEventListener("click", () => {
-            popup.remove();
-            abrirEdicionEvento(p);
-          });
-        }, 80);
-      });
-
-      // Cursor
-      App.map.on("mouseenter", LAYER_ID, () => {
-        App.map.getCanvas().style.cursor = "pointer";
-      });
-      App.map.on("mouseleave", LAYER_ID, () => {
-        App.map.getCanvas().style.cursor = "";
-      });
-
       console.log("✅ Capa eventos creada");
     }
 
-    /* ===============================
-       Render eventos
-    =============================== */
     function refreshLayer() {
       const source = App.map.getSource(SOURCE_ID);
       if (!source) return;
@@ -203,7 +138,6 @@
     function addEventoToMap(evt) {
       if (!evt?.lng || !evt?.lat) return;
 
-      // Normalizar (por si viene string)
       const lng = Number(evt.lng);
       const lat = Number(evt.lat);
       if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
@@ -223,30 +157,18 @@
       refreshLayer();
     }
 
-    function removeEventoFromMap(id) {
-      App.data.eventos = App.data.eventos.filter(f => f.id !== id);
-      refreshLayer();
-    }
-
     /* ===============================
        Firebase Sync
     =============================== */
 
-    // 👉 Exponer recarga global para cambios de estilo
     App.reloadEventos = function () {
       console.log("🔄 Recargando capa EVENTOS");
-
-      // Volver a crear source + layer si fueron destruidos
       initLayer();
-
-      // Volver a pintar datos en el mapa
       refreshLayer();
     };
 
-    // Crear capa inicial
     App.reloadEventos();
 
-    // Escuchar cambios desde Firebase
     FB.escucharEventos((evt) => {
       addEventoToMap(evt);
     });
@@ -254,12 +176,6 @@
     /* ===============================
        Modal helpers
     =============================== */
-    function openModal() {
-      modal?.classList.remove("hidden");
-      // si es creación, ocultar delete
-      const editId = modal.dataset.editId;
-      if (btnDelete) btnDelete.style.display = editId ? "inline-block" : "none";
-    }
 
     function closeModal() {
       modal?.classList.add("hidden");
@@ -267,22 +183,6 @@
       selectedLngLat = null;
       blockNextClick = true;
 
-      // limpiar inputs (para próxima vez)
-      if (elTipo) elTipo.value = "";
-      if (elAccion) elAccion.value = "";
-      if (elEstado) elEstado.value = "PROVISIONAL";
-      if (elImpacto) elImpacto.value = "";
-      if (elTecnico) elTecnico.value = "";
-      if (elNotas) elNotas.value = "";
-
-      // ✅ limpiar central/molécula
-      if (elCentralEvento) elCentralEvento.value = "";
-      if (elMoleculaEvento) {
-        elMoleculaEvento.innerHTML = `<option value="">Seleccione Molécula</option>`;
-        elMoleculaEvento.disabled = true;
-      }
-
-      // ✅ limpiar fotos temporales
       fotosAntes = [];
       fotosDespues = [];
       if (fotoAntesInput) fotoAntesInput.value = "";
@@ -293,245 +193,57 @@
 
     btnClose?.addEventListener("click", closeModal);
 
-    function abrirEdicionEvento(evt) {
-      // llenar campos
-      elTipo.value = evt.tipo || "";
-      elAccion.value = evt.accion || "";
-      elEstado.value = evt.estado || "PROVISIONAL";
-      elImpacto.value = evt.impacto || "";
-      elTecnico.value = evt.tecnico || "";
-      elNotas.value = evt.notas || "";
-
-      // ✅ central/molécula al editar
-      if (elCentralEvento) elCentralEvento.value = evt.central || "";
-      if (elCentralEvento) elCentralEvento.dispatchEvent(new Event("change"));
-      if (elMoleculaEvento) elMoleculaEvento.value = evt.molecula || "";
-
-      // set edit id
-      modal.dataset.editId = evt.id || "";
-      // al editar NO cambiamos coordenadas (las deja como estaban)
-      selectedLngLat = { lng: Number(evt.lng), lat: Number(evt.lat) };
-
-      openModal();
-    }
-
     /* ===============================
-       Central → Moléculas (Eventos)
+       Guardar evento
     =============================== */
+    btnSave?.addEventListener("click", async (e) => {
+      e.stopPropagation();
 
-    const CENTRAL_PREFIX = {
-      BACHUE: "BA",
-      CHICO: "CH",
-      CUNI: "CU",
-      FONTIBON: "FO",
-      GUAYMARAL: "GU",
-      HOLANDA: "HO",
-      MUZU: "MU",
-      SANTA_INES: "SI",
-      SUBA: "SU",
-      TOBERIN: "TO"
-    };
-
-    function generarMoleculas(prefijo) {
-      const lista = [];
-      for (let i = 1; i <= 30; i++) {
-        const num = String(i).padStart(2, "0");
-        lista.push(`${prefijo}${num}`);
-      }
-      return lista;
-    }
-
-    elCentralEvento?.addEventListener("change", () => {
-      const central = elCentralEvento.value;
-      elMoleculaEvento.innerHTML = `<option value="">Seleccione Molécula</option>`;
-
-      const prefijo = CENTRAL_PREFIX[central];
-      if (!prefijo) {
-        elMoleculaEvento.disabled = true;
-        return;
-      }
-
-      const moleculas = generarMoleculas(prefijo);
-
-      moleculas.forEach(mol => {
-        const opt = document.createElement("option");
-        opt.value = mol;
-        opt.textContent = mol;
-        elMoleculaEvento.appendChild(opt);
-      });
-
-      elMoleculaEvento.disabled = false;
-    });
-
-    /* ===============================
-       Tool control
-    =============================== */
-    function start() {
-      if (active) return;
-      active = true;
-
-      App.map.getCanvas().style.cursor = "crosshair";
-      App.map.on("click", handleMapClick);
-
-      console.log("🚨 Montar Evento ACTIVADO");
-    }
-
-    function stop() {
-      active = false;
-      App.map.off("click", handleMapClick);
-      App.map.getCanvas().style.cursor = "";
-      closeModal();
-      console.log("🛑 Montar Evento DESACTIVADO");
-    }
-
-    function handleMapClick(e) {
-      if (!active) return;
-
-      if (blockNextClick) {
-        blockNextClick = false;
-        return;
-      }
-
-      selectedLngLat = e.lngLat;
-      modal.dataset.editId = ""; // creación nueva
-
-      // defaults rápidos (operación)
-      if (elEstado) elEstado.value = "PROVISIONAL";
-
-      // ✅ reset central/molécula en creación
-      if (elCentralEvento) elCentralEvento.value = "";
-      if (elMoleculaEvento) {
-        elMoleculaEvento.innerHTML = `<option value="">Seleccione Molécula</option>`;
-        elMoleculaEvento.disabled = true;
-      }
-
-      openModal();
-    }
-
-    /* ===============================
-       Validaciones
-    =============================== */
-    function validar(evt) {
-      if (!evt.tipo) return "⚠️ Selecciona el Tipo (Vandalismo / Corte / etc.)";
-      if (!evt.accion) return "⚠️ Selecciona la Acción (Empalme provisional / etc.)";
-      if (!evt.estado) return "⚠️ Selecciona el Estado";
-      if (!evt.tecnico) return "⚠️ Escribe el nombre del técnico";
-      if (!selectedLngLat?.lng || !selectedLngLat?.lat) return "⚠️ Selecciona un punto en el mapa";
-      return "";
-    }
-
-/* ===============================
-   Guardar evento
-=============================== */
-btnSave?.addEventListener("click", async (e) => {
-  e.stopPropagation();
-  
-  const evento = {
-    tipo: (elTipo.value || "").trim(),
-    accion: (elAccion.value || "").trim(),
-    estado: (elEstado.value || "").trim(),
-    impacto: (elImpacto.value || "").trim(),
-    tecnico: (elTecnico.value || "").trim(),
-    notas: (elNotas.value || "").trim(),
-    
-    // 🏢 Central / 🧬 Molécula
-    central: (elCentralEvento?.value || "").trim(),
-    molecula: (elMoleculaEvento?.value || "").trim(),
-    
-    lng: selectedLngLat?.lng,
-    lat: selectedLngLat?.lat,
-    
-    // 📅 Fecha creación
-    createdAt: new Date().toISOString()
-  };
-  
-  const msg = validar(evento);
-  if (msg) return alert(msg);
-  
-  try {
-    const editId = modal.dataset.editId;
-    let eventoId = editId;
-    
-    /* =========================
-       1️⃣ Guardar evento base
-    ========================= */
-    if (editId) {
-      const update = { ...evento };
-      delete update.createdAt;
-      update.updatedAt = new Date().toISOString();
-      await FB.actualizarEvento(editId, update);
-    } else {
-      eventoId = await FB.guardarEvento(evento); // ⚠️ debe devolver ID
-    }
-    
-    if (!eventoId) {
-      throw new Error("No se pudo obtener eventoId");
-    }
-    
-    /* =========================
-       2️⃣ Subir fotos a Storage
-    ========================= */
-    const fotosAntesURLs = [];
-    const fotosDespuesURLs = [];
-    
-    for (const file of fotosAntes) {
-      const url = await window.FTTH_STORAGE.subirFotoEvento(eventoId, "antes", file);
-      if (url) fotosAntesURLs.push(url);
-    }
-    
-    for (const file of fotosDespues) {
-      const url = await window.FTTH_STORAGE.subirFotoEvento(eventoId, "despues", file);
-      if (url) fotosDespuesURLs.push(url);
-    }
-    
-    /* =========================
-       3️⃣ Guardar URLs en Firestore
-    ========================= */
-    if (fotosAntesURLs.length || fotosDespuesURLs.length) {
-      await FB.actualizarEvento(eventoId, {
-        fotos: {
-          antes: fotosAntesURLs,
-          despues: fotosDespuesURLs
-        }
-      });
-    }
-    
-    closeModal();
-  } catch (err) {
-    console.error("❌ Error guardando evento con fotos:", err);
-    alert("❌ Error guardando evento o subiendo fotos");
-  }
-});
-    /* ===============================
-       Eliminar evento
-    =============================== */
-    btnDelete?.addEventListener("click", async () => {
-      const id = modal.dataset.editId;
-      if (!id) return;
-
-      if (!confirm("¿Eliminar este evento?")) return;
+      const evento = {
+        tipo: (elTipo.value || "").trim(),
+        accion: (elAccion.value || "").trim(),
+        estado: (elEstado.value || "").trim(),
+        impacto: (elImpacto.value || "").trim(),
+        tecnico: (elTecnico.value || "").trim(),
+        notas: (elNotas.value || "").trim(),
+        central: (elCentralEvento?.value || "").trim(),
+        molecula: (elMoleculaEvento?.value || "").trim(),
+        lng: selectedLngLat?.lng,
+        lat: selectedLngLat?.lat,
+        createdAt: new Date().toISOString()
+      };
 
       try {
-        // si tienes eliminarEvento en firebase, úsalo
-        if (FB.eliminarEvento) {
-          await FB.eliminarEvento(id);
+        let eventoId = await FB.guardarEvento(evento);
+        if (!eventoId) throw new Error("No se pudo obtener eventoId");
+
+        /* =========================
+           Subida de fotos (segura)
+        ========================= */
+        const storage = window.FTTH_STORAGE;
+
+        if (!storage?.subirFotoEvento) {
+          console.warn("📷 Storage no disponible — fotos omitidas");
         } else {
-          // fallback: si no existe, avisa
-          console.warn("⚠️ eliminarEvento no existe en firebase.db.js");
+          for (const file of fotosAntes) {
+            await storage.subirFotoEvento(eventoId, "antes", file);
+          }
+          for (const file of fotosDespues) {
+            await storage.subirFotoEvento(eventoId, "despues", file);
+          }
         }
 
-        removeEventoFromMap(id);
         closeModal();
       } catch (err) {
-        console.error(err);
-        alert("❌ Error eliminando evento");
+        console.error("❌ Error guardando evento:", err);
+        alert("❌ Error guardando evento");
       }
     });
 
     /* ===============================
        Registrar tool
     =============================== */
-    App.tools.eventos = { start, stop };
+    App.tools.eventos = { start: () => {}, stop: () => {} };
 
     console.log("🚀 tool.eventos listo (PRO)");
   }, 300);

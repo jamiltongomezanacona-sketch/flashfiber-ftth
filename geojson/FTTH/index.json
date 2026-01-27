@@ -1,0 +1,15 @@
+{
+  "label": "FTTH",
+  "children": [
+    { "type": "folder", "label": "Bachué", "index": "BACHUE/index.json" },
+    { "type": "folder", "label": "Chicó", "index": "CHICO/index.json" },
+    { "type": "folder", "label": "Cuni", "index": "CUNI/index.json" },
+    { "type": "folder", "label": "Fontibón", "index": "FONTIBON/index.json" },
+    { "type": "folder", "label": "Guaymaral", "index": "GUAYMARAL/index.json" },
+    { "type": "folder", "label": "Holanda", "index": "HOLANDA/index.json" },
+    { "type": "folder", "label": "Muzú", "index": "MUZU/index.json" },
+    { "type": "folder", "label": "Santa Inés", "index": "SANTA_INES/index.json" },
+    { "type": "folder", "label": "Suba", "index": "SUBA/index.json" },
+    { "type": "folder", "label": "Toberín", "index": "TOBERIN/index.json" }
+  ]
+}

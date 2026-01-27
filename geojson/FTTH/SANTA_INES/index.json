@@ -1,0 +1,37 @@
+{
+  "label": "Santa Inés (SI)",
+  "children": [
+    { "id": "SI01", "label": "SI01", "type": "folder", "index": "SI01/index.json" },
+    { "id": "SI02", "label": "SI02", "type": "folder", "index": "SI02/index.json" },
+    { "id": "SI03", "label": "SI03", "type": "folder", "index": "SI03/index.json" },
+    { "id": "SI04", "label": "SI04", "type": "folder", "index": "SI04/index.json" },
+    { "id": "SI05", "label": "SI05", "type": "folder", "index": "SI05/index.json" },
+    { "id": "SI06", "label": "SI06", "type": "folder", "index": "SI06/index.json" },
+    { "id": "SI07", "label": "SI07", "type": "folder", "index": "SI07/index.json" },
+    { "id": "SI08", "label": "SI08", "type": "folder", "index": "SI08/index.json" },
+    { "id": "SI09", "label": "SI09", "type": "folder", "index": "SI09/index.json" },
+    { "id": "SI10", "label": "SI10", "type": "folder", "index": "SI10/index.json" },
+
+    { "id": "SI11", "label": "SI11", "type": "folder", "index": "SI11/index.json" },
+    { "id": "SI12", "label": "SI12", "type": "folder", "index": "SI12/index.json" },
+    { "id": "SI13", "label": "SI13", "type": "folder", "index": "SI13/index.json" },
+    { "id": "SI14", "label": "SI14", "type": "folder", "index": "SI14/index.json" },
+    { "id": "SI15", "label": "SI15", "type": "folder", "index": "SI15/index.json" },
+    { "id": "SI16", "label": "SI16", "type": "folder", "index": "SI16/index.json" },
+    { "id": "SI17", "label": "SI17", "type": "folder", "index": "SI17/index.json" },
+    { "id": "SI18", "label": "SI18", "type": "folder", "index": "SI18/index.json" },
+    { "id": "SI19", "label": "SI19", "type": "folder", "index": "SI19/index.json" },
+    { "id": "SI20", "label": "SI20", "type": "folder", "index": "SI20/index.json" },
+
+    { "id": "SI21", "label": "SI21", "type": "folder", "index": "SI21/index.json" },
+    { "id": "SI22", "label": "SI22", "type": "folder", "index": "SI22/index.json" },
+    { "id": "SI23", "label": "SI23", "type": "folder", "index": "SI23/index.json" },
+    { "id": "SI24", "label": "SI24", "type": "folder", "index": "SI24/index.json" },
+    { "id": "SI25", "label": "SI25", "type": "folder", "index": "SI25/index.json" },
+    { "id": "SI26", "label": "SI26", "type": "folder", "index": "SI26/index.json" },
+    { "id": "SI27", "label": "SI27", "type": "folder", "index": "SI27/index.json" },
+    { "id": "SI28", "label": "SI28", "type": "folder", "index": "SI28/index.json" },
+    { "id": "SI29", "label": "SI29", "type": "folder", "index": "SI29/index.json" },
+    { "id": "SI30", "label": "SI30", "type": "folder", "index": "SI30/index.json" }
+  ]
+}

@@ -1,0 +1,449 @@
+/* =====================================================
+   FlashFiber FTTH - Paneles flotantes y tarjetas
+===================================================== */
+
+.panel {
+  position: absolute;
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-soft);
+  backdrop-filter: blur(10px);
+}
+
+.panel-header {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-title {
+  font-size: 14px;
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.panel-content {
+  padding: 14px;
+}
+
+/* Tarjetas */
+
+.card {
+  background: rgba(19,47,76,.6);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  border-left: 3px solid var(--accent-cyan);
+}
+
+.card.green { border-left-color: var(--accent-green); }
+.card.purple { border-left-color: var(--accent-purple); }
+.card.orange { border-left-color: var(--warning); }
+
+.card-value {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.card-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+/* ===============================
+   Panel Capas
+=============================== */
+
+.panel-capas {
+  top: 80px;
+  right: 20px;
+  width: 260px;
+  max-height: 60vh;
+  overflow: auto;
+  z-index: 3000; /* 👈 por encima del sidebar y botones */
+}
+
+.panel-capas.hidden {
+  display: none;
+}
+
+.capa-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.capa-item label {
+  flex: 1;
+  cursor: pointer;
+}
+/* ===========================
+   BOTÓN FLOTANTE
+=========================== */
+#btnSidebar {
+  position: fixed;
+  top: 70px;
+  left: 14px;
+  z-index: 2000;
+
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+
+  background: rgba(15, 18, 30, 0.95);
+  color: #00e5ff;
+  font-size: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  backdrop-filter: blur(8px);
+}
+
+/* ===========================
+   SIDEBAR OVERLAY
+=========================== */
+.sidebar {
+  position: fixed;
+  top: 65px;
+  left: 12px;
+  bottom: 12px;
+
+  width: 270px;
+  z-index: 1900;
+
+  background: rgba(18, 22, 40, 0.88);
+  backdrop-filter: blur(14px);
+  border-radius: 18px;
+
+  box-shadow: 0 15px 40px rgba(0,0,0,0.45);
+  overflow-y: auto;
+
+  transform: translateX(0);
+  transition: all 0.3s ease;
+}
+
+.sidebar.hidden {
+  transform: translateX(-120%);
+  opacity: 0;
+}
+
+/* Header */
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  color: #00e5ff;
+  font-size: 18px;
+}
+
+.sidebar-header span {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Menú */
+.sidebar-menu {
+  padding: 12px;
+}
+
+.menu-section {
+  margin-bottom: 14px;
+}
+
+.menu-title {
+  font-size: 13px;
+  opacity: 0.6;
+  margin-bottom: 6px;
+}
+
+.menu-item {
+  width: 100%;
+  border: none;
+  background: rgba(255,255,255,0.04);
+  color: #fff;
+  padding: 10px;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.menu-item:hover {
+  background: rgba(0,229,255,0.15);
+}
+/* ===========================
+   MODAL RUTA PROFESIONAL
+=========================== */
+
+.route-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.route-modal.hidden {
+  display: none;
+}
+
+.route-card {
+  width: 330px;
+  background: #0f172a;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+  animation: routePop 0.25s ease;
+}
+
+@keyframes routePop {
+  from { transform: scale(0.9); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.route-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #fff;
+  font-weight: 600;
+}
+
+.route-header button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.route-body {
+  padding: 20px;
+  color: #e5e7eb;
+  font-size: 15px;
+}
+
+.route-actions {
+  display: flex;
+  gap: 10px;
+  padding: 14px;
+}
+
+.route-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 12px;
+  border: none;
+  background: #1e293b;
+  color: #e5e7eb;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.route-btn:hover {
+  background: #334155;
+}
+
+.route-btn.primary {
+  background: #2563eb;
+}
+
+.route-btn.primary:hover {
+  background: #1d4ed8;
+}
+
+.route-btn.danger {
+  background: #dc2626;
+}
+
+.route-btn.danger:hover {
+  background: #b91c1c;
+}
+.route-body label {
+  font-size: 12px;
+  color: #93c5fd;
+  margin-top: 10px;
+  display: block;
+}
+
+.route-body input,
+.route-body select,
+.route-body textarea {
+  width: 100%;
+  background: #020617;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 8px;
+  color: #e5e7eb;
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.route-body textarea {
+  resize: none;
+  min-height: 60px;
+}
+
+.route-body input:focus,
+.route-body select:focus,
+.route-body textarea:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+/* ======================================================
+   MODAL EVENTO - Estilo Profesional
+====================================================== */
+
+#eventoModal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#eventoModal.hidden {
+  display: none;
+}
+
+#eventoModal .modal-content {
+  width: 92%;
+  max-width: 420px;
+  max-height: 90vh;        /* ✅ límite de altura */
+  background: #111827;
+  color: #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  overflow-y: auto;       /* ✅ scroll vertical */
+  overflow-x: hidden;
+  animation: modalIn 0.25s ease-out;
+}
+
+
+/* Header */
+#eventoModal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+  color: #fff;
+}
+
+#eventoModal .modal-header h3 {
+  font-size: 15px;
+  margin: 0;
+}
+
+#eventoModal .modal-header button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* Body */
+#eventoModal .modal-body {
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+#eventoModal label {
+  grid-column: span 2;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+#eventoModal select,
+#eventoModal input,
+#eventoModal textarea {
+  grid-column: span 2;
+  padding: 7px 8px;
+  border-radius: 6px;
+  border: none;
+  background: #1f2933;
+  color: #fff;
+  font-size: 13px;
+}
+
+#eventoModal textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* Footer */
+#eventoModal .modal-footer {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #020617;
+}
+
+#eventoModal .modal-footer button {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+#btnSaveEvento {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+}
+
+#btnDeleteEvento {
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  color: white;
+}
+
+/* Animación */
+@keyframes modalIn {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.foto-preview {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0 10px 0;
+  flex-wrap: wrap;
+}
+
+.foto-preview img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #2c3e50;
+  cursor: pointer;
+}

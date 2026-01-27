@@ -1,0 +1,15 @@
+{
+  "label": "Guaymaral (GU)",
+  "children": [
+    { "id": "GU01", "label": "GU01", "type": "folder", "index": "GU01/index.json" },
+    { "id": "GU02", "label": "GU02", "type": "folder", "index": "GU02/index.json" },
+    { "id": "GU03", "label": "GU03", "type": "folder", "index": "GU03/index.json" },
+    { "id": "GU04", "label": "GU04", "type": "folder", "index": "GU04/index.json" },
+    { "id": "GU05", "label": "GU05", "type": "folder", "index": "GU05/index.json" },
+    { "id": "GU06", "label": "GU06", "type": "folder", "index": "GU06/index.json" },
+    { "id": "GU07", "label": "GU07", "type": "folder", "index": "GU07/index.json" },
+    { "id": "GU08", "label": "GU08", "type": "folder", "index": "GU08/index.json" },
+    { "id": "GU09", "label": "GU09", "type": "folder", "index": "GU09/index.json" },
+    { "id": "GU10", "label": "GU10", "type": "folder", "index": "GU10/index.json" }
+  ]
+}

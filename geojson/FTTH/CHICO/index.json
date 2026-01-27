@@ -1,0 +1,37 @@
+{
+  "label": "Chicó (CO)",
+  "children": [
+    { "id": "CO01", "label": "CO01", "type": "folder", "index": "CO01/index.json" },
+    { "id": "CO02", "label": "CO02", "type": "folder", "index": "CO02/index.json" },
+    { "id": "CO03", "label": "CO03", "type": "folder", "index": "CO03/index.json" },
+    { "id": "CO04", "label": "CO04", "type": "folder", "index": "CO04/index.json" },
+    { "id": "CO05", "label": "CO05", "type": "folder", "index": "CO05/index.json" },
+    { "id": "CO06", "label": "CO06", "type": "folder", "index": "CO06/index.json" },
+    { "id": "CO07", "label": "CO07", "type": "folder", "index": "CO07/index.json" },
+    { "id": "CO08", "label": "CO08", "type": "folder", "index": "CO08/index.json" },
+    { "id": "CO09", "label": "CO09", "type": "folder", "index": "CO09/index.json" },
+    { "id": "CO10", "label": "CO10", "type": "folder", "index": "CO10/index.json" },
+
+    { "id": "CO11", "label": "CO11", "type": "folder", "index": "CO11/index.json" },
+    { "id": "CO12", "label": "CO12", "type": "folder", "index": "CO12/index.json" },
+    { "id": "CO13", "label": "CO13", "type": "folder", "index": "CO13/index.json" },
+    { "id": "CO14", "label": "CO14", "type": "folder", "index": "CO14/index.json" },
+    { "id": "CO15", "label": "CO15", "type": "folder", "index": "CO15/index.json" },
+    { "id": "CO16", "label": "CO16", "type": "folder", "index": "CO16/index.json" },
+    { "id": "CO17", "label": "CO17", "type": "folder", "index": "CO17/index.json" },
+    { "id": "CO18", "label": "CO18", "type": "folder", "index": "CO18/index.json" },
+    { "id": "CO19", "label": "CO19", "type": "folder", "index": "CO19/index.json" },
+    { "id": "CO20", "label": "CO20", "type": "folder", "index": "CO20/index.json" },
+
+    { "id": "CO21", "label": "CO21", "type": "folder", "index": "CO21/index.json" },
+    { "id": "CO22", "label": "CO22", "type": "folder", "index": "CO22/index.json" },
+    { "id": "CO23", "label": "CO23", "type": "folder", "index": "CO23/index.json" },
+    { "id": "CO24", "label": "CO24", "type": "folder", "index": "CO24/index.json" },
+    { "id": "CO25", "label": "CO25", "type": "folder", "index": "CO25/index.json" },
+    { "id": "CO26", "label": "CO26", "type": "folder", "index": "CO26/index.json" },
+    { "id": "CO27", "label": "CO27", "type": "folder", "index": "CO27/index.json" },
+    { "id": "CO28", "label": "CO28", "type": "folder", "index": "CO28/index.json" },
+    { "id": "CO29", "label": "CO29", "type": "folder", "index": "CO29/index.json" },
+    { "id": "CO30", "label": "CO30", "type": "folder", "index": "CO30/index.json" }
+  ]
+}

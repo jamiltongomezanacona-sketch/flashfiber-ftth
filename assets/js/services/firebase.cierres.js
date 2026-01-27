@@ -1,0 +1,110 @@
+/* =========================================================
+   FlashFiber FTTH | Firebase Cierres Service
+========================================================= */
+
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* =========================
+   Obtener DB desde core
+========================= */
+function getDB() {
+  return window.__FTTH_FIREBASE__?.db;
+}
+
+/* =========================
+   Guardar Cierre
+========================= */
+async function guardarCierre(cierre) {
+  const db = getDB();
+  if (!db) throw new Error("Firebase DB no disponible");
+
+  const payload = {
+    codigo: cierre.codigo || "",
+    tipo: cierre.tipo || "",
+    central: cierre.central || "",
+    molecula: cierre.molecula || "",
+    notas: cierre.notas || "",
+    lat: Number(cierre.lat),
+    lng: Number(cierre.lng),
+    createdAt: serverTimestamp()
+  };
+
+  const ref = collection(db, "cierres");
+  const doc = await addDoc(ref, payload);
+
+  console.log("☁️ Cierre guardado:", doc.id);
+  return doc.id;
+}
+import {
+  doc,
+  updateDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* =========================
+   Actualizar Cierre
+========================= */
+async function actualizarCierre(id, data) {
+  const db = getDB();
+  if (!db) throw new Error("Firebase DB no disponible");
+
+  const ref = doc(db, "cierres", id);
+  await updateDoc(ref, {
+    ...data,
+    updatedAt: serverTimestamp()
+  });
+
+  console.log("✏️ Cierre actualizado:", id);
+}
+
+/* =========================
+   Eliminar Cierre
+========================= */
+async function eliminarCierre(id) {
+  const db = getDB();
+  if (!db) throw new Error("Firebase DB no disponible");
+
+  const ref = doc(db, "cierres", id);
+  await deleteDoc(ref);
+
+  console.log("🗑️ Cierre eliminado:", id);
+}
+
+/* =========================
+   Escuchar Cierres
+========================= */
+function escucharCierres(callback) {
+  const db = getDB();
+  if (!db) throw new Error("Firebase DB no disponible");
+
+  const ref = collection(db, "cierres");
+  console.log("👂 Escuchando cierres...");
+
+  return onSnapshot(ref, snapshot => {
+    snapshot.docChanges().forEach(change => {
+      if (change.type === "added") {
+        callback({
+          id: change.doc.id,
+          ...change.doc.data()
+        });
+      }
+    });
+  });
+}
+
+/* =========================
+   Exponer API GLOBAL
+========================= */
+window.FTTH_FIREBASE = window.FTTH_FIREBASE || {};
+
+window.FTTH_FIREBASE.guardarCierre     = guardarCierre;
+window.FTTH_FIREBASE.escucharCierres   = escucharCierres;
+window.FTTH_FIREBASE.actualizarCierre  = actualizarCierre;
+window.FTTH_FIREBASE.eliminarCierre    = eliminarCierre;
+
+console.log("✅ firebase.cierres listo con edición y eliminación");

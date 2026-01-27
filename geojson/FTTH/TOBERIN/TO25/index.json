@@ -1,0 +1,25 @@
+{
+    "children":  [
+                     {
+                         "id":  "cables",
+                         "label":  "Cables"
+                     },
+                     {
+                         "id":  "cierres",
+                         "label":  "Cierres"
+                     },
+                     {
+                         "id":  "centrales",
+                         "label":  "Centrales"
+                     },
+                     {
+                         "id":  "cortes",
+                         "label":  "Cortes"
+                     },
+                     {
+                         "id":  "naps",
+                         "label":  "Naps"
+                     }
+                 ],
+    "label":  "TO25"
+}

@@ -1,0 +1,16 @@
+{
+  "label": "cierres",
+  "type": "folder",
+  "children": [
+    {
+      "type": "layer",
+      "label": "E1SI01_1",
+      "url": "E1SI01_1.json"
+    },
+    {
+      "type": "layer",
+      "label": "index",
+      "url": "index.json"
+    }
+  ]
+}

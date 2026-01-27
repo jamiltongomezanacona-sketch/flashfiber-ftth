@@ -1,0 +1,37 @@
+{
+  "label": "Muzú (MU)",
+  "children": [
+    { "id": "MU01", "label": "MU01", "type": "folder", "index": "MU01/index.json" },
+    { "id": "MU02", "label": "MU02", "type": "folder", "index": "MU02/index.json" },
+    { "id": "MU03", "label": "MU03", "type": "folder", "index": "MU03/index.json" },
+    { "id": "MU04", "label": "MU04", "type": "folder", "index": "MU04/index.json" },
+    { "id": "MU05", "label": "MU05", "type": "folder", "index": "MU05/index.json" },
+    { "id": "MU06", "label": "MU06", "type": "folder", "index": "MU06/index.json" },
+    { "id": "MU07", "label": "MU07", "type": "folder", "index": "MU07/index.json" },
+    { "id": "MU08", "label": "MU08", "type": "folder", "index": "MU08/index.json" },
+    { "id": "MU09", "label": "MU09", "type": "folder", "index": "MU09/index.json" },
+    { "id": "MU10", "label": "MU10", "type": "folder", "index": "MU10/index.json" },
+
+    { "id": "MU11", "label": "MU11", "type": "folder", "index": "MU11/index.json" },
+    { "id": "MU12", "label": "MU12", "type": "folder", "index": "MU12/index.json" },
+    { "id": "MU13", "label": "MU13", "type": "folder", "index": "MU13/index.json" },
+    { "id": "MU14", "label": "MU14", "type": "folder", "index": "MU14/index.json" },
+    { "id": "MU15", "label": "MU15", "type": "folder", "index": "MU15/index.json" },
+    { "id": "MU16", "label": "MU16", "type": "folder", "index": "MU16/index.json" },
+    { "id": "MU17", "label": "MU17", "type": "folder", "index": "MU17/index.json" },
+    { "id": "MU18", "label": "MU18", "type": "folder", "index": "MU18/index.json" },
+    { "id": "MU19", "label": "MU19", "type": "folder", "index": "MU19/index.json" },
+    { "id": "MU20", "label": "MU20", "type": "folder", "index": "MU20/index.json" },
+
+    { "id": "MU21", "label": "MU21", "type": "folder", "index": "MU21/index.json" },
+    { "id": "MU22", "label": "MU22", "type": "folder", "index": "MU22/index.json" },
+    { "id": "MU23", "label": "MU23", "type": "folder", "index": "MU23/index.json" },
+    { "id": "MU24", "label": "MU24", "type": "folder", "index": "MU24/index.json" },
+    { "id": "MU25", "label": "MU25", "type": "folder", "index": "MU25/index.json" },
+    { "id": "MU26", "label": "MU26", "type": "folder", "index": "MU26/index.json" },
+    { "id": "MU27", "label": "MU27", "type": "folder", "index": "MU27/index.json" },
+    { "id": "MU28", "label": "MU28", "type": "folder", "index": "MU28/index.json" },
+    { "id": "MU29", "label": "MU29", "type": "folder", "index": "MU29/index.json" },
+    { "id": "MU30", "label": "MU30", "type": "folder", "index": "MU30/index.json" }
+  ]
+}

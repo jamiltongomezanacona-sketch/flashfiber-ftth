@@ -1,0 +1,16 @@
+{
+  "label": "cables",
+  "type": "folder",
+  "children": [
+    {
+      "type": "layer",
+      "label": "index",
+      "url": "index.json"
+    },
+    {
+      "type": "layer",
+      "label": "SI01FH144",
+      "url": "SI01FH144.json"
+    }
+  ]
+}

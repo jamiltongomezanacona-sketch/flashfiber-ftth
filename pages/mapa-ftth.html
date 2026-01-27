@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Flash Fiber FTTH | Visor GIS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ICONOS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- MAPBOX -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../assets/css/theme.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/map.css">
+  <link rel="stylesheet" href="../assets/css/panels.css">
+</head>
+
+<body>
+
+  <header class="header">
+    <div class="logo">
+      <i class="fas fa-satellite-dish"></i>
+      <span>Flash Fiber FTTH</span>
+    </div>
+  </header>
+
+  <!-- 🔘 BOTÓN FLOTANTE SIDEBAR -->
+  <div id="btnSidebar">
+    <i class="fas fa-bars"></i>
+  </div>
+
+  <!-- 📂 SIDEBAR OVERLAY -->
+  <aside id="sidebar" class="sidebar hidden">
+
+    <div class="sidebar-header">
+      <h2>FLASH FIBER</h2>
+      <span>FTTH Platform</span>
+    </div>
+
+    <nav class="sidebar-menu">
+
+      <section class="menu-section">
+        <div class="menu-title">📍 Operación</div>
+        <button class="menu-item" data-action="gps">📍 GPS</button>
+        <button class="menu-item" data-action="medir">📏 Medir</button>
+        <button class="menu-item" data-action="navegar">🚗 Navegar</button>
+      </section>
+
+      <section class="menu-section">
+        <div class="menu-title">🗺️ Red FTTH</div>
+        <button class="menu-item" id="btnOpenLayers">🧱 Capas</button>
+        <button class="menu-item">🏢 Centrales</button>
+        <button class="menu-item">🧵 Moléculas</button>
+        <button class="menu-item">🔒 Cierres</button>
+        <button class="menu-item">📦 NAP</button>
+      </section>
+
+      <section class="menu-section">
+        <div class="menu-title">🛠️ Herramientas</div>
+        <button class="menu-item" data-action="ruta">🛣️ Montar Ruta</button>
+        <button class="menu-item" data-action="cierres">🧱 Montar Cierre</button>
+        <button class="menu-item" data-action="eventos">📝 Evento</button> <!-- ✅ -->
+        <button class="menu-item">📷 Fotos</button>
+      </section>
+
+    </nav>
+  </aside>
+
+  <!-- 🗺️ MAPA -->
+  <main class="map-wrapper">
+    <div id="map"></div>
+
+    <div class="map-controls">
+      <button id="btnGPS"><i class="fas fa-location-crosshairs"></i></button>
+      <button id="btnMedir"><i class="fas fa-ruler"></i></button>
+      <button id="btnCapas"><i class="fas fa-layer-group"></i></button>
+      <button id="btnBaseMap"><i class="fas fa-globe"></i></button>
+
+      <!-- ✅ Finalizar ruta -->
+      <button id="btnFinishRuta" title="Finalizar Ruta">
+        <i class="fas fa-check"></i>
+      </button>
+    </div>
+  </main>
+
+  <!-- 🗂️ PANEL CAPAS FTTH -->
+  <div id="layersPanel" class="panel panel-capas hidden">
+
+    <div class="panel-header">
+      <span class="panel-title">🗺️ Capas FTTH</span>
+      <button id="btnCloseLayers">✖</button>
+    </div>
+
+    <div id="layersTree" class="panel-content">
+      <!-- Árbol dinámico -->
+    </div>
+
+  </div>
+
+  <!-- 🚗 MODAL NAVEGACIÓN -->
+  <div id="navModal" class="nav-modal hidden">
+
+    <div class="nav-card">
+      <h3>🧭 ¿Cómo deseas navegar?</h3>
+
+      <div class="nav-options">
+        <button id="btnNavWaze" class="nav-btn waze">
+          🚗 Waze
+        </button>
+
+        <button id="btnNavGoogle" class="nav-btn google">
+          🌍 Google Maps
+        </button>
+      </div>
+
+      <button id="btnNavCancel" class="nav-cancel">
+        Cancelar
+      </button>
+    </div>
+
+  </div>
+
+  <!-- 🛣️ MODAL RUTA -->
+  <div id="routeModal" class="route-modal hidden">
+    <div class="route-card">
+
+      <div class="route-header">
+        <span>🛣️ Nueva Ruta</span>
+        <button id="closeRouteModal">✕</button>
+      </div>
+
+      <div class="route-body">
+
+        <label>📛 Nombre</label>
+        <input id="routeName" placeholder="Ej: Troncal BA01 Norte">
+
+        <label>🧱 Tipo</label>
+        <select id="routeType">
+          <option value="troncal">Troncal</option>
+          <option value="distribucion">Distribución</option>
+          <option value="acometida">Acometida</option>
+          <option value="mantenimiento">Mantenimiento</option>
+        </select>
+
+        <label>🏢 Central</label>
+        <input id="routeCentral" placeholder="Ej: BACHUE">
+
+        <label>📝 Observaciones</label>
+        <textarea id="routeNotes" placeholder="Notas técnicas..."></textarea>
+
+        <p id="routeDistance">Distancia: 0 m</p>
+
+      </div>
+
+      <div class="route-actions">
+        <button class="route-btn primary" id="btnSaveRoute">💾 Guardar</button>
+        <button class="route-btn danger" id="btnCancelRoute">Cancelar</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 🔒 MODAL CIERRE -->
+  <div id="cierreModal" class="route-modal hidden">
+    <div class="route-card">
+
+      <div class="route-header">
+        <span>🔒 Nuevo Cierre</span>
+        <button id="closeCierreModal">✕</button>
+      </div>
+
+      <div class="route-body">
+
+        <label>🏷️ Código</label>
+        <input id="cierreCodigo" placeholder="Ej: E2BA01_A1">
+
+        <label>📦 Tipo</label>
+        <select id="cierreTipo">
+          <option value="E1">E1 - Derivación</option>
+          <option value="E2">E2 - Splitter</option>
+          <option value="NAP">NAP</option>
+        </select>
+
+        <label>🏢 Central</label>
+        <select id="cierreCentral">
+          <option value="">Seleccione Central</option>
+          <option value="BACHUE">Bachué</option>
+          <option value="CHICO">Chicó</option>
+          <option value="CUNI">Cuni</option>
+          <option value="FONTIBON">Fontibón</option>
+          <option value="GUAYMARAL">Guaymaral</option>
+          <option value="HOLANDA">Holanda</option>
+          <option value="MUZU">Muzú</option>
+          <option value="SANTA_INES">Santa Inés</option>
+          <option value="SUBA">Suba</option>
+          <option value="TOBERIN">Toberín</option>
+        </select>
+
+        <label>🧬 Molécula</label>
+        <select id="cierreMolecula" disabled>
+          <option value="">Seleccione Molécula</option>
+        </select>
+
+        <label>📝 Observaciones</label>
+        <textarea id="cierreNotas"></textarea>
+
+      </div>
+
+      <div class="route-actions">
+        <button class="route-btn primary" id="btnSaveCierre">💾 Guardar</button>
+
+        <button class="route-btn danger" id="btnDeleteCierre">
+          🗑️ Eliminar
+        </button>
+
+        <button class="route-btn danger" id="btnCancelCierre">
+          Cancelar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODAL EVENTO ================= -->
+  <div id="eventoModal" class="route-modal hidden">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h3>🚨 Registrar Evento</h3>
+        <button id="closeEventoModal">✖</button>
+      </div>
+
+      <div class="modal-body">
+
+        <label>Tipo</label>
+        <select id="eventoTipo">
+          <option value="">Seleccione</option>
+          <option>VANDALISMO</option>
+          <option>CORTE</option>
+          <option>OBRAS</option>
+          <option>MANTENIMIENTO</option>
+        </select>
+
+        <label>Acción</label>
+        <select id="eventoAccion">
+          <option value="">Seleccione</option>
+          <option>EMPALME_PROVISIONAL</option>
+          <option>AJUSTE DE HILO</option>
+          <option>RECONSTRUCCION</option>
+          <option>BANDEJA</option>
+        </select>
+
+        <label>Estado</label>
+        <select id="eventoEstado">
+          <option>CRITICO</option>
+          <option>PROVISIONAL</option>
+          <option>RESUELTO</option>
+        </select>
+        <label>🏢 Central</label>
+        <select id="eventoCentral">
+          <option value="">Seleccione Central</option>
+          <option value="BACHUE">Bachué</option>
+          <option value="CHICO">Chicó</option>
+          <option value="CUNI">Cuni</option>
+          <option value="FONTIBON">Fontibón</option>
+          <option value="GUAYMARAL">Guaymaral</option>
+          <option value="HOLANDA">Holanda</option>
+          <option value="MUZU">Muzú</option>
+          <option value="SANTA_INES">Santa Inés</option>
+          <option value="SUBA">Suba</option>
+          <option value="TOBERIN">Toberín</option>
+        </select>
+
+        <label>🧬 Molécula</label>
+        <select id="eventoMolecula" disabled>
+          <option value="">Seleccione Molécula</option>
+        </select>
+
+        <label>Impacto</label>
+        <input id="eventoImpacto" placeholder="Ej: Troncal BA01 - 48 fibras">
+
+        <label>Técnico</label>
+        <input id="eventoTecnico" placeholder="Nombre técnico">
+
+        <!-- 📸 FOTOS DEL EVENTO -->
+        <label>📷 Foto Antes</label>
+        <input type="file" id="fotoAntesInput" accept="image/*" capture="environment">
+        <div id="fotoAntesPreview" class="foto-preview"></div>
+
+        <label>📸 Foto Después</label>
+        <input type="file" id="fotoDespuesInput" accept="image/*" capture="environment">
+        <div id="fotoDespuesPreview" class="foto-preview"></div>
+
+        <label>Notas</label>
+        <textarea id="eventoNotas"></textarea>
+
+      </div>
+
+      <div class="modal-footer">
+        <button id="btnSaveEvento">💾 Guardar</button>
+        <button id="btnDeleteEvento">🗑️ Eliminar</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LIBS -->
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+  <!-- CORE -->
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/storage.js"></script>
+  <script src="../assets/js/storage.cierres.js"></script>
+
+  <!-- FIREBASE CORE -->
+  <script type="module" src="../assets/js/services/firebase.db.js"></script>
+
+  <!-- FIREBASE SERVICES -->
+  <script type="module" src="../assets/js/services/firebase.cierres.js"></script>
+  <script type="module" src="../assets/js/services/firebase.rutas.js"></script>
+  <script type="module" src="../assets/js/services/firebase.storage.js"></script>
+
+  <!-- MAPA -->
+  <script src="../assets/js/map/mapa.init.js"></script>
+
+  <!-- TOOLS -->
+  <script src="../assets/js/tools/tool.medicion.js"></script>
+  <script src="../assets/js/tools/tool.gps.js"></script>
+  <script src="../assets/js/tools/tool.navegacion.js?v=2026"></script>
+  <script src="../assets/js/tools/tool.capas.js"></script>
+  <script src="../assets/js/tools/tool.rutas.js"></script> <!-- 🛣️ NUEVO -->
+  <script src="../assets/js/tools/tool.cierres.js"></script>
+  <script src="../assets/js/tools/tool.eventos.js"></script>
+
+
+  <!-- UI -->
+  <script src="../assets/js/ui/ui.panel.js"></script>
+
+</body>
+
+</html>

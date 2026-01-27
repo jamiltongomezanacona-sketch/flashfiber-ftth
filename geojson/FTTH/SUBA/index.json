@@ -1,0 +1,10 @@
+{
+  "label": "BAxx",
+  "children": [
+    { "id": "cables", "label": "Cables", "children": [] },
+    { "id": "cierres", "label": "Cierres", "children": [] },
+    { "id": "rutas", "label": "Rutas", "children": [] },
+    { "id": "eventos", "label": "Eventos", "children": [] },
+    { "id": "mantenimientos", "label": "Mantenimientos", "children": [] }
+  ]
+}

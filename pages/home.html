@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Flash Fiber FTTH | Panel Principal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Base del proyecto -->
+  <link rel="stylesheet" href="../assets/css/theme.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+
+  <!-- Fuente -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ======================================================
+       HOME DASHBOARD - FLASHFIBER FTTH
+       Estilo moderno, limpio y escalable
+    ====================================================== */
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 15% 20%, #1e40af33, transparent 40%),
+        radial-gradient(circle at 85% 80%, #7c3aed33, transparent 45%),
+        linear-gradient(135deg, #050914, #0b1224);
+      color: #e5e7eb;
+      overflow-x: hidden;
+    }
+
+    /* ================= HEADER ================= */
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(14px);
+      background: rgba(15, 23, 42, 0.75);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand .title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+
+    .brand .subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .user-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .user-name {
+      font-size: 13px;
+      color: #cbd5f5;
+    }
+
+    .btn-logout {
+      border: none;
+      border-radius: 10px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: #020617;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      transition: .2s ease;
+    }
+
+    .btn-logout:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    /* ================= MAIN ================= */
+
+    main {
+      padding: 28px 26px 40px;
+      max-width: 1300px;
+      margin: auto;
+    }
+
+    .welcome {
+      margin-bottom: 28px;
+    }
+
+    .welcome h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .welcome p {
+      margin-top: 6px;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    /* ================= GRID ================= */
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      position: relative;
+      padding: 20px 20px 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      background: rgba(255,255,255,.06);
+      box-shadow: 0 12px 28px rgba(0,0,0,.35);
+    }
+
+    .card-icon {
+      font-size: 34px;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    .badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: rgba(96,165,250,.15);
+      color: #93c5fd;
+      border: 1px solid rgba(96,165,250,.3);
+    }
+
+    /* ================= FOOTER ================= */
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    /* ================= RESPONSIVE ================= */
+
+    @media (max-width: 520px) {
+      .welcome h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="brand">
+    <div class="title">Flash Fiber FTTH</div>
+    <div class="subtitle">Panel Operativo</div>
+  </div>
+
+  <div class="user-box">
+    <div class="user-name" id="usernameDisplay">Usuario</div>
+    <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
+  </div>
+</header>
+
+<main>
+
+  <section class="welcome">
+    <h1>Bienvenido 👋</h1>
+    <p>Seleccione un módulo para comenzar la operación.</p>
+  </section>
+
+  <section class="grid">
+
+    <div class="card" data-link="mapa-ftth.html">
+      <div class="badge">Activo</div>
+      <div class="card-icon">🗺️</div>
+      <div class="card-title">Visor GIS</div>
+      <div class="card-desc">
+        Visualización completa de red FTTH, troncales, cierres, NAP, eventos y trazabilidad.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="badge">Próximamente</div>
+      <div class="card-icon">📊</div>
+      <div class="card-title">Dashboard Operativo</div>
+      <div class="card-desc">
+        KPIs, fallas, disponibilidad, mapas de calor y control de SLA.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="badge">Próximamente</div>
+      <div class="card-icon">📡</div>
+      <div class="card-title">Inventario</div>
+      <div class="card-desc">
+        Gestión de cables, cierres, splitters, reservas y capacidad.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="badge">Próximamente</div>
+      <div class="card-icon">👷</div>
+      <div class="card-title">Técnicos</div>
+      <div class="card-desc">
+        Asignación de órdenes, tracking GPS y productividad.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="badge">Beta</div>
+      <div class="card-icon">📱</div>
+      <div class="card-title">Modo Campo</div>
+      <div class="card-desc">
+        Interfaz optimizada para uso en móviles y tablets en terreno.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="badge">Admin</div>
+      <div class="card-icon">⚙️</div>
+      <div class="card-title">Configuración</div>
+      <div class="card-desc">
+        Usuarios, permisos, sincronización y parámetros globales.
+      </div>
+    </div>
+
+  </section>
+
+  <footer>
+    © 2026 Flash Fiber · Plataforma FTTH
+  </footer>
+
+</main>
+
+<script>
+/* ======================================================
+   HOME | Protección de sesión + navegación
+====================================================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const userRaw = sessionStorage.getItem("user");
+  const isLogged = sessionStorage.getItem("isLoggedIn");
+
+  // 🔒 Protección
+  if (isLogged !== "true" || !userRaw) {
+    window.location.replace("../index.html");
+    return;
+  }
+
+  const user = JSON.parse(userRaw);
+
+  // Mostrar usuario
+  document.getElementById("usernameDisplay").textContent = user.username;
+
+  // Navegación tarjetas
+  document.querySelectorAll(".card[data-link]").forEach(card => {
+    card.addEventListener("click", () => {
+      window.location.href = card.dataset.link;
+    });
+  });
+
+  // Logout
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    sessionStorage.clear();
+    window.location.replace("../index.html");
+  });
+
+});
+</script>
+
+</body>
+</html>

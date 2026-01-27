@@ -1,0 +1,37 @@
+{
+  "label": "Cuni (CU)",
+  "children": [
+    { "id": "CU01", "label": "CU01", "type": "folder", "index": "CU01/index.json" },
+    { "id": "CU02", "label": "CU02", "type": "folder", "index": "CU02/index.json" },
+    { "id": "CU03", "label": "CU03", "type": "folder", "index": "CU03/index.json" },
+    { "id": "CU04", "label": "CU04", "type": "folder", "index": "CU04/index.json" },
+    { "id": "CU05", "label": "CU05", "type": "folder", "index": "CU05/index.json" },
+    { "id": "CU06", "label": "CU06", "type": "folder", "index": "CU06/index.json" },
+    { "id": "CU07", "label": "CU07", "type": "folder", "index": "CU07/index.json" },
+    { "id": "CU08", "label": "CU08", "type": "folder", "index": "CU08/index.json" },
+    { "id": "CU09", "label": "CU09", "type": "folder", "index": "CU09/index.json" },
+    { "id": "CU10", "label": "CU10", "type": "folder", "index": "CU10/index.json" },
+
+    { "id": "CU11", "label": "CU11", "type": "folder", "index": "CU11/index.json" },
+    { "id": "CU12", "label": "CU12", "type": "folder", "index": "CU12/index.json" },
+    { "id": "CU13", "label": "CU13", "type": "folder", "index": "CU13/index.json" },
+    { "id": "CU14", "label": "CU14", "type": "folder", "index": "CU14/index.json" },
+    { "id": "CU15", "label": "CU15", "type": "folder", "index": "CU15/index.json" },
+    { "id": "CU16", "label": "CU16", "type": "folder", "index": "CU16/index.json" },
+    { "id": "CU17", "label": "CU17", "type": "folder", "index": "CU17/index.json" },
+    { "id": "CU18", "label": "CU18", "type": "folder", "index": "CU18/index.json" },
+    { "id": "CU19", "label": "CU19", "type": "folder", "index": "CU19/index.json" },
+    { "id": "CU20", "label": "CU20", "type": "folder", "index": "CU20/index.json" },
+
+    { "id": "CU21", "label": "CU21", "type": "folder", "index": "CU21/index.json" },
+    { "id": "CU22", "label": "CU22", "type": "folder", "index": "CU22/index.json" },
+    { "id": "CU23", "label": "CU23", "type": "folder", "index": "CU23/index.json" },
+    { "id": "CU24", "label": "CU24", "type": "folder", "index": "CU24/index.json" },
+    { "id": "CU25", "label": "CU25", "type": "folder", "index": "CU25/index.json" },
+    { "id": "CU26", "label": "CU26", "type": "folder", "index": "CU26/index.json" },
+    { "id": "CU27", "label": "CU27", "type": "folder", "index": "CU27/index.json" },
+    { "id": "CU28", "label": "CU28", "type": "folder", "index": "CU28/index.json" },
+    { "id": "CU29", "label": "CU29", "type": "folder", "index": "CU29/index.json" },
+    { "id": "CU30", "label": "CU30", "type": "folder", "index": "CU30/index.json" }
+  ]
+}

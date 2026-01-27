@@ -57,3 +57,10 @@
 
   window.__FTTH_APP__ = App;
 })();
+// 🔧 Reparación automática de Firebase DB
+setInterval(() => {
+  if (!window.__FTTH_DB__ && window.FTTH_FIREBASE?.db) {
+    window.__FTTH_DB__ = window.FTTH_FIREBASE.db;
+    console.log("✅ Alias __FTTH_DB__ creado automáticamente");
+  }
+}, 500);

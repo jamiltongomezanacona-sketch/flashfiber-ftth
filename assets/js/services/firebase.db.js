@@ -45,12 +45,13 @@ const CIERRES_COLLECTION = "cierres";
 async function guardarCierre(cierre) {
   cierre.createdAt = cierre.createdAt || new Date().toISOString();
 
-  await addDoc(collection(db, CIERRES_COLLECTION), {
+  const ref = await addDoc(collection(db, CIERRES_COLLECTION), {
     ...cierre,
     serverTime: serverTimestamp()
   });
 
-  console.log("✅ Cierre guardado");
+  console.log("✅ Cierre guardado con ID:", ref.id);
+  return ref.id;   // ✅ RETORNA ID
 }
 
 function escucharCierres(callback) {
@@ -83,12 +84,13 @@ const EVENTOS_COLLECTION = "eventos";
 async function guardarEvento(evento) {
   evento.createdAt = evento.createdAt || new Date().toISOString();
 
-  await addDoc(collection(db, EVENTOS_COLLECTION), {
+  const ref = await addDoc(collection(db, EVENTOS_COLLECTION), {
     ...evento,
     serverTime: serverTimestamp()
   });
 
-  console.log("✅ Evento guardado");
+  console.log("✅ Evento guardado con ID:", ref.id);
+  return ref.id;   // ✅ RETORNA ID
 }
 
 function escucharEventos(callback) {
@@ -116,6 +118,9 @@ async function eliminarEvento(id) {
    🌍 EXPONER GLOBAL
 ========================================================= */
 
+// 👉 Alias global para compatibilidad total
+window.__FTTH_DB__ = db;
+
 window.FTTH_FIREBASE = {
   db,
 
@@ -131,3 +136,5 @@ window.FTTH_FIREBASE = {
   actualizarEvento,
   eliminarEvento
 };
+
+console.log("🌍 Firebase expuesto globalmente");

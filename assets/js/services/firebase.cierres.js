@@ -13,7 +13,8 @@ import {
    Obtener DB desde core
 ========================= */
 function getDB() {
-  return window.__FTTH_FIREBASE__?.db;
+  // Prioridad: alias global → objeto principal
+  return window.__FTTH_DB__ || window.FTTH_FIREBASE?.db || null;
 }
 
 /* =========================
@@ -21,7 +22,10 @@ function getDB() {
 ========================= */
 async function guardarCierre(cierre) {
   const db = getDB();
-  if (!db) throw new Error("Firebase DB no disponible");
+  if (!db) {
+    console.warn("⏳ Firebase DB aún no disponible...");
+    return;
+  }
 
   const payload = {
     codigo: cierre.codigo || "",
@@ -40,6 +44,7 @@ async function guardarCierre(cierre) {
   console.log("☁️ Cierre guardado:", doc.id);
   return doc.id;
 }
+
 import {
   doc,
   updateDoc,
@@ -51,7 +56,10 @@ import {
 ========================= */
 async function actualizarCierre(id, data) {
   const db = getDB();
-  if (!db) throw new Error("Firebase DB no disponible");
+  if (!db) {
+    console.warn("⏳ Firebase DB aún no disponible...");
+    return;
+  }
 
   const ref = doc(db, "cierres", id);
   await updateDoc(ref, {
@@ -67,7 +75,10 @@ async function actualizarCierre(id, data) {
 ========================= */
 async function eliminarCierre(id) {
   const db = getDB();
-  if (!db) throw new Error("Firebase DB no disponible");
+  if (!db) {
+    console.warn("⏳ Firebase DB aún no disponible...");
+    return;
+  }
 
   const ref = doc(db, "cierres", id);
   await deleteDoc(ref);
@@ -80,7 +91,10 @@ async function eliminarCierre(id) {
 ========================= */
 function escucharCierres(callback) {
   const db = getDB();
-  if (!db) throw new Error("Firebase DB no disponible");
+  if (!db) {
+    console.warn("⏳ Firebase DB aún no disponible...");
+    return;
+  }
 
   const ref = collection(db, "cierres");
   console.log("👂 Escuchando cierres...");

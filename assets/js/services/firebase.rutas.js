@@ -2,7 +2,7 @@
    Firebase Rutas Service | FlashFiber FTTH (SAFE)
 ===================================================== */
 
-import { db } from "./firebase.js";
+import { db } from "./firebase.db.js";
 import {
   collection,
   addDoc,

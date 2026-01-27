@@ -1,8 +1,6 @@
 /* =========================================================
    FlashFiber FTTH | tool.eventos.js
    EVENTOS OPERATIVOS - Crear / Editar / Eliminar (Firebase Sync)
-   - Pensado para vandalismo/corte + empalme provisional
-   - Igual o mejor que tool.cierres.js
 ========================================================= */
 
 (function () {
@@ -39,52 +37,45 @@
     const elTecnico = document.getElementById("eventoTecnico");
     const elNotas   = document.getElementById("eventoNotas");
 
-    // 🏢 Central / 🧬 Molécula
     const elCentralEvento  = document.getElementById("eventoCentral");
     const elMoleculaEvento = document.getElementById("eventoMolecula");
 
-    // 📸 Inputs de fotos
     const fotoAntesInput     = document.getElementById("fotoAntesInput");
     const fotoDespuesInput   = document.getElementById("fotoDespuesInput");
     const fotoAntesPreview   = document.getElementById("fotoAntesPreview");
     const fotoDespuesPreview = document.getElementById("fotoDespuesPreview");
 
-    // Buffers temporales
     let fotosAntes = [];
     let fotosDespues = [];
 
-    if (!modal || !btnSave || !btnClose || !elTipo || !elAccion || !elEstado) {
-      console.error("❌ Modal de eventos no encontrado. Revisa el HTML (eventoModal y campos).");
+    if (!modal || !btnSave || !btnClose) {
+      console.error("❌ Modal de eventos no encontrado.");
       return;
     }
 
     /* ===============================
-       Fotos: preview y captura
+       Fotos preview
     =============================== */
     function renderPreview(container, files) {
       if (!container) return;
       container.innerHTML = "";
-
       (files || []).forEach(file => {
         const img = document.createElement("img");
         img.src = URL.createObjectURL(file);
-        img.title = file.name;
         img.style.width = "72px";
         img.style.height = "72px";
         img.style.objectFit = "cover";
         img.style.borderRadius = "8px";
-        img.style.border = "1px solid #2c3e50";
-        img.style.cursor = "pointer";
         container.appendChild(img);
       });
     }
 
-    fotoAntesInput?.addEventListener("change", (e) => {
+    fotoAntesInput?.addEventListener("change", e => {
       fotosAntes = Array.from(e.target.files || []);
       renderPreview(fotoAntesPreview, fotosAntes);
     });
 
-    fotoDespuesInput?.addEventListener("change", (e) => {
+    fotoDespuesInput?.addEventListener("change", e => {
       fotosDespues = Array.from(e.target.files || []);
       renderPreview(fotoDespuesPreview, fotosDespues);
     });
@@ -162,41 +153,64 @@
     =============================== */
 
     App.reloadEventos = function () {
-      console.log("🔄 Recargando capa EVENTOS");
       initLayer();
       refreshLayer();
     };
 
     App.reloadEventos();
 
-    FB.escucharEventos((evt) => {
-      addEventoToMap(evt);
-    });
+    FB.escucharEventos(evt => addEventoToMap(evt));
 
     /* ===============================
        Modal helpers
     =============================== */
+    function openModal() {
+      modal.classList.remove("hidden");
+    }
 
     function closeModal() {
-      modal?.classList.add("hidden");
+      modal.classList.add("hidden");
       modal.dataset.editId = "";
       selectedLngLat = null;
       blockNextClick = true;
-
-      fotosAntes = [];
-      fotosDespues = [];
-      if (fotoAntesInput) fotoAntesInput.value = "";
-      if (fotoDespuesInput) fotoDespuesInput.value = "";
-      if (fotoAntesPreview) fotoAntesPreview.innerHTML = "";
-      if (fotoDespuesPreview) fotoDespuesPreview.innerHTML = "";
     }
 
     btnClose?.addEventListener("click", closeModal);
 
     /* ===============================
+       Tool control
+    =============================== */
+    function start() {
+      if (active) return;
+      active = true;
+      App.map.getCanvas().style.cursor = "crosshair";
+      App.map.on("click", handleMapClick);
+      console.log("🚨 Montar Evento ACTIVADO");
+    }
+
+    function stop() {
+      active = false;
+      App.map.off("click", handleMapClick);
+      App.map.getCanvas().style.cursor = "";
+      closeModal();
+      console.log("🛑 Montar Evento DESACTIVADO");
+    }
+
+    function handleMapClick(e) {
+      if (!active) return;
+      if (blockNextClick) {
+        blockNextClick = false;
+        return;
+      }
+      selectedLngLat = e.lngLat;
+      modal.dataset.editId = "";
+      openModal();
+    }
+
+    /* ===============================
        Guardar evento
     =============================== */
-    btnSave?.addEventListener("click", async (e) => {
+    btnSave?.addEventListener("click", async e => {
       e.stopPropagation();
 
       const evento = {
@@ -214,17 +228,11 @@
       };
 
       try {
-        let eventoId = await FB.guardarEvento(evento);
+        const eventoId = await FB.guardarEvento(evento);
         if (!eventoId) throw new Error("No se pudo obtener eventoId");
 
-        /* =========================
-           Subida de fotos (segura)
-        ========================= */
         const storage = window.FTTH_STORAGE;
-
-        if (!storage?.subirFotoEvento) {
-          console.warn("📷 Storage no disponible — fotos omitidas");
-        } else {
+        if (storage?.subirFotoEvento) {
           for (const file of fotosAntes) {
             await storage.subirFotoEvento(eventoId, "antes", file);
           }
@@ -243,8 +251,8 @@
     /* ===============================
        Registrar tool
     =============================== */
-    App.tools.eventos = { start: () => {}, stop: () => {} };
+    App.tools.eventos = { start, stop };
 
-    console.log("🚀 tool.eventos listo (PRO)");
+    console.log("🚀 tool.eventos listo y operativo");
   }, 300);
 })();

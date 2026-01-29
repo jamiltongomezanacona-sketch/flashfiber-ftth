@@ -185,6 +185,26 @@
       color: #64748b;
     }
 
+    .btn-install {
+      width: 100%;
+      height: 46px;
+      border-radius: 12px;
+      border: 1px dashed rgba(96, 165, 250, .6);
+      background: rgba(96, 165, 250, .08);
+      color: #e5e7eb;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 14px;
+      cursor: pointer;
+      transition: .25s ease;
+    }
+
+    .btn-install:hover {
+      background: rgba(96, 165, 250, .15);
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, .25);
+    }
+
+
     /* Responsive */
     @media (max-width: 480px) {
       .login-card {
@@ -226,6 +246,11 @@
 
     </form>
 
+    <button id="btnInstallApp" class="btn-install" style="display:none;">
+      Instalar FlashFiber
+    </button>
+
+
     <div id="errorMessage" class="error"></div>
 
     <div class="footer">
@@ -250,6 +275,42 @@
       });
     }
   </script>
+
+  <script>
+    let deferredPrompt;
+    const installBtn = document.getElementById("btnInstallApp");
+
+    // Chrome detecta que la PWA es instalable
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();          // Evita el mini-banner automático
+      deferredPrompt = e;
+      installBtn.style.display = "block";
+    });
+
+    // Click en instalar
+    installBtn.addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+
+      if (choice.outcome === "accepted") {
+        console.log("✅ App instalada");
+      } else {
+        console.log("❌ Instalación cancelada");
+      }
+
+      deferredPrompt = null;
+      installBtn.style.display = "none";
+    });
+
+    // Ocultar botón si ya está instalada
+    window.addEventListener("appinstalled", () => {
+      installBtn.style.display = "none";
+      console.log("🎉 FlashFiber instalada");
+    });
+  </script>
+
 
 
 </body>

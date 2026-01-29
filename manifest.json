@@ -2,7 +2,7 @@
   "name": "FlashFiber FTTH",
   "short_name": "FlashFiber",
   "description": "Plataforma GIS FTTH para operación en campo",
-  "start_url": "/index.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

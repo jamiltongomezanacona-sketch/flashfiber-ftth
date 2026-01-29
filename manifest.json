@@ -1,0 +1,23 @@
+{
+  "name": "FlashFiber FTTH",
+  "short_name": "FlashFiber",
+  "description": "Plataforma GIS FTTH para operación en campo",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1d2a",
+  "theme_color": "#00e5ff",
+  "icons": [
+    {
+      "src": "/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

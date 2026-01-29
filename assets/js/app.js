@@ -64,3 +64,13 @@ setInterval(() => {
     console.log("✅ Alias __FTTH_DB__ creado automáticamente");
   }
 }, 500);
+
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then(() => console.log("📱 PWA activa"))
+      .catch(err => console.error("❌ Error SW", err));
+  });
+}

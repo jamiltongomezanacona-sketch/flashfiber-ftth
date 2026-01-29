@@ -171,8 +171,8 @@
         type: "line",
         source: lineSourceId,
         paint: {
-          "line-width": 3,
-          "line-color": "#003366"
+          "line-width": 5,
+          "line-color": "#eb7f33"
         }
       });
     }

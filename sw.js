@@ -1,10 +1,8 @@
-const CACHE_NAME = "flashfiber-ftth-v1";
+const CACHE_NAME = "flashfiber-ftth-v2";
 
 const STATIC_ASSETS = [
   "/",
   "/index.html",
-  "/pages/home.html",
-  "/pages/mapa-ftth.html",
 
   "/assets/css/theme.css",
   "/assets/css/layout.css",
@@ -18,25 +16,29 @@ const STATIC_ASSETS = [
   "/assets/js/auth.js"
 ];
 
-// Instalar
+// 🔹 INSTALACIÓN
 self.addEventListener("install", event => {
+  self.skipWaiting(); // 🔥 CLAVE
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
   );
 });
 
-// Activar
+// 🔹 ACTIVACIÓN
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+    Promise.all([
+      self.clients.claim(), // 🔥 CLAVE
+      caches.keys().then(keys =>
+        Promise.all(
+          keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+        )
       )
-    )
+    ])
   );
 });
 
-// Interceptar requests
+// 🔹 FETCH
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
 

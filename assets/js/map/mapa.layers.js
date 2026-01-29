@@ -1,123 +1,188 @@
 /* =========================================================
    FlashFiber FTTH | mapa.layers.js
-   Carga dinámica de capas GeoJSON FTTH
-   ✔ Estable para móvil
+   Carga dinámica de capas GeoJSON FTTH (desde árbol children)
+   + AutoZoom inteligente
 ========================================================= */
 
 (() => {
   "use strict";
 
   const App = window.__FTTH_APP__;
-  if (!App || !App.map) {
-    console.error("❌ App o mapa no disponible en mapa.layers.js");
+  if (!App) {
+    console.error("❌ App no disponible en mapa.layers.js");
     return;
   }
 
-  const FTTH_INDEX = "../geojson/FTTH/index.json";
-  let cachedIndex = null;
+  const ROOT_INDEX = "../geojson/index.json";
   let restoring = false;
 
+  App.__ftthLayerIds = App.__ftthLayerIds || [];
+
   /* ===============================
-     Cargar index.json
+     🎯 AUTO ZOOM GEOJSON
   =============================== */
-  async function loadIndex() {
+  function autoZoomToGeoJSON(geojson) {
+    const map = App.map;
+    if (!map || !geojson?.features?.length) return;
+
+    const coords = [];
+
+    geojson.features.forEach(f => {
+      if (f.geometry.type === "LineString") {
+        coords.push(...f.geometry.coordinates);
+      }
+      if (f.geometry.type === "MultiLineString") {
+        f.geometry.coordinates.forEach(line => {
+          coords.push(...line);
+        });
+      }
+    });
+
+    if (!coords.length) return;
+
+    const bounds = coords.reduce(
+      (b, c) => b.extend(c),
+      new mapboxgl.LngLatBounds(coords[0], coords[0])
+    );
+
+    // 🛡️ Delay para evitar conflictos de render
+    setTimeout(() => {
+      map.fitBounds(bounds, {
+        padding: 80,
+        duration: 900
+      });
+      console.log("🎯 AutoZoom aplicado");
+    }, 300);
+  }
+
+  /* ===============================
+     Cargar árbol raíz
+  =============================== */
+  async function loadFTTHTree() {
     try {
-      console.log("📂 Cargando índice FTTH...");
+      console.log("📂 Cargando árbol FTTH...");
+      const res = await fetch(ROOT_INDEX, { cache: "no-store" });
+      const root = await res.json();
 
-      const res = await fetch(FTTH_INDEX, { cache: "no-store" });
-      const data = await res.json();
+      await walkNode(root, "../geojson/");
 
-      cachedIndex = data;
-      buildLayers(data);
-
+      console.log("🌳 Árbol FTTH procesado");
     } catch (err) {
-      console.error("❌ Error cargando index.json", err);
+      console.error("❌ Error cargando árbol FTTH", err);
     }
   }
 
   /* ===============================
-     Construir capas
+     Recorrer nodos recursivamente
   =============================== */
-  function buildLayers(index) {
-    if (!index?.layers?.length) return;
+  async function walkNode(node, basePath) {
+    if (!node) return;
 
-    index.layers.forEach(layer => {
-      createLayer(layer);
-    });
+    // 🟢 Si ESTE nodo es una capa
+    if (node.type === "layer") {
+      await createLayer(node, basePath);
+      return;
+    }
+
+    // 🟢 Si tiene hijos → recorrerlos
+    if (node.children?.length) {
+      for (const child of node.children) {
+
+        // 👉 CASO 1: hijo es capa directa
+        if (child.type === "layer") {
+          await createLayer(child, basePath);
+          continue;
+        }
+
+        // 👉 CASO 2: hijo es carpeta con index.json
+        if (child.index) {
+          try {
+            const url = basePath + child.index;
+            const res = await fetch(url, { cache: "no-store" });
+            const json = await res.json();
+
+            const nextBase =
+              basePath + child.index.replace("index.json", "");
+
+            await walkNode(json, nextBase);
+
+          } catch (err) {
+            console.warn("⚠️ No se pudo cargar:", child.index);
+          }
+        }
+      }
+    }
   }
 
   /* ===============================
-     Crear capa segura
+     Crear capa Mapbox
   =============================== */
-  async function createLayer(layer) {
-    const id  = layer.id;
-    const url = "../geojson/FTTH/" + layer.path;
+  async function createLayer(layer, basePath) {
+    const map = App.map;
+    if (!map || !map.isStyleLoaded()) return;
 
-    if (!App.map.isStyleLoaded()) return;
-    if (App.map.getSource(id)) return;
+    const id  = layer.id;
+    const url = basePath + layer.path;
+
+    if (map.getSource(id)) return;
 
     try {
       const res = await fetch(url, { cache: "no-store" });
       const geojson = await res.json();
 
-      App.map.addSource(id, {
+      map.addSource(id, {
         type: "geojson",
         data: geojson
       });
 
-      App.map.addLayer({
+      map.addLayer({
         id,
-        type: layer.type || "line",
+        type: layer.typeLayer || "line",
         source: id,
+        layout: {
+          visibility: "visible"
+        },
         paint: layer.paint || {
-          "line-color": "#00e5ff",
-          "line-width": 2
+          "line-color": "#00ff90",
+          "line-width": 4
         }
       });
 
-      console.log("✅ Capa cargada:", id);
+      App.__ftthLayerIds.push(id);
+
+      console.log("✅ Capa FTTH cargada:", id);
+
+      // 🎯 Auto zoom automático al cargar
+      autoZoomToGeoJSON(geojson);
 
     } catch (err) {
-      console.error("❌ Error cargando capa:", id, err);
+      console.error("❌ Error creando capa:", id, err);
     }
   }
 
   /* ===============================
-     Restaurar capas tras cambio de estilo
+     Restaurar al cambiar estilo
   =============================== */
   function restoreLayers() {
     if (restoring) return;
-    if (!cachedIndex) return;
-
     restoring = true;
 
     console.log("🔄 Restaurando capas FTTH...");
-
-    // Pequeña espera para estabilidad interna del mapa
     setTimeout(() => {
-      buildLayers(cachedIndex);
+      loadFTTHTree();
       restoring = false;
-    }, 300);
+    }, 400);
   }
 
   /* ===============================
-     Eventos del mapa
+     Eventos
   =============================== */
-
-  // Primera carga
-  App.map.on("load", () => {
-    console.log("🗺️ Mapa listo → cargando capas FTTH");
-    loadIndex();
-  });
-
-  // Cambio de estilo (satélite / calles)
-
+  App.map?.on("load", loadFTTHTree);
+  App.map?.on("style.load", restoreLayers);
 
   /* ===============================
      API pública
   =============================== */
-  App.layers = {
-    reload: restoreLayers
-  };
+  App.loadFTTHTree = loadFTTHTree;
 
 })();

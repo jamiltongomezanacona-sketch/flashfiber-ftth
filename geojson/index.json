@@ -1,0 +1,7 @@
+{
+  "label": "GEOJSON",
+  "children": [
+    { "type": "folder", "label": "FTTH", "index": "FTTH/index.json" },
+    { "type": "folder", "label": "CORPORATIVO", "index": "CORPORATIVO/index.json" }
+  ]
+}

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <title>Flash Fiber FTTH | Panel Principal</title>
@@ -42,7 +43,7 @@
       z-index: 10;
       backdrop-filter: blur(14px);
       background: rgba(15, 23, 42, 0.75);
-      border-bottom: 1px solid rgba(255,255,255,.06);
+      border-bottom: 1px solid rgba(255, 255, 255, .06);
       padding: 14px 22px;
       display: flex;
       align-items: center;
@@ -129,8 +130,8 @@
       position: relative;
       padding: 20px 20px 18px;
       border-radius: 16px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .08);
       backdrop-filter: blur(8px);
       cursor: pointer;
       transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
@@ -138,8 +139,8 @@
 
     .card:hover {
       transform: translateY(-4px);
-      background: rgba(255,255,255,.06);
-      box-shadow: 0 12px 28px rgba(0,0,0,.35);
+      background: rgba(255, 255, 255, .06);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, .35);
     }
 
     .card-icon {
@@ -166,9 +167,9 @@
       font-size: 10px;
       padding: 3px 8px;
       border-radius: 20px;
-      background: rgba(96,165,250,.15);
+      background: rgba(96, 165, 250, .15);
       color: #93c5fd;
-      border: 1px solid rgba(96,165,250,.3);
+      border: 1px solid rgba(96, 165, 250, .3);
     }
 
     /* ================= FOOTER ================= */
@@ -190,127 +191,128 @@
   </style>
 </head>
 
-<body>
+<body class="app-dashboard">
 
-<header>
-  <div class="brand">
-    <div class="title">Flash Fiber FTTH</div>
-    <div class="subtitle">Panel Operativo</div>
-  </div>
-
-  <div class="user-box">
-    <div class="user-name" id="usernameDisplay">Usuario</div>
-    <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
-  </div>
-</header>
-
-<main>
-
-  <section class="welcome">
-    <h1>Bienvenido 👋</h1>
-    <p>Seleccione un módulo para comenzar la operación.</p>
-  </section>
-
-  <section class="grid">
-
-    <div class="card" data-link="mapa-ftth.html">
-      <div class="badge">Activo</div>
-      <div class="card-icon">🗺️</div>
-      <div class="card-title">Visor GIS</div>
-      <div class="card-desc">
-        Visualización completa de red FTTH, troncales, cierres, NAP, eventos y trazabilidad.
-      </div>
+  <header>
+    <div class="brand">
+      <div class="title">Flash Fiber FTTH</div>
+      <div class="subtitle">Panel Operativo</div>
     </div>
 
-    <div class="card">
-      <div class="badge">Próximamente</div>
-      <div class="card-icon">📊</div>
-      <div class="card-title">Dashboard Operativo</div>
-      <div class="card-desc">
-        KPIs, fallas, disponibilidad, mapas de calor y control de SLA.
-      </div>
+    <div class="user-box">
+      <div class="user-name" id="usernameDisplay">Usuario</div>
+      <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
     </div>
+  </header>
 
-    <div class="card">
-      <div class="badge">Próximamente</div>
-      <div class="card-icon">📡</div>
-      <div class="card-title">Inventario</div>
-      <div class="card-desc">
-        Gestión de cables, cierres, splitters, reservas y capacidad.
+  <main>
+
+    <section class="welcome">
+      <h1>Bienvenido 👋</h1>
+      <p>Seleccione un módulo para comenzar la operación.</p>
+    </section>
+
+    <section class="grid">
+
+      <div class="card" data-link="mapa-ftth.html">
+        <div class="badge">Activo</div>
+        <div class="card-icon">🗺️</div>
+        <div class="card-title">Visor GIS</div>
+        <div class="card-desc">
+          Visualización completa de red FTTH, troncales, cierres, NAP, eventos y trazabilidad.
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="badge">Próximamente</div>
-      <div class="card-icon">👷</div>
-      <div class="card-title">Técnicos</div>
-      <div class="card-desc">
-        Asignación de órdenes, tracking GPS y productividad.
+      <div class="card">
+        <div class="badge">Próximamente</div>
+        <div class="card-icon">📊</div>
+        <div class="card-title">Dashboard Operativo</div>
+        <div class="card-desc">
+          KPIs, fallas, disponibilidad, mapas de calor y control de SLA.
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="badge">Beta</div>
-      <div class="card-icon">📱</div>
-      <div class="card-title">Modo Campo</div>
-      <div class="card-desc">
-        Interfaz optimizada para uso en móviles y tablets en terreno.
+      <div class="card">
+        <div class="badge">Próximamente</div>
+        <div class="card-icon">📡</div>
+        <div class="card-title">Inventario</div>
+        <div class="card-desc">
+          Gestión de cables, cierres, splitters, reservas y capacidad.
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="badge">Admin</div>
-      <div class="card-icon">⚙️</div>
-      <div class="card-title">Configuración</div>
-      <div class="card-desc">
-        Usuarios, permisos, sincronización y parámetros globales.
+      <div class="card">
+        <div class="badge">Próximamente</div>
+        <div class="card-icon">👷</div>
+        <div class="card-title">Técnicos</div>
+        <div class="card-desc">
+          Asignación de órdenes, tracking GPS y productividad.
+        </div>
       </div>
-    </div>
 
-  </section>
+      <div class="card">
+        <div class="badge">Beta</div>
+        <div class="card-icon">📱</div>
+        <div class="card-title">Modo Campo</div>
+        <div class="card-desc">
+          Interfaz optimizada para uso en móviles y tablets en terreno.
+        </div>
+      </div>
 
-  <footer>
-    © 2026 Flash Fiber · Plataforma FTTH
-  </footer>
+      <div class="card">
+        <div class="badge">Admin</div>
+        <div class="card-icon">⚙️</div>
+        <div class="card-title">Configuración</div>
+        <div class="card-desc">
+          Usuarios, permisos, sincronización y parámetros globales.
+        </div>
+      </div>
 
-</main>
+    </section>
 
-<script>
-/* ======================================================
-   HOME | Protección de sesión + navegación
-====================================================== */
+    <footer>
+      © 2026 Flash Fiber · Plataforma FTTH
+    </footer>
 
-document.addEventListener("DOMContentLoaded", () => {
+  </main>
 
-  const userRaw = sessionStorage.getItem("user");
-  const isLogged = sessionStorage.getItem("isLoggedIn");
+  <script>
+    /* ======================================================
+       HOME | Protección de sesión + navegación
+    ====================================================== */
 
-  // 🔒 Protección
-  if (isLogged !== "true" || !userRaw) {
-    window.location.replace("../index.html");
-    return;
-  }
+    document.addEventListener("DOMContentLoaded", () => {
 
-  const user = JSON.parse(userRaw);
+      const userRaw = sessionStorage.getItem("user");
+      const isLogged = sessionStorage.getItem("isLoggedIn");
 
-  // Mostrar usuario
-  document.getElementById("usernameDisplay").textContent = user.username;
+      // 🔒 Protección
+      if (isLogged !== "true" || !userRaw) {
+        window.location.replace("../index.html");
+        return;
+      }
 
-  // Navegación tarjetas
-  document.querySelectorAll(".card[data-link]").forEach(card => {
-    card.addEventListener("click", () => {
-      window.location.href = card.dataset.link;
+      const user = JSON.parse(userRaw);
+
+      // Mostrar usuario
+      document.getElementById("usernameDisplay").textContent = user.username;
+
+      // Navegación tarjetas
+      document.querySelectorAll(".card[data-link]").forEach(card => {
+        card.addEventListener("click", () => {
+          window.location.href = card.dataset.link;
+        });
+      });
+
+      // Logout
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        sessionStorage.clear();
+        window.location.replace("../index.html");
+      });
+
     });
-  });
-
-  // Logout
-  document.getElementById("logoutBtn").addEventListener("click", () => {
-    sessionStorage.clear();
-    window.location.replace("../index.html");
-  });
-
-});
-</script>
+  </script>
 
 </body>
+
 </html>

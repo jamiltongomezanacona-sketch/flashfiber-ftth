@@ -6,9 +6,10 @@
    BASE GLOBAL
 =============================== */
 
-html, body {
+html,
+body {
   width: 100%;
-  height: 100%;        
+  height: 100%;
   margin: 0;
   overflow-x: hidden;
 }
@@ -20,11 +21,9 @@ html, body {
 .header {
   height: 56px;
   padding: 0 16px;
-  background: linear-gradient(
-    135deg,
-    var(--dark-primary),
-    var(--dark-secondary)
-  );
+  background: linear-gradient(135deg,
+      var(--dark-primary),
+      var(--dark-secondary));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -51,7 +50,7 @@ html, body {
 }
 
 .header-actions button:hover {
-  background: rgba(0,180,216,.15);
+  background: rgba(0, 180, 216, .15);
 }
 
 /* ===============================
@@ -61,8 +60,7 @@ html, body {
 .app {
   display: flex;
   height: calc(100vh - 56px);
-  overflow: hidden;
-  min-height: 0;      
+  min-height: 0;
 }
 
 
@@ -72,7 +70,7 @@ html, body {
 
 .sidebar {
   width: 260px;
-  background: rgba(10,25,41,.92);
+  background: rgba(10, 25, 41, .92);
   border-right: 1px solid var(--border-soft);
   display: flex;
   flex-direction: column;
@@ -154,11 +152,11 @@ html, body {
 }
 
 .menu-item:hover {
-  background: rgba(0,180,216,.15);
+  background: rgba(0, 180, 216, .15);
 }
 
 .menu-item.active {
-  background: rgba(0,180,216,.25);
+  background: rgba(0, 180, 216, .25);
   border-color: var(--border-soft);
 }
 
@@ -173,16 +171,16 @@ html, body {
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  background: rgba(15,35,70,.85);
+  background: rgba(15, 35, 70, .85);
   color: #7dd3fc;
-  border: 1px solid rgba(255,255,255,.18);
+  border: 1px solid rgba(255, 255, 255, .18);
   backdrop-filter: blur(6px);
   cursor: pointer;
   z-index: 6000;
   display: none;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 20px rgba(0,0,0,.4);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .4);
   transition: .25s;
 }
 
@@ -213,19 +211,21 @@ body.app-map {
 
 @media (max-width: 768px) {
   body.app-map {
-    height: 100svh; /* viewport real móvil */
+    height: 100svh;
+    /* viewport real móvil */
   }
 }
+
 .map-wrapper {
   flex: 1;
   position: relative;
-  min-height: 0;       /* 🔧 evita altura 0 */
+  min-height: 0;
+  /* 🔧 evita altura 0 */
 }
+
 #map {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
 }
-
-

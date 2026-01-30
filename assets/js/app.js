@@ -37,9 +37,11 @@
 
       // 🔄 Cuando cambia el estilo del mapa
       this.map.on("style.load", () => {
-        this.log("🎨 Estilo recargado → reconstruyendo capas");
+        this.log("🎨 Estilo recargado → resize + capas");
+        this.map.resize();          // 🔧 CLAVE
         this.reloadAllLayers?.();
       });
+
     },
 
     // =========================

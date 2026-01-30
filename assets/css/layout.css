@@ -8,7 +8,7 @@
 
 html, body {
   width: 100%;
-  min-height: 100%;
+  height: 100%;        
   margin: 0;
   overflow-x: hidden;
 }
@@ -62,7 +62,9 @@ html, body {
   display: flex;
   height: calc(100vh - 56px);
   overflow: hidden;
+  min-height: 0;      
 }
+
 
 /* ===============================
    SIDEBAR
@@ -214,3 +216,16 @@ body.app-map {
     height: 100svh; /* viewport real móvil */
   }
 }
+.map-wrapper {
+  flex: 1;
+  position: relative;
+  min-height: 0;       /* 🔧 evita altura 0 */
+}
+#map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+

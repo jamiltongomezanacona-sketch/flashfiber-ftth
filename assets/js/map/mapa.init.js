@@ -24,14 +24,14 @@
   mapboxgl.accessToken = CONFIG.MAPBOX_TOKEN;
 
   const map = new mapboxgl.Map({
-  container: "map",
-  style: "mapbox://styles/mapbox/satellite-streets-v12",
-  center: CONFIG.MAP.CENTER,
-  zoom: CONFIG.MAP.ZOOM,
-  pitch: CONFIG.MAP.PITCH,
-  bearing: CONFIG.MAP.BEARING,
-  antialias: true
-});
+    container: "map",
+    style: "mapbox://styles/mapbox/satellite-streets-v12",
+    center: CONFIG.MAP.CENTER,
+    zoom: CONFIG.MAP.ZOOM,
+    pitch: CONFIG.MAP.PITCH,
+    bearing: CONFIG.MAP.BEARING,
+    antialias: true
+  });
 
   map.addControl(new mapboxgl.NavigationControl(), "top-right");
   map.addControl(new mapboxgl.FullscreenControl(), "top-right");
@@ -40,25 +40,26 @@
   App.setMap(map);
 
   map.on("load", () => {
-  console.log("🗺️ MAPA CARGADO CORRECTAMENTE");
+    console.log("🗺️ MAPA CARGADO CORRECTAMENTE");
 
-  // 🌍 Cargar capas FTTH
-  App.layers?.loadIndex();
+    // 🌍 Cargar capas FTTH
+    App.layers?.loadIndex();
 
-  // 💾 Cargar rutas guardadas
-  try {
-    const rutas = window.__FTTH_STORAGE__?.getRutas() || [];
+    // 💾 Cargar rutas guardadas
+    try {
+      const rutas = window.__FTTH_STORAGE__?.getRutas() || [];
 
-    rutas.forEach(ruta => {
-      if (window.drawSavedRoute) {
-        window.drawSavedRoute(ruta);
-      }
-    });
+      rutas.forEach(ruta => {
+        if (window.drawSavedRoute) {
+          window.drawSavedRoute(ruta);
+        }
+      });
 
-    console.log("📦 Rutas cargadas:", rutas.length);
-  } catch (e) {
-    console.warn("⚠️ Error cargando rutas:", e);
-  }
-});
+      console.log("📦 Rutas cargadas:", rutas.length);
+    } catch (e) {
+      console.warn("⚠️ Error cargando rutas:", e);
+    }
+  });
+
 
 })();

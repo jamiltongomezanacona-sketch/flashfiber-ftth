@@ -1,9 +1,6 @@
 /* =========================================================
    FlashFiber FTTH | mapa.controls.js
-   Control de rotación ON / OFF
-   ✔ Desktop
-   ✔ Tablet
-   ✔ Celular
+   Rotación ON / OFF (SOLUCIÓN REAL touch)
 ========================================================= */
 
 (() => {
@@ -22,7 +19,7 @@
 
     let rotationEnabled = false;
 
-    // 🔒 Estado inicial SEGURO (campo)
+    // 🔒 Estado inicial SEGURO
     map.dragRotate.disable();
     map.touchZoomRotate.disable();
     map.touchPitch.disable();
@@ -32,21 +29,27 @@
       rotationEnabled = !rotationEnabled;
 
       if (rotationEnabled) {
-        // 🔓 ACTIVAR ROTACIÓN (tablet + celular REAL)
+        // 🔓 ACTIVAR ROTACIÓN (touch real)
         map.dragRotate.enable();
         map.touchZoomRotate.enable();
         map.touchPitch.enable();
+
+        // ⚠️ Pitch mínimo necesario para que gire
+        map.easeTo({
+          pitch: 30,
+          duration: 200
+        });
 
         btnRotate.classList.add("active");
         console.log("🧭 Rotación ACTIVADA");
 
       } else {
-        // 🔒 DESACTIVAR ROTACIÓN (tablet + celular REAL)
+        // 🔒 DESACTIVAR ROTACIÓN
         map.dragRotate.disable();
         map.touchZoomRotate.disable();
         map.touchPitch.disable();
 
-        // 🔄 Reset completo (OBLIGATORIO)
+        // 🔄 Reset TOTAL
         map.easeTo({
           bearing: 0,
           pitch: 0,
@@ -56,7 +59,6 @@
         btnRotate.classList.remove("active");
         console.log("🧭 Rotación DESACTIVADA");
       }
-
     });
   };
 

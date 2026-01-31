@@ -21,10 +21,10 @@
     return;
   }
 
-  // ✅ TOKEN CORRECTO
+  // ✅ TOKEN
   mapboxgl.accessToken = CONFIG.MAPBOX_TOKEN;
 
-  // ✅ MAPA BASE – SOLO CALLES
+  // 🗺️ MAPA BASE – SOLO CALLES
   const map = new mapboxgl.Map({
     container: "map",
     style: "mapbox://styles/mapbox/streets-v12",
@@ -34,11 +34,15 @@
     pitch: 30
   });
 
-  // 🔒 UX FTTH (evita rotaciones accidentales)
-  map.dragRotate.disable();
-  map.touchZoomRotate.disableRotation();
+  /* ===============================
+     🔒 BLOQUEO INICIAL (CORRECTO)
+     =============================== */
 
-  // 🎛️ Controles nativos (pueden ocultarse por CSS)
+  map.dragRotate.disable();        // desktop
+  map.touchZoomRotate.disable();   // ⚠️ TODO apagado (NO disableRotation)
+  map.touchPitch.disable();
+
+  // 🎛️ Controles nativos
   map.addControl(new mapboxgl.NavigationControl(), "top-right");
   map.addControl(new mapboxgl.FullscreenControl(), "top-right");
   map.addControl(
@@ -46,19 +50,19 @@
     "bottom-right"
   );
 
-  // Registrar mapa globalmente
+  // Registrar mapa
   App.setMap(map);
 
-  // ===============================
-  // Mapa listo
-  // ===============================
+  /* ===============================
+     MAPA LISTO
+     =============================== */
   map.on("load", () => {
     console.log("🗺️ MAPA CARGADO CORRECTAMENTE");
 
-    // 🌍 Cargar capas FTTH
+    // 🌍 Capas FTTH
     App.layers?.loadIndex();
 
-    // 💾 Cargar rutas guardadas
+    // 💾 Rutas guardadas
     try {
       const rutas = window.__FTTH_STORAGE__?.getRutas() || [];
 
@@ -73,7 +77,7 @@
       console.warn("⚠️ Error cargando rutas:", e);
     }
 
-    // ✅ INICIALIZAR CONTROLES DEL MAPA (ROTACIÓN ON/OFF)
+    // 🧭 CONTROLES (rotación ON / OFF)
     if (window.initMapControls) {
       window.initMapControls();
     }

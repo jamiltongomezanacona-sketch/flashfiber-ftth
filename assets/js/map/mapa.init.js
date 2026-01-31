@@ -25,7 +25,7 @@
 
   const map = new mapboxgl.Map({
     container: "map",
-    style: "mapbox://styles/mapbox/streets-v12", // 👈 SOLO CALLES
+    style: "mapbox://styles/mapbox/light-v11"
     center: CONFIG.MAP.CENTER,
     zoom: CONFIG.MAP.ZOOM,
     pitch: CONFIG.MAP.PITCH,

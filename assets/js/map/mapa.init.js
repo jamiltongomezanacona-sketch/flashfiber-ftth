@@ -21,24 +21,37 @@
     return;
   }
 
-  mapboxgl.accessToken = MAPBOX_TOKEN;
+  // ✅ TOKEN CORRECTO
+  mapboxgl.accessToken = CONFIG.MAPBOX_TOKEN;
 
+  // ✅ MAPA BASE – SOLO CALLES
   const map = new mapboxgl.Map({
     container: "map",
-    style: "mapbox://styles/mapbox/streets-v12", // 👈 SOLO CALLES
-    center: [-74.08, 4.65], // ajusta a tu zona
+    style: "mapbox://styles/mapbox/streets-v12",
+    center: [-74.08, 4.65],
     zoom: 13,
     bearing: 0,
     pitch: 0
   });
 
+  // 🔒 UX FTTH (evita rotaciones accidentales)
+  map.dragRotate.disable();
+  map.touchZoomRotate.disableRotation();
 
+  // 🎛️ Controles nativos (pueden ocultarse por CSS)
   map.addControl(new mapboxgl.NavigationControl(), "top-right");
   map.addControl(new mapboxgl.FullscreenControl(), "top-right");
-  map.addControl(new mapboxgl.ScaleControl({ unit: "metric" }), "bottom-right");
+  map.addControl(
+    new mapboxgl.ScaleControl({ unit: "metric" }),
+    "bottom-right"
+  );
 
+  // Registrar mapa globalmente
   App.setMap(map);
 
+  // ===============================
+  // Mapa listo
+  // ===============================
   map.on("load", () => {
     console.log("🗺️ MAPA CARGADO CORRECTAMENTE");
 
@@ -60,6 +73,5 @@
       console.warn("⚠️ Error cargando rutas:", e);
     }
   });
-
 
 })();

@@ -21,17 +21,17 @@
     return;
   }
 
-  mapboxgl.accessToken = CONFIG.MAPBOX_TOKEN;
+  mapboxgl.accessToken = MAPBOX_TOKEN;
 
   const map = new mapboxgl.Map({
     container: "map",
-    style: "mapbox://styles/mapbox/light-v12"
-    center: CONFIG.MAP.CENTER,
-    zoom: CONFIG.MAP.ZOOM,
-    pitch: CONFIG.MAP.PITCH,
-    bearing: CONFIG.MAP.BEARING,
-    antialias: true
+    style: "mapbox://styles/mapbox/streets-v12", // 👈 SOLO CALLES
+    center: [-74.08, 4.65], // ajusta a tu zona
+    zoom: 13,
+    bearing: 0,
+    pitch: 0
   });
+
 
   map.addControl(new mapboxgl.NavigationControl(), "top-right");
   map.addControl(new mapboxgl.FullscreenControl(), "top-right");

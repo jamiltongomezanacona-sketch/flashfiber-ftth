@@ -72,6 +72,11 @@
     } catch (e) {
       console.warn("⚠️ Error cargando rutas:", e);
     }
+
+    // ✅ INICIALIZAR CONTROLES DEL MAPA (ROTACIÓN ON/OFF)
+    if (window.initMapControls) {
+      window.initMapControls();
+    }
   });
 
 })();

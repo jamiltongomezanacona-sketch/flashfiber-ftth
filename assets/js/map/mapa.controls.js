@@ -1,52 +1,50 @@
 /* =========================================================
    FlashFiber FTTH | mapa.controls.js
    Controles UI del mapa
+   - Rotación ON / OFF
 ========================================================= */
 
 (() => {
   "use strict";
 
   const App = window.__FTTH_APP__;
-
   if (!App) return;
 
   window.initMapControls = function () {
 
-    const buttons = document.querySelectorAll("[data-basemap]");
-    if (!buttons.length) return;
+    const map = App.map;
+    if (!map) return;
 
-    let current = "dark";
+    /* ===============================
+       ROTACIÓN MAPA (OPCIONABLE)
+    =============================== */
 
-    buttons.forEach(btn => {
-      btn.addEventListener("click", () => {
+    const btnRotate = document.getElementById("btnRotate");
+    if (btnRotate) {
 
-        if (!App.map) return;
+      let rotationEnabled = false;
 
-        const style = btn.dataset.basemap;
-        if (style === current) return;
+      btnRotate.addEventListener("click", () => {
 
-        const center = App.map.getCenter();
-        const zoom = App.map.getZoom();
-        const bearing = App.map.getBearing();
-        const pitch = App.map.getPitch();
+        rotationEnabled = !rotationEnabled;
 
-        App.map.setStyle(getMapStyle(style));
-
-        App.map.once("style.load", () => {
-          App.map.setCenter(center);
-          App.map.setZoom(zoom);
-          App.map.setBearing(bearing);
-          App.map.setPitch(pitch);
-        });
-
-        document.querySelectorAll("[data-basemap]")
-          .forEach(b => b.classList.remove("active"));
-
-        btn.classList.add("active");
-        current = style;
+        if (rotationEnabled) {
+          // 🔓 Activar rotación
+          map.dragRotate.enable();
+          map.touchZoomRotate.enableRotation();
+          btnRotate.classList.add("active");
+          console.log("🧭 Rotación ACTIVADA");
+        } else {
+          // 🔒 Desactivar rotación
+          map.dragRotate.disable();
+          map.touchZoomRotate.disableRotation();
+          map.easeTo({ bearing: 0 });
+          btnRotate.classList.remove("active");
+          console.log("🧭 Rotación DESACTIVADA");
+        }
 
       });
-    });
+    }
 
   };
 

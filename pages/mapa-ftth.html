@@ -72,21 +72,29 @@
   </aside>
 
   <!-- 🗺️ MAPA -->
-  <main class="map-wrapper">
-    <div id="map"></div>
+<main class="map-wrapper">
+  <div id="map"></div>
 
-    <div class="map-controls">
-      <button id="btnGPS"><i class="fas fa-location-crosshairs"></i></button>
-      <button id="btnMedir"><i class="fas fa-ruler"></i></button>
-      <button id="btnCapas"><i class="fas fa-layer-group"></i></button>
-      <button id="btnBaseMap"><i class="fas fa-globe"></i></button>
+  <div class="map-controls">
+    <button id="btnGPS"><i class="fas fa-location-crosshairs"></i></button>
+    <button id="btnMedir"><i class="fas fa-ruler"></i></button>
+    <button id="btnCapas"><i class="fas fa-layer-group"></i></button>
 
-      <!-- ✅ Finalizar ruta -->
-      <button id="btnFinishRuta" title="Finalizar Ruta">
-        <i class="fas fa-check"></i>
-      </button>
-    </div>
-  </main>
+    <!-- ❌ Si ya no usas cambio de base, puedes eliminar btnBaseMap -->
+    <!-- <button id="btnBaseMap"><i class="fas fa-globe"></i></button> -->
+
+    <!-- 🧭 ROTACIÓN ON / OFF -->
+    <button id="btnRotate" title="Rotar mapa">
+      <i class="fas fa-sync-alt"></i>
+    </button>
+
+    <!-- ✅ Finalizar ruta -->
+    <button id="btnFinishRuta" title="Finalizar Ruta">
+      <i class="fas fa-check"></i>
+    </button>
+  </div>
+</main>
+
 
   <!-- 🗂️ PANEL CAPAS FTTH -->
   <div id="layersPanel" class="panel panel-capas hidden">

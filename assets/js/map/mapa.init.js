@@ -31,7 +31,7 @@
     center: [-74.08, 4.65],
     zoom: 13,
     bearing: 0,
-    pitch: 0
+    pitch: 30
   });
 
   // 🔒 UX FTTH (evita rotaciones accidentales)

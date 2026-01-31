@@ -171,3 +171,11 @@
 .popup-btn:active {
   transform: scale(0.97);
 }
+/* =========================================
+   Ocultar controles nativos de Mapbox
+   (mantiene zoom, gestos y doble click)
+========================================= */
+
+.mapboxgl-ctrl-top-right .mapboxgl-ctrl-group {
+  display: none !important;
+}

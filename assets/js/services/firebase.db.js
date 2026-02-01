@@ -16,6 +16,16 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 /* =========================================================
+   🧹 CLEANUP DE LISTENERS
+========================================================= */
+
+// ✅ Almacenar funciones de unsubscribe para cleanup
+const unsubscribeFunctions = {
+  eventos: null,
+  cierres: null
+};
+
+/* =========================================================
    📦 CIERRES
 ========================================================= */
 
@@ -31,9 +41,17 @@ export async function guardarCierre(cierre) {
 }
 
 export function escucharCierres(callback) {
-  return onSnapshot(collection(db, CIERRES_COLLECTION), snap => {
+  // ✅ Limpiar listener anterior si existe
+  if (unsubscribeFunctions.cierres) {
+    unsubscribeFunctions.cierres();
+  }
+
+  const unsubscribe = onSnapshot(collection(db, CIERRES_COLLECTION), snap => {
     snap.forEach(d => callback({ id: d.id, ...d.data() }));
   });
+
+  unsubscribeFunctions.cierres = unsubscribe;
+  return unsubscribe; // ✅ Retornar para cleanup manual
 }
 
 export async function actualizarCierre(id, data) {
@@ -60,9 +78,17 @@ export async function guardarEvento(evento) {
 }
 
 export function escucharEventos(callback) {
-  return onSnapshot(collection(db, EVENTOS_COLLECTION), snap => {
+  // ✅ Limpiar listener anterior si existe
+  if (unsubscribeFunctions.eventos) {
+    unsubscribeFunctions.eventos();
+  }
+
+  const unsubscribe = onSnapshot(collection(db, EVENTOS_COLLECTION), snap => {
     snap.forEach(d => callback({ id: d.id, ...d.data() }));
   });
+
+  unsubscribeFunctions.eventos = unsubscribe;
+  return unsubscribe; // ✅ Retornar para cleanup manual
 }
 
 export async function actualizarEvento(id, data) {
@@ -81,4 +107,28 @@ export async function obtenerPerfilUsuario(uid) {
   const ref = doc(db, "usuarios", uid);
   const snap = await getDoc(ref);
   return snap.exists() ? snap.data() : null;
+}
+
+/* =========================================================
+   🧹 CLEANUP GLOBAL
+========================================================= */
+
+// ✅ Función de cleanup global
+export function cleanup() {
+  Object.values(unsubscribeFunctions).forEach(unsub => {
+    if (unsub && typeof unsub === "function") {
+      unsub();
+    }
+  });
+  // Limpiar referencias
+  Object.keys(unsubscribeFunctions).forEach(key => {
+    unsubscribeFunctions[key] = null;
+  });
+  console.log("🧹 Listeners de Firebase limpiados");
+}
+
+// ✅ Cleanup automático al cerrar página
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeunload", cleanup);
+  window.addEventListener("pagehide", cleanup);
 }

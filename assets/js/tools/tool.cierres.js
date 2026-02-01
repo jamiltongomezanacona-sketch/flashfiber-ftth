@@ -150,12 +150,15 @@
     /* ===============================
        Firebase Sync (auto-retry)
     =============================== */
+    let unsubscribeCierres = null;
+    
     function tryFirebaseSync() {
       const FB = window.FTTH_FIREBASE;
       if (!FB?.escucharCierres) return false;
 
       console.log("✅ Firebase cierres conectado");
-      FB.escucharCierres(addCierreToMap);
+      // ✅ Guardar referencia del unsubscribe para cleanup
+      unsubscribeCierres = FB.escucharCierres(addCierreToMap);
       return true;
     }
 
@@ -216,6 +219,12 @@
       App.map.off("click", handleMapClick);
       App.map.getCanvas().style.cursor = "";
       closeModal();
+      
+      // ✅ Limpiar listener de Firebase si existe
+      if (unsubscribeCierres && typeof unsubscribeCierres === "function") {
+        unsubscribeCierres();
+        unsubscribeCierres = null;
+      }
     }
 
     function handleMapClick(e) {

@@ -246,10 +246,13 @@
     // Crear capa inicial
     App.reloadEventos();
 
-    // Escuchar cambios desde Firebase
-    FB.escucharEventos((evt) => {
-      addEventoToMap(evt);
-    });
+    // ✅ Escuchar cambios desde Firebase (guardar referencia para cleanup)
+    let unsubscribeEventos = null;
+    if (FB.escucharEventos) {
+      unsubscribeEventos = FB.escucharEventos((evt) => {
+        addEventoToMap(evt);
+      });
+    }
 
     /* ===============================
        Modal helpers
@@ -381,6 +384,13 @@
       App.map.off("click", handleMapClick);
       App.map.getCanvas().style.cursor = "";
       closeModal();
+      
+      // ✅ Limpiar listener de Firebase si existe
+      if (unsubscribeEventos && typeof unsubscribeEventos === "function") {
+        unsubscribeEventos();
+        unsubscribeEventos = null;
+      }
+      
       console.log("🛑 Montar Evento DESACTIVADO");
     }
 
@@ -469,19 +479,54 @@ btnSave?.addEventListener("click", async (e) => {
     }
     
     /* =========================
-       2️⃣ Subir fotos a Storage
+       2️⃣ Subir fotos a Storage (con manejo de errores mejorado)
     ========================= */
     const fotosAntesURLs = [];
     const fotosDespuesURLs = [];
     
-    for (const file of fotosAntes) {
-      const url = await window.FTTH_STORAGE.subirFotoEvento(eventoId, "antes", file);
-      if (url) fotosAntesURLs.push(url);
+    // ✅ Subir fotos "antes" con Promise.allSettled para manejar errores individuales
+    if (fotosAntes.length > 0) {
+      const uploadAntesResults = await Promise.allSettled(
+        fotosAntes.map(file => 
+          window.FTTH_STORAGE.subirFotoEvento(eventoId, "antes", file)
+        )
+      );
+      
+      uploadAntesResults.forEach((result, index) => {
+        if (result.status === "fulfilled" && result.value) {
+          fotosAntesURLs.push(result.value);
+        } else {
+          const errorMsg = result.reason?.message || "Error desconocido";
+          console.warn(`⚠️ Error subiendo foto antes #${index + 1}:`, errorMsg);
+        }
+      });
     }
     
-    for (const file of fotosDespues) {
-      const url = await window.FTTH_STORAGE.subirFotoEvento(eventoId, "despues", file);
-      if (url) fotosDespuesURLs.push(url);
+    // ✅ Subir fotos "después" con Promise.allSettled
+    if (fotosDespues.length > 0) {
+      const uploadDespuesResults = await Promise.allSettled(
+        fotosDespues.map(file => 
+          window.FTTH_STORAGE.subirFotoEvento(eventoId, "despues", file)
+        )
+      );
+      
+      uploadDespuesResults.forEach((result, index) => {
+        if (result.status === "fulfilled" && result.value) {
+          fotosDespuesURLs.push(result.value);
+        } else {
+          const errorMsg = result.reason?.message || "Error desconocido";
+          console.warn(`⚠️ Error subiendo foto después #${index + 1}:`, errorMsg);
+        }
+      });
+    }
+    
+    // ✅ Mostrar resumen si hubo errores
+    const totalFotos = fotosAntes.length + fotosDespues.length;
+    const fotosExitosas = fotosAntesURLs.length + fotosDespuesURLs.length;
+    const fotosFallidas = totalFotos - fotosExitosas;
+    
+    if (fotosFallidas > 0 && totalFotos > 0) {
+      console.warn(`⚠️ ${fotosFallidas} de ${totalFotos} fotos no se pudieron subir. El evento se guardó correctamente.`);
     }
     
     /* =========================

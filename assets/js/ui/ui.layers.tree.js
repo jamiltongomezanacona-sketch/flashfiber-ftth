@@ -46,7 +46,38 @@
     // ☑ Checkbox
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
-    checkbox.checked = false;     // 🔴 Arranque desactivado
+    
+    // ✅ Si es una capa (type: "layer"), verificar si está cargada y habilitada
+    let shouldBeChecked = false;
+    if (node.type === "layer" && node.id) {
+      const App = window.__FTTH_APP__;
+      const map = App?.map;
+      
+      // Verificar si la capa ya está cargada en el mapa
+      if (map && map.getLayer(node.id)) {
+        // Verificar si está visible
+        const visibility = map.getLayoutProperty(node.id, "visibility");
+        shouldBeChecked = visibility !== "none";
+      } else {
+        // Si no está cargada, verificar si el archivo tiene datos
+        if (node.path) {
+          try {
+            const layerUrl = "../geojson/" + basePath + node.path;
+            const layerRes = await fetch(layerUrl, { cache: "no-store" });
+            const layerData = await layerRes.json();
+            
+            // Habilitar solo si tiene features
+            if (layerData && layerData.features && layerData.features.length > 0) {
+              shouldBeChecked = true;
+            }
+          } catch (err) {
+            console.warn("⚠️ No se pudo verificar capa:", node.path);
+          }
+        }
+      }
+    }
+    
+    checkbox.checked = shouldBeChecked;
 
     // 🏷️ Label
     const label = document.createElement("span");
@@ -78,8 +109,14 @@
        Toggle capas
     ========================= */
     checkbox.addEventListener("change", () => {
-      toggleChildren(childrenBox, checkbox.checked);
-      toggleLayers(label.textContent, checkbox.checked);
+      // ✅ Si es una capa individual, usar su ID directamente
+      if (node.type === "layer" && node.id) {
+        toggleLayerById(node.id, checkbox.checked);
+      } else {
+        // Si es una carpeta, propagar a hijos y buscar por label
+        toggleChildren(childrenBox, checkbox.checked);
+        toggleLayers(label.textContent, checkbox.checked);
+      }
     });
 
     /* =========================
@@ -87,29 +124,36 @@
     ========================= */
     if (node.children?.length) {
       for (const child of node.children) {
-        if (!child.index) continue;
+        // ✅ Si el child es una capa directa (type: "layer"), renderizarla
+        if (child.type === "layer") {
+          await renderNode(child, childrenBox, basePath, false);
+          continue;
+        }
 
-        try {
-          const nextPath = basePath + child.index;
-          const url = "../geojson/" + nextPath;
+        // ✅ Si tiene index.json, cargar como carpeta
+        if (child.index) {
+          try {
+            const nextPath = basePath + child.index;
+            const url = "../geojson/" + nextPath;
 
-          const res = await fetch(url, { cache: "no-store" });
-          const json = await res.json();
+            const res = await fetch(url, { cache: "no-store" });
+            const json = await res.json();
 
-          const childNode = {
-            label: child.label || json.label || "Carpeta",
-            children: json.children || []
-          };
+            const childNode = {
+              label: child.label || json.label || "Carpeta",
+              children: json.children || []
+            };
 
-          await renderNode(
-            childNode,
-            childrenBox,
-            basePath + child.index.replace("index.json", ""),
-            true // 👈 todos los hijos cerrados
-          );
+            await renderNode(
+              childNode,
+              childrenBox,
+              basePath + child.index.replace("index.json", ""),
+              true // 👈 todos los hijos cerrados
+            );
 
-        } catch (err) {
-          console.warn("⚠️ No se pudo cargar:", basePath + child.index);
+          } catch (err) {
+            console.warn("⚠️ No se pudo cargar:", basePath + child.index);
+          }
         }
       }
     } else {
@@ -151,6 +195,26 @@
         );
       }
     });
+  }
+
+  /* =========================
+     Toggle capa por ID directo
+  ========================= */
+  function toggleLayerById(layerId, visible) {
+    const App = window.__FTTH_APP__;
+    const map = App.map;
+    if (!map || !layerId) return;
+
+    if (map.getLayer(layerId)) {
+      map.setLayoutProperty(
+        layerId,
+        "visibility",
+        visible ? "visible" : "none"
+      );
+      console.log(`${visible ? "✅" : "❌"} Capa ${layerId} ${visible ? "habilitada" : "deshabilitada"}`);
+    } else {
+      console.warn("⚠️ Capa no encontrada:", layerId);
+    }
   }
 
 })();

@@ -130,6 +130,18 @@
       const res = await fetch(url, { cache: "no-store" });
       const geojson = await res.json();
 
+      // ✅ Validar que el GeoJSON tenga datos
+      if (!geojson || !geojson.features || geojson.features.length === 0) {
+        console.warn("⚠️ GeoJSON vacío, omitiendo:", id);
+        return;
+      }
+
+      // ✅ Validar estructura GeoJSON
+      if (geojson.type !== "FeatureCollection") {
+        console.warn("⚠️ GeoJSON inválido (no es FeatureCollection):", id);
+        return;
+      }
+
       map.addSource(id, {
         type: "geojson",
         data: geojson
@@ -140,7 +152,7 @@
         type: layer.typeLayer || "line",
         source: id,
         layout: {
-          visibility: "visible"
+          visibility: "visible" // ✅ Capas habilitadas por defecto
         },
         paint: layer.paint || {
           "line-color": "#00ff90",
@@ -150,10 +162,12 @@
 
       App.__ftthLayerIds.push(id);
 
-      console.log("✅ Capa FTTH cargada:", id);
+      console.log("✅ Capa FTTH cargada y habilitada:", id, `(${geojson.features.length} features)`);
 
-      // 🎯 Auto zoom automático al cargar
-      autoZoomToGeoJSON(geojson);
+      // 🎯 Auto zoom automático al cargar (solo si hay datos)
+      if (geojson.features.length > 0) {
+        autoZoomToGeoJSON(geojson);
+      }
 
     } catch (err) {
       console.error("❌ Error creando capa:", id, err);

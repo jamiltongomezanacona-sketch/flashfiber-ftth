@@ -1,6 +1,6 @@
 /* =========================================================
    FlashFiber FTTH | mapa.controls.js
-   Rotación ON / OFF – ESTABLE TOUCH
+   Rotación ON / OFF (zoom siempre activo)
 ========================================================= */
 
 (() => {
@@ -10,42 +10,32 @@
   if (!App) return;
 
   window.initMapControls = function () {
-
     const map = App.map;
     if (!map) return;
 
     const btnRotate = document.getElementById("btnRotate");
     if (!btnRotate) return;
 
-    let enabled = false;
-
-    // Estado inicial seguro
-    map.dragRotate.disable();
-    map.touchZoomRotate.disable();
-    map.touchPitch.disable();
+    let rotationEnabled = false;
 
     btnRotate.addEventListener("click", () => {
+      rotationEnabled = !rotationEnabled;
 
-      enabled = !enabled;
-
-      if (enabled) {
-        // 🔓 ACTIVAR
+      if (rotationEnabled) {
+        // 🔓 GIRAR ACTIVADO
         map.dragRotate.enable();
-        map.touchZoomRotate.enable();
+        map.touchZoomRotate.enableRotation(); // 👈 solo rotación
         map.touchPitch.enable();
 
-        map.easeTo({
-          pitch: 35,
-          duration: 200
-        });
+        map.easeTo({ pitch: 30, duration: 200 });
 
         btnRotate.classList.add("active");
-        console.log("🧭 Rotación ACTIVADA (touch)");
+        console.log("🧭 Giro ACTIVADO");
 
       } else {
-        // 🔒 DESACTIVAR
+        // 🔒 PLANO (SIN GIRAR, CON ZOOM)
         map.dragRotate.disable();
-        map.touchZoomRotate.disable();
+        map.touchZoomRotate.disableRotation(); // 👈 zoom sigue vivo
         map.touchPitch.disable();
 
         map.easeTo({
@@ -55,7 +45,7 @@
         });
 
         btnRotate.classList.remove("active");
-        console.log("🧭 Rotación DESACTIVADA");
+        console.log("🧭 Giro DESACTIVADO");
       }
     });
   };

@@ -12,11 +12,142 @@
 
   <!-- Fuente -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ======================================================
+       HOME DASHBOARD - FLASHFIBER FTTH
+    ====================================================== */
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 15% 20%, #1e40af33, transparent 40%),
+        radial-gradient(circle at 85% 80%, #7c3aed33, transparent 45%),
+        linear-gradient(135deg, #050914, #0b1224);
+      color: #e5e7eb;
+    }
+
+    /* ================= HEADER ================= */
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(14px);
+      background: rgba(15, 23, 42, 0.75);
+      border-bottom: 1px solid rgba(255, 255, 255, .06);
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand .title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .brand .subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .user-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .user-name {
+      font-size: 13px;
+      color: #cbd5f5;
+    }
+
+    .btn-logout {
+      border: none;
+      border-radius: 10px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: #020617;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    }
+
+    /* ================= MAIN ================= */
+
+    main {
+      padding: 28px 26px 40px;
+      max-width: 1300px;
+      margin: auto;
+    }
+
+    .welcome h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .welcome p {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    .grid {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      padding: 20px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .08);
+      cursor: pointer;
+      transition: .25s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      background: rgba(255, 255, 255, .06);
+    }
+
+    .card-icon {
+      font-size: 34px;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 12px;
+      color: #64748b;
+    }
+  </style>
 </head>
 
-<body class="app-dashboard">
+<body>
 
   <!-- ================= HEADER ================= -->
+
   <header>
     <div class="brand">
       <div class="title">Flash Fiber FTTH</div>
@@ -24,12 +155,13 @@
     </div>
 
     <div class="user-box">
-      <div class="user-name" id="usernameDisplay">Cargando...</div>
+      <div class="user-name" id="usernameDisplay">Cargando…</div>
       <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
     </div>
   </header>
 
   <!-- ================= MAIN ================= -->
+
   <main>
 
     <section class="welcome">
@@ -40,39 +172,27 @@
     <section class="grid">
 
       <div class="card" data-link="mapa-ftth.html">
-        <div class="badge">Activo</div>
         <div class="card-icon">🗺️</div>
         <div class="card-title">Visor GIS</div>
-        <div class="card-desc">
-          Visualización completa de red FTTH, troncales, cierres, NAP y eventos.
-        </div>
+        <div class="card-desc">Visualización completa de la red FTTH.</div>
       </div>
 
       <div class="card">
-        <div class="badge">Próximamente</div>
         <div class="card-icon">📊</div>
-        <div class="card-title">Dashboard Operativo</div>
-        <div class="card-desc">
-          KPIs, fallas y control de SLA.
-        </div>
+        <div class="card-title">Dashboard</div>
+        <div class="card-desc">Indicadores operativos (próximamente).</div>
       </div>
 
       <div class="card">
-        <div class="badge">Próximamente</div>
         <div class="card-icon">📡</div>
         <div class="card-title">Inventario</div>
-        <div class="card-desc">
-          Gestión de cables, cierres y capacidad.
-        </div>
+        <div class="card-desc">Gestión de infraestructura.</div>
       </div>
 
       <div class="card">
-        <div class="badge">Admin</div>
-        <div class="card-icon">⚙️</div>
-        <div class="card-title">Configuración</div>
-        <div class="card-desc">
-          Usuarios, permisos y parámetros globales.
-        </div>
+        <div class="card-icon">👷</div>
+        <div class="card-title">Técnicos</div>
+        <div class="card-desc">Órdenes y seguimiento.</div>
       </div>
 
     </section>
@@ -83,10 +203,8 @@
 
   </main>
 
-  <!-- ================= FIREBASE ================= -->
-  <script type="module" src="../assets/js/services/firebase.js"></script>
+  <!-- ================= LÓGICA REAL FIREBASE ================= -->
 
-  <!-- ================= LÓGICA HOME ================= -->
   <script type="module">
     import { auth } from "../assets/js/services/firebase.js";
     import {
@@ -94,47 +212,51 @@
       signOut
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    /* ======================================================
-       Protección REAL con Firebase
-    ====================================================== */
+    onAuthStateChanged(auth, async (user) => {
 
-    onAuthStateChanged(auth, (user) => {
+      // 🔒 Sin sesión
       if (!user) {
-        // ❌ Sin sesión → login
         window.location.replace("../index.html");
         return;
       }
 
-      // ✅ Usuario autenticado
-      console.log("✅ Sesión activa:", user.uid);
+      console.log("✅ Sesión Firebase activa:", user.uid);
 
-      // Obtener perfil cargado por firebase.js
-      const profile = window.__USER__;
+      // ⏳ Esperar perfil Firestore
+      const waitProfile = setInterval(() => {
+        const profile = window.__USER__;
 
-      if (!profile || profile.activo !== true) {
-        console.warn("❌ Usuario sin perfil o inactivo");
-        window.location.replace("../index.html");
-        return;
-      }
+        if (!profile) return;
 
-      // Mostrar nombre
-      document.getElementById("usernameDisplay").textContent =
-        profile.nombre || "Usuario";
+        clearInterval(waitProfile);
 
-      // Navegación
-      document.querySelectorAll(".card[data-link]").forEach(card => {
-        card.addEventListener("click", () => {
-          window.location.href = card.dataset.link;
+        if (profile.activo !== true) {
+          console.warn("❌ Usuario inactivo");
+          window.location.replace("../index.html");
+          return;
+        }
+
+        // Mostrar nombre
+        document.getElementById("usernameDisplay").textContent =
+          profile.nombre || "Usuario";
+
+        // Navegación
+        document.querySelectorAll(".card[data-link]").forEach(card => {
+          card.addEventListener("click", () => {
+            window.location.href = card.dataset.link;
+          });
         });
-      });
 
-      // Logout real
-      document.getElementById("logoutBtn").addEventListener("click", async () => {
-        await signOut(auth);
-        window.location.replace("../index.html");
-      });
+        // Logout real
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
+          await signOut(auth);
+          window.location.replace("../index.html");
+        });
+
+      }, 100);
     });
   </script>
 
 </body>
+
 </html>

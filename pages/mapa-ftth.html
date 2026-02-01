@@ -77,21 +77,21 @@
 <main class="map-wrapper">
   <div id="map"></div>
 
-  <div class="map-controls">
-    <button id="btnGPS"><i class="fas fa-location-crosshairs"></i></button>
-    <button id="btnMedir"><i class="fas fa-ruler"></i></button>
-    <button id="btnCapas"><i class="fas fa-layer-group"></i></button>
+  <div class="map-controls" style="display: flex !important; visibility: visible !important; opacity: 1 !important; z-index: 9999 !important; position: absolute !important;">
+    <button id="btnGPS" style="display: flex !important; visibility: visible !important; opacity: 1 !important;"><i class="fas fa-location-crosshairs"></i></button>
+    <button id="btnMedir" style="display: flex !important; visibility: visible !important; opacity: 1 !important;"><i class="fas fa-ruler"></i></button>
+    <button id="btnCapas" style="display: flex !important; visibility: visible !important; opacity: 1 !important;"><i class="fas fa-layer-group"></i></button>
 
     <!-- ❌ Si ya no usas cambio de base, puedes eliminar btnBaseMap -->
     <!-- <button id="btnBaseMap"><i class="fas fa-globe"></i></button> -->
 
     <!-- 🧭 ROTACIÓN ON / OFF -->
-    <button id="btnRotate" title="Rotar mapa">
+    <button id="btnRotate" title="Rotar mapa" style="display: flex !important; visibility: visible !important; opacity: 1 !important;">
       <i class="fas fa-sync-alt"></i>
     </button>
 
     <!-- ✅ Finalizar ruta -->
-    <button id="btnFinishRuta" title="Finalizar Ruta">
+    <button id="btnFinishRuta" title="Finalizar Ruta" style="display: flex !important; visibility: visible !important; opacity: 1 !important;">
       <i class="fas fa-check"></i>
     </button>
   </div>

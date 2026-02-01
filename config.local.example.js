@@ -8,7 +8,7 @@
 ========================================================= */
 
 window.__FTTH_SECRETS__ = {
-  // 🔑 Token de Mapbox
+  // 🔑 Token de Mapbox (Actualizado)
   MAPBOX_TOKEN: "pk.eyJ1IjoiamFtaWx0b244NCIsImEiOiJjbWpxMjB4eDkydWdmM2RwdTVib3htb284In0.5gk_bRtcnXLshXE9eMeryg",
   
   // 🔥 Configuración de Firebase

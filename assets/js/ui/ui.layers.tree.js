@@ -8,13 +8,27 @@
   const TREE_CONTAINER_ID = "layersTree";
   const ROOT_INDEX = "../geojson/index.json";
 
-  const wait = setInterval(() => {
-    const App = window.__FTTH_APP__;
-    if (!App?.map) return;
-    clearInterval(wait);
+  // ✅ Sistema de inicialización mejorado
+  async function init() {
+    await waitForDependencies();
     console.log("🌳 UI Layers Tree listo");
     loadRoot();
-  }, 300);
+  }
+
+  async function waitForDependencies(maxAttempts = 100) {
+    for (let i = 0; i < maxAttempts; i++) {
+      const App = window.__FTTH_APP__;
+      if (App?.map) {
+        return true;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    console.warn("⚠️ ui.layers.tree: App.map no disponible después de esperar");
+    return false;
+  }
+
+  // ✅ Auto-inicializar
+  init();
 
   /* =========================
      Cargar índice raíz
@@ -198,6 +212,7 @@
   ========================= */
   function toggleLayers(label, visible) {
     const App = window.__FTTH_APP__;
+    if (!App) return;
     const map = App.map;
     if (!map) return;
 
@@ -222,6 +237,7 @@
   ========================= */
   function toggleLayerById(layerId, visible) {
     const App = window.__FTTH_APP__;
+    if (!App) return;
     const map = App.map;
     if (!map || !layerId) return;
 

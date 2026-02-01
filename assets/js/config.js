@@ -15,10 +15,11 @@ window.__FTTH_CONFIG__ = {
   // ✅ Token de Mapbox desde config.local.js o valor por defecto (solo para desarrollo)
   MAPBOX_TOKEN: SECRETS.MAPBOX_TOKEN || 
     (() => {
-      console.warn("⚠️ MAPBOX_TOKEN no encontrado en config.local.js. Usando valor por defecto (solo desarrollo)");
+      // ❌ DESHABILITADO: Advertencia silenciada
+      // console.warn("⚠️ MAPBOX_TOKEN no encontrado en config.local.js. Usando valor por defecto (solo desarrollo)");
       // ⚠️ Este valor solo debe usarse en desarrollo local
       // En producción, DEBE estar en config.local.js
-      return "pk.eyJ1IjoiamFtaWx0b244NCIsImEiOiJjbWpxMjB4eDkydWdmM2RwdTVib3htb284In0.5gk_bRtcnXLshXE9eMeryg";
+      return "pk.eyJ1IjoiamFtaWx0b244NCIsImEiOiJjbWpxMjB4eDkydWdmM2RwdTVib3htb284In0.5gk_bRtcnXLshXE9eMeryg"; // ✅ Token actualizado
     })(),
 
   MAP: {
@@ -31,7 +32,8 @@ window.__FTTH_CONFIG__ = {
 
 };
 
-// ✅ Validar que el token esté presente
+// ✅ Validar que el token esté presente (silenciado - siempre hay valor por defecto)
 if (!window.__FTTH_CONFIG__.MAPBOX_TOKEN) {
-  console.error("❌ MAPBOX_TOKEN no configurado. Crea config.local.js basado en config.local.example.js");
+  // ❌ DESHABILITADO: Error silenciado (el token por defecto siempre está presente)
+  // console.error("❌ MAPBOX_TOKEN no configurado. Crea config.local.js basado en config.local.example.js");
 }

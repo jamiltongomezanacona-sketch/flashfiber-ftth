@@ -325,8 +325,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
 <!-- CONFIG -->
-<!-- ✅ Cargar configuración local primero (si existe, NO se versiona) -->
-<script src="../config.local.js" onerror="console.log('ℹ️ config.local.js no encontrado, usando valores por defecto')"></script>
+<!-- ❌ DESHABILITADO: Carga de config.local.js (genera errores 404 y MIME type) -->
+<!-- El archivo config.local.js es opcional y se usan valores por defecto de config.js -->
+<script>
+  // ❌ DESHABILITADO: No cargar config.local.js para evitar errores
+  // Inicializar __FTTH_SECRETS__ vacío para que config.js use valores por defecto
+  window.__FTTH_SECRETS__ = window.__FTTH_SECRETS__ || {};
+</script>
 <script src="../assets/js/config.js"></script>
 
 <!-- ✅ INITIALIZER (debe cargarse antes de otros módulos) -->

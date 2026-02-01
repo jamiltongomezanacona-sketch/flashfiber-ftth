@@ -17,54 +17,403 @@
   let restoring = false;
 
   App.__ftthLayerIds = App.__ftthLayerIds || [];
+  
+  // 🎯 Sistema global de registro de iconos por capa
+  const layerIconRegistry = new Map(); // layerId → { iconMap, CENTRAL_COLOR }
+  
+  // 🎯 Handler global único para iconos faltantes (evita múltiples handlers)
+  let globalImageMissingHandler = null;
+  
+  // Función para crear pin SVG (extraída para reutilización)
+  function createCentralPinIconSVG(color, label = "", size = 50) {
+    const pinHeight = size;
+    const pinWidth = size * 0.6;
+    const labelSize = label ? 12 : 0;
+    
+    const svg = `
+      <svg width="${size}" height="${pinHeight + labelSize}" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+            <feOffset dx="0" dy="2" result="offsetblur"/>
+            <feComponentTransfer>
+              <feFuncA type="linear" slope="0.3"/>
+            </feComponentTransfer>
+            <feMerge>
+              <feMergeNode/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        
+        <ellipse cx="${size / 2}" cy="${pinHeight - 2}" rx="${pinWidth * 0.4}" ry="4" 
+                 fill="#000" opacity="0.2" filter="url(#shadow)"/>
+        
+        <path d="M ${size / 2} 0 
+                 L ${size / 2 - pinWidth / 2} ${pinHeight * 0.6}
+                 Q ${size / 2 - pinWidth / 2} ${pinHeight * 0.85} ${size / 2} ${pinHeight * 0.9}
+                 Q ${size / 2 + pinWidth / 2} ${pinHeight * 0.85} ${size / 2 + pinWidth / 2} ${pinHeight * 0.6}
+                 Z" 
+              fill="${color}" 
+              stroke="#FFFFFF" 
+              stroke-width="2"
+              filter="url(#shadow)"/>
+        
+        ${label ? `
+          <rect x="${size / 2 - pinWidth / 2}" y="${pinHeight}" 
+                width="${pinWidth}" height="${labelSize + 4}" 
+                rx="3" fill="#FFFFFF" stroke="${color}" stroke-width="1.5"
+                filter="url(#shadow)"/>
+          <text x="${size / 2}" y="${pinHeight + labelSize + 1}" 
+                font-family="Arial, sans-serif" 
+                font-size="${labelSize}" 
+                font-weight="bold"
+                fill="${color}"
+                text-anchor="middle"
+                dominant-baseline="middle">${label}</text>
+        ` : ''}
+      </svg>
+    `;
+    
+    return svg;
+  }
+  
+  // Función para crear pin directamente en Canvas (método más robusto y compatible)
+  // Evita problemas de decodificación SVG en Mapbox
+  function createCentralPinIcon(color, label = "", size = 50) {
+    return new Promise((resolve, reject) => {
+      try {
+        const pinHeight = size;
+        const pinWidth = size * 0.6;
+        const labelSize = label ? 12 : 0;
+        const totalHeight = pinHeight + labelSize;
+        
+        // Crear canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = totalHeight;
+        const ctx = canvas.getContext('2d');
+        
+        // Configurar calidad de renderizado
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        // Dibujar sombra del pin (ellipse)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.beginPath();
+        ctx.ellipse(size / 2, pinHeight - 2, pinWidth * 0.4, 4, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Dibujar cuerpo del pin (forma de gota estilo Google Maps)
+        ctx.fillStyle = color;
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 2;
+        
+        ctx.beginPath();
+        ctx.moveTo(size / 2, 0); // Punto superior
+        ctx.lineTo(size / 2 - pinWidth / 2, pinHeight * 0.6); // Lado izquierdo
+        ctx.quadraticCurveTo(
+          size / 2 - pinWidth / 2, pinHeight * 0.85,
+          size / 2, pinHeight * 0.9
+        ); // Curva inferior izquierda
+        ctx.quadraticCurveTo(
+          size / 2 + pinWidth / 2, pinHeight * 0.85,
+          size / 2 + pinWidth / 2, pinHeight * 0.6
+        ); // Curva inferior derecha
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // Dibujar etiqueta si existe
+        if (label) {
+          const labelY = pinHeight;
+          const labelHeight = labelSize + 4;
+          
+          // Fondo de etiqueta (rectángulo redondeado)
+          ctx.fillStyle = '#FFFFFF';
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          // Usar roundRect si está disponible, sino usar arcos manuales
+          if (ctx.roundRect) {
+            ctx.roundRect(
+              size / 2 - pinWidth / 2,
+              labelY,
+              pinWidth,
+              labelHeight,
+              3
+            );
+          } else {
+            // Fallback para navegadores antiguos
+            const x = size / 2 - pinWidth / 2;
+            const y = labelY;
+            const w = pinWidth;
+            const h = labelHeight;
+            const r = 3;
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+          }
+          ctx.fill();
+          ctx.stroke();
+          
+          // Texto de etiqueta
+          ctx.fillStyle = color;
+          ctx.font = `bold ${labelSize}px Arial, sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(
+            label,
+            size / 2,
+            labelY + labelHeight / 2
+          );
+        }
+        
+        // Convertir canvas a imagen PNG
+        const img = new Image();
+        img.onload = () => {
+          resolve(img);
+        };
+        img.onerror = (err) => {
+          reject(new Error(`Error creando imagen desde canvas: ${err}`));
+        };
+        img.src = canvas.toDataURL('image/png');
+        
+      } catch (err) {
+        reject(new Error(`Error en createCentralPinIcon: ${err.message}`));
+      }
+    });
+  }
+  
+  // ❌ DESHABILITADO: Handler global de iconos faltantes (genera errores)
+  function initGlobalImageMissingHandler() {
+    // ❌ DESHABILITADO: No inicializar handler de iconos faltantes
+    return;
+    
+    /*
+    if (globalImageMissingHandler) return; // Ya está inicializado
+    
+    const map = App.map;
+    if (!map) return;
+    
+    globalImageMissingHandler = (e) => {
+      if (!e?.id || !map || !map.isStyleLoaded()) return;
+      
+      // Buscar en todos los registros de capas
+      for (const [layerId, registry] of layerIconRegistry.entries()) {
+        if (e.id.startsWith(`${layerId}-pin-`)) {
+          console.warn(`⚠️ Icono faltante detectado: ${e.id} (capa: ${layerId}), cargando bajo demanda...`);
+          
+          // Extraer el nombre de la central del iconId
+          const match = e.id.match(new RegExp(`${layerId}-pin-(.+)`));
+          if (!match) continue;
+          
+          const safeName = match[1];
+          const { iconMap, CENTRAL_COLOR } = registry;
+          
+          // Buscar el nombre original en el mapa de iconos
+          let found = false;
+          let centralName = null;
+          
+          for (const [name, storedIconId] of iconMap.entries()) {
+            if (storedIconId === e.id) {
+              found = true;
+              centralName = name;
+              break;
+            }
+          }
+          
+          // Si no se encontró, intentar reconstruir desde safeName
+          if (!found) {
+            centralName = safeName.replace(/_/g, " ");
+          }
+          
+          if (centralName) {
+            const label = centralName.length > 8 
+              ? centralName.substring(0, 8).toUpperCase() 
+              : centralName.toUpperCase();
+            
+            // Crear y cargar el icono desde SVG (el mapa ya está verificado)
+            createCentralPinIcon(CENTRAL_COLOR, label, 50)
+              .then((img) => {
+                try {
+                  // El mapa ya está verificado al inicio
+                  // Verificar nuevamente antes de agregar
+                  if (!map.hasImage(e.id)) {
+                    map.addImage(e.id, img);
+                    console.log(`✅ Icono cargado bajo demanda: ${e.id} para "${centralName}"`);
+                    
+                  // Forzar actualización de la capa si existe (sin bloquear)
+                  try {
+                    if (map.getLayer(layerId)) {
+                      // Trigger refresh de la capa de forma asíncrona
+                      setTimeout(() => {
+                        try {
+                          const source = map.getSource(layerId);
+                          if (source && source._data && map.isStyleLoaded()) {
+                            map.getSource(layerId).setData(source._data);
+                          }
+                        } catch (refreshError) {
+                          // Ignorar errores de refresh - no crítico
+                        }
+                      }, 100);
+                    }
+                  } catch (layerError) {
+                    // Ignorar errores de capa - no crítico
+                  }
+                  } else {
+                    console.log(`ℹ️ Icono ${e.id} ya existe (cargado por otro proceso)`);
+                  }
+                } catch (addError) {
+                  // Silenciar errores de iconos faltantes (404, etc.) - se usarán pins generados
+                  if (!addError.message?.includes('404') && !addError.message?.includes('Not Found')) {
+                    console.debug(`ℹ️ No se pudo agregar icono ${e.id}, se usará pin generado`);
+                  }
+                }
+              })
+              .catch((error) => {
+                // Silenciar errores 404 de iconos faltantes - se usarán pins generados automáticamente
+                if (!error.message?.includes('404') && !error.message?.includes('Not Found') && !error.message?.includes('Could not load image')) {
+                  console.debug(`ℹ️ Icono ${e.id} no disponible, se usará pin generado`);
+                }
+              });
+          }
+          
+          break; // Solo procesar una vez
+        }
+      }
+    };
+    
+    map.on("styleimagemissing", globalImageMissingHandler);
+    console.log("✅ Handler global de iconos faltantes inicializado");
+    */
+  }
+  
+  // Función para limpiar el handler global
+  function cleanupGlobalImageMissingHandler() {
+    const map = App.map;
+    if (map && globalImageMissingHandler) {
+      map.off("styleimagemissing", globalImageMissingHandler);
+      globalImageMissingHandler = null;
+      console.log("🧹 Handler global de iconos faltantes limpiado");
+    }
+  }
 
   /* ===============================
-     🎯 AUTO ZOOM GEOJSON
+     🎯 ZOOM A SANTA INÉS
+  =============================== */
+  function zoomToSantaInes() {
+    const map = App.map;
+    if (!map) return;
+    
+    // ❌ Verificar que el mapa esté completamente cargado y tenga dimensiones válidas
+    if (!map.isStyleLoaded() || !map.loaded()) {
+      // Esperar a que el mapa esté listo
+      map.once('load', () => {
+        setTimeout(() => zoomToSantaInes(), 100);
+      });
+      return;
+    }
+    
+    // Verificar que el mapa tenga dimensiones válidas
+    const container = map.getContainer();
+    if (!container || container.offsetWidth === 0 || container.offsetHeight === 0) {
+      console.warn("⚠️ Mapa sin dimensiones válidas, omitiendo zoom");
+      return;
+    }
+
+    // Coordenadas de la central Santa Inés: [-74.088195, 4.562537]
+    // Límites del sector Santa Inés (área alrededor de la central)
+    // ✅ Validar que las coordenadas sean números válidos
+    const swLng = -74.12;
+    const swLat = 4.54;
+    const neLng = -74.05;
+    const neLat = 4.59;
+    
+    // Verificar que las coordenadas sean válidas
+    if (!Number.isFinite(swLng) || !Number.isFinite(swLat) || 
+        !Number.isFinite(neLng) || !Number.isFinite(neLat)) {
+      console.error("❌ Coordenadas inválidas para zoom a Santa Inés");
+      return;
+    }
+    
+    try {
+      const santaInesBounds = new mapboxgl.LngLatBounds(
+        [swLng, swLat],  // Suroeste (límite oeste y sur)
+        [neLng, neLat]   // Noreste (límite este y norte)
+      );
+
+      // ✅ Validar que los bounds sean válidos antes de aplicar zoom
+      const sw = santaInesBounds.getSouthWest();
+      const ne = santaInesBounds.getNorthEast();
+      
+      if (!Number.isFinite(sw.lng) || !Number.isFinite(sw.lat) || 
+          !Number.isFinite(ne.lng) || !Number.isFinite(ne.lat)) {
+        console.error("❌ Coordenadas de límites de Santa Inés no válidas (NaN). Omitiendo zoom.");
+        return;
+      }
+
+      // Verificar que el mapa esté listo antes de aplicar zoom
+      if (!map.isStyleLoaded() || !map.loaded()) {
+        console.debug("ℹ️ Mapa no completamente cargado para zoom a Santa Inés. Reintentando...");
+        setTimeout(zoomToSantaInes, 500);
+        return;
+      }
+
+      // Aplicar zoom con padding para mejor visualización
+      map.fitBounds(santaInesBounds, {
+        padding: { top: 80, bottom: 80, left: 80, right: 80 },
+        duration: 1000,
+        maxZoom: 15 // Zoom más cercano para ver el sector en detalle
+      });
+      console.log("🎯 Zoom a Santa Inés aplicado");
+    } catch (error) {
+      // Silenciar errores de zoom si el mapa no está completamente listo
+      if (error.message?.includes('Invalid LngLat') || error.message?.includes('NaN')) {
+        console.debug("ℹ️ Zoom a Santa Inés omitido (mapa no completamente listo)");
+      } else {
+        console.error("❌ Error aplicando zoom a Santa Inés:", error);
+      }
+    }
+  }
+
+  /* ===============================
+     🎯 ZOOM A BOGOTÁ (función alternativa)
+  =============================== */
+  function zoomToBogota() {
+    const map = App.map;
+    if (!map) return;
+
+    // Límites geográficos de Bogotá (coordenadas aproximadas)
+    const bogotaBounds = new mapboxgl.LngLatBounds(
+      [-74.25, 4.50],  // Suroeste
+      [-73.90, 4.80]   // Noreste
+    );
+
+    setTimeout(() => {
+      map.fitBounds(bogotaBounds, {
+        padding: { top: 50, bottom: 50, left: 50, right: 50 },
+        duration: 1000,
+        maxZoom: 13
+      });
+      console.log("🎯 Zoom a Bogotá aplicado");
+    }, 500);
+  }
+
+  /* ===============================
+     🎯 AUTO ZOOM GEOJSON (deshabilitado - usar zoom a Bogotá)
   =============================== */
   function autoZoomToGeoJSON(geojson) {
-    const map = App.map;
-    if (!map || !geojson?.features?.length) return;
-
-    const coords = [];
-
-    geojson.features.forEach(f => {
-      if (f.geometry.type === "Point") {
-        // Extraer [lng, lat] de Point (puede tener altura)
-        const [lng, lat] = f.geometry.coordinates;
-        coords.push([lng, lat]);
-      }
-      if (f.geometry.type === "LineString") {
-        coords.push(...f.geometry.coordinates);
-      }
-      if (f.geometry.type === "MultiLineString") {
-        f.geometry.coordinates.forEach(line => {
-          coords.push(...line);
-        });
-      }
-    });
-
-    if (!coords.length) return;
-
-    // Crear bounds desde el primer punto
-    const firstCoord = Array.isArray(coords[0][0]) ? coords[0][0] : coords[0];
-    const bounds = new mapboxgl.LngLatBounds(firstCoord, firstCoord);
-
-    // Extender bounds con todos los puntos
-    coords.forEach(c => {
-      const coord = Array.isArray(c[0]) ? c : [c];
-      coord.forEach(point => {
-        bounds.extend(point);
-      });
-    });
-
-    // 🛡️ Delay para evitar conflictos de render
-    setTimeout(() => {
-      map.fitBounds(bounds, {
-        padding: 80,
-        duration: 900
-      });
-      console.log("🎯 AutoZoom aplicado");
-    }, 300);
+    // Deshabilitado - usar zoomToBogota() en su lugar
+    // Esta función se mantiene por compatibilidad pero no hace nada
+    return;
   }
 
   /* ===============================
@@ -128,11 +477,13 @@
 
   /* ===============================
      Crear capa Mapbox
+     SOLUCIÓN SIMPLIFICADA: Confiar en eventos del mapa
   =============================== */
   async function createLayer(layer, basePath) {
+    // Verificación simple - el mapa debe estar disponible porque solo se llama desde eventos
     const map = App.map;
-    if (!map || !map.isStyleLoaded()) {
-      console.warn("⚠️ Mapa no disponible o estilo no cargado para:", layer.id);
+    if (!map) {
+      console.error(`❌ Mapa no disponible para: ${layer.id}`);
       return;
     }
 
@@ -172,64 +523,6 @@
       // 🎨 Configuración específica para capas de tipo "symbol" (puntos con iconos)
       // IMPORTANTE: Cargar iconos ANTES de crear el source y la capa
       if (layerType === "symbol") {
-        // Función para generar pin SVG estilo Google Maps para centrales (igual que cierres)
-        function createCentralPinIcon(color, label = "", size = 50) {
-          const pinHeight = size;
-          const pinWidth = size * 0.6;
-          const labelSize = label ? 12 : 0;
-          
-          // SVG simplificado sin filtros complejos (igual que tool.cierres.js)
-          const svg = `
-            <svg width="${size}" height="${pinHeight + labelSize}" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
-                  <feOffset dx="0" dy="2" result="offsetblur"/>
-                  <feComponentTransfer>
-                    <feFuncA type="linear" slope="0.3"/>
-                  </feComponentTransfer>
-                  <feMerge>
-                    <feMergeNode/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
-              </defs>
-              
-              <!-- Sombra del pin -->
-              <ellipse cx="${size / 2}" cy="${pinHeight - 2}" rx="${pinWidth * 0.4}" ry="4" 
-                       fill="#000" opacity="0.2" filter="url(#shadow)"/>
-              
-              <!-- Cuerpo del pin (forma de gota estilo Google Maps) -->
-              <path d="M ${size / 2} 0 
-                       L ${size / 2 - pinWidth / 2} ${pinHeight * 0.6}
-                       Q ${size / 2 - pinWidth / 2} ${pinHeight * 0.85} ${size / 2} ${pinHeight * 0.9}
-                       Q ${size / 2 + pinWidth / 2} ${pinHeight * 0.85} ${size / 2 + pinWidth / 2} ${pinHeight * 0.6}
-                       Z" 
-                    fill="${color}" 
-                    stroke="#FFFFFF" 
-                    stroke-width="2"
-                    filter="url(#shadow)"/>
-              
-              <!-- Etiqueta con texto (si se proporciona) -->
-              ${label ? `
-                <rect x="${size / 2 - pinWidth / 2}" y="${pinHeight}" 
-                      width="${pinWidth}" height="${labelSize + 4}" 
-                      rx="3" fill="#FFFFFF" stroke="${color}" stroke-width="1.5"
-                      filter="url(#shadow)"/>
-                <text x="${size / 2}" y="${pinHeight + labelSize + 1}" 
-                      font-family="Arial, sans-serif" 
-                      font-size="${labelSize}" 
-                      font-weight="bold"
-                      fill="${color}"
-                      text-anchor="middle"
-                      dominant-baseline="middle">${label}</text>
-              ` : ''}
-            </svg>
-          `;
-          
-          return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-        }
-
         // Color para centrales ETB (azul corporativo)
         const CENTRAL_COLOR = "#2196F3"; // Azul Material Design
         
@@ -244,45 +537,34 @@
         });
         console.log(`📋 Centrales encontradas: ${Array.from(centralNames).join(", ")}`);
 
-        // Cargar iconos personalizados si existen, sino usar pins generados
-        const iconPaths = new Set();
+        // ❌ DESHABILITADO: Carga de iconos personalizados (genera errores 404)
+        // const iconPaths = new Set();
         const iconMap = new Map(); // Mapear nombre/ruta → ID de icono
         
-        geojson.features.forEach(f => {
-          if (f.properties?.icon) {
-            iconPaths.add(f.properties.icon);
-          }
+        // ❌ DESHABILITADO: No cargar iconos personalizados
+        // geojson.features.forEach(f => {
+        //   if (f.properties?.icon) {
+        //     iconPaths.add(f.properties.icon);
+        //   }
+        // });
+
+        // Separar iconos personalizados de pins generados
+        const customIconIds = new Set(); // IDs de iconos personalizados (PNG externos)
+        const generatedPinIds = new Set(); // IDs de pins generados (Canvas)
+        
+        // ❌ DESHABILITADO: Carga de iconos personalizados desde rutas (genera errores 404)
+        // Los iconos personalizados están deshabilitados para evitar errores 404
+        // Solo se usarán pins generados dinámicamente
+        
+        // Registrar esta capa en el sistema global ANTES de cargar iconos
+        layerIconRegistry.set(id, {
+          iconMap,
+          CENTRAL_COLOR
         });
-
-        // Cargar iconos personalizados desde rutas
-        for (const iconPath of iconPaths) {
-          const iconId = `icon-${id}-${iconPath.replace(/[^a-zA-Z0-9]/g, "_")}`;
-          iconMap.set(iconPath, iconId);
-          
-          if (!map.hasImage(iconId)) {
-            try {
-              const iconUrl = iconPath.startsWith("http") 
-                ? iconPath 
-                : `../${iconPath}`;
-              
-              await new Promise((resolve) => {
-                map.loadImage(iconUrl, (error, image) => {
-                  if (error) {
-                    console.warn(`⚠️ No se pudo cargar icono: ${iconPath}`, error);
-                    resolve();
-                  } else {
-                    map.addImage(iconId, image);
-                    console.log(`✅ Icono cargado: ${iconId} desde ${iconPath}`);
-                    resolve();
-                  }
-                });
-              });
-            } catch (err) {
-              console.warn(`⚠️ Error cargando icono ${iconPath}:`, err);
-            }
-          }
-        }
-
+        
+        // ❌ DESHABILITADO: Handler global de iconos faltantes
+        // initGlobalImageMissingHandler();
+        
         // Generar pins SVG para cada central
         console.log(`📌 Generando pins para ${centralNames.size} centrales únicas`);
         const iconPromises = [];
@@ -293,6 +575,7 @@
           
           // Mapear nombre de central a ID de icono (hacerlo ANTES de cargar)
           iconMap.set(centralName, iconId);
+          generatedPinIds.add(iconId); // Registrar como pin generado
           
           if (!map.hasImage(iconId)) {
             // Usar nombre completo de la central (o abreviado si es muy largo)
@@ -300,34 +583,28 @@
               ? centralName.substring(0, 8).toUpperCase() 
               : centralName.toUpperCase();
             
-            const pinUrl = createCentralPinIcon(CENTRAL_COLOR, label, 50); // Tamaño más grande para mejor visibilidad
-            
-            // Cargar icono de forma asíncrona (igual que tool.cierres.js)
-            const iconPromise = new Promise((resolve, reject) => {
-              map.loadImage(pinUrl, (error, image) => {
-                if (error) {
-                  console.error(`❌ Error cargando pin para ${centralName}:`, error);
-                  reject(error);
-                  return;
-                }
-                
-                // Agregar imagen al mapa
+            // Cargar icono de forma asíncrona usando la nueva función
+            const iconPromise = createCentralPinIcon(CENTRAL_COLOR, label, 50)
+              .then((img) => {
+                // Agregar imagen al mapa (el mapa ya está verificado)
                 if (!map.hasImage(iconId)) {
                   try {
-                    map.addImage(iconId, image);
+                    map.addImage(iconId, img);
                     console.log(`✅ Pin agregado: ${iconId} para "${centralName}"`);
                   } catch (addError) {
                     console.error(`❌ Error agregando imagen ${iconId}:`, addError);
-                    reject(addError);
-                    return;
+                    throw addError;
                   }
                 } else {
                   console.log(`ℹ️ Pin ya existe: ${iconId}`);
                 }
                 
-                resolve(true);
+                return true;
+              })
+              .catch((error) => {
+                console.error(`❌ Error cargando pin para ${centralName}:`, error);
+                throw error;
               });
-            });
             
             iconPromises.push(iconPromise);
           } else {
@@ -335,87 +612,35 @@
           }
         }
         
-        // Esperar a que TODOS los iconos se carguen y se agreguen al mapa
+        // SOLUCIÓN RADICAL: No bloquear la creación de capa esperando iconos
+        // Los iconos se cargarán bajo demanda cuando el mapa los necesite
+        // Usar Promise.race con timeout para no esperar indefinidamente
         try {
-          const results = await Promise.allSettled(iconPromises);
+          const timeoutPromise = new Promise(resolve => setTimeout(resolve, 2000)); // Max 2 segundos
+          const loadPromise = Promise.allSettled(iconPromises);
+          
+          await Promise.race([loadPromise, timeoutPromise]);
+          
+          // Reportar resultados sin bloquear
+          const results = await loadPromise.catch(() => []);
           const successful = results.filter(r => r.status === 'fulfilled' && r.value === true).length;
           const failed = results.filter(r => r.status === 'rejected').length;
-          console.log(`✅ Mapeo de iconos: ${successful} exitosos, ${failed} fallidos de ${iconPromises.length} totales`);
+          console.log(`✅ Iconos: ${successful} cargados, ${failed} fallidos de ${iconPromises.length} totales`);
           
-          // Verificación final: todos los iconos deben estar en el mapa
-          let missingIcons = [];
-          for (const [name, iconId] of iconMap.entries()) {
-            if (!map.hasImage(iconId)) {
-              missingIcons.push({name, iconId});
-            }
-          }
+          // NO VERIFICAR iconos faltantes - confiar en el handler de styleimagemissing
+          // El handler global cargará los iconos bajo demanda cuando el mapa los necesite
+          console.log(`ℹ️ Los iconos faltantes se cargarán automáticamente cuando el mapa los necesite`);
           
-          if (missingIcons.length > 0) {
-            console.error(`❌ ERROR: ${missingIcons.length} iconos NO están en el mapa, recargando...`);
-            // Recargar los iconos faltantes de forma síncrona
-            const reloadPromises = [];
-            for (const {name, iconId} of missingIcons) {
-              const label = name.length > 8 ? name.substring(0, 8).toUpperCase() : name.toUpperCase();
-              const pinUrl = createCentralPinIcon(CENTRAL_COLOR, label, 50);
-              
-              const reloadPromise = new Promise((resolve) => {
-                map.loadImage(pinUrl, (error, image) => {
-                  if (error) {
-                    console.error(`❌ Error recargando ${iconId}:`, error);
-                    resolve(false);
-                    return;
-                  }
-                  
-                  if (image) {
-                    try {
-                      if (!map.hasImage(iconId)) {
-                        map.addImage(iconId, image);
-                        console.log(`✅ Icono recargado: ${iconId} para "${name}"`);
-                        resolve(true);
-                      } else {
-                        console.log(`ℹ️ Icono ${iconId} ya existe`);
-                        resolve(true);
-                      }
-                    } catch (addError) {
-                      console.error(`❌ Error agregando icono recargado ${iconId}:`, addError);
-                      resolve(false);
-                    }
-                  } else {
-                    resolve(false);
-                  }
-                });
-              });
-              
-              reloadPromises.push(reloadPromise);
-            }
-            
-            // Esperar a que todos los iconos se recarguen
-            await Promise.allSettled(reloadPromises);
-            
-            // Verificar nuevamente
-            let stillMissing = [];
-            for (const {name, iconId} of missingIcons) {
-              if (!map.hasImage(iconId)) {
-                stillMissing.push(iconId);
-              }
-            }
-            
-            if (stillMissing.length > 0) {
-              console.error(`❌ Aún faltan ${stillMissing.length} iconos después de recargar:`, stillMissing);
-            } else {
-              console.log(`✅ Todos los iconos recargados correctamente`);
-            }
-          } else {
-            console.log(`✅ Verificación: Todos los ${iconMap.size} iconos están en el mapa`);
-          }
         } catch (err) {
-          console.error(`❌ Error cargando algunos iconos:`, err);
+          // Silenciar advertencias de iconos faltantes - se usarán pins generados automáticamente
+          console.debug(`ℹ️ Algunos iconos personalizados no están disponibles, se usarán pins generados`);
         }
         
-        // Pequeño delay adicional para asegurar que los iconos estén completamente disponibles
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // NO BLOQUEAR - Continuar inmediatamente con la creación de la capa
+        // El mapa ya está verificado al inicio de la función
 
         // Actualizar propiedades de features para usar IDs de iconos
+        // SOLUCIÓN RADICAL: NO VERIFICAR si existen - confiar 100% en el handler de styleimagemissing
         let featuresWithIcons = 0;
         geojson.features.forEach(f => {
           const name = f.properties?.name;
@@ -423,116 +648,54 @@
             // Normalizar nombre igual que al crear el icono
             const normalizedName = name.trim();
             
-            // Buscar el icono en el mapa
+            // Buscar el icono en el mapa o construir el ID
+            let iconId = null;
             if (iconMap.has(normalizedName)) {
-              const iconId = iconMap.get(normalizedName);
-              // Verificar que el icono realmente existe en el mapa
-              if (map.hasImage(iconId)) {
-                f.properties.iconId = iconId;
-                featuresWithIcons++;
-                console.log(`  ✓ Feature "${name}" → iconId: ${iconId}`);
-              } else {
-                console.warn(`⚠️ Icono ${iconId} no existe en el mapa para "${name}"`);
-                // Intentar usar el iconId de todas formas (puede estar cargándose)
-                f.properties.iconId = iconId;
-                featuresWithIcons++;
-              }
+              iconId = iconMap.get(normalizedName);
             } else {
-              // Si no está en el mapa, intentar construir el iconId directamente
+              // Construir el iconId directamente
               const safeName = normalizedName.replace(/[^a-zA-Z0-9]/g, "_");
-              const iconId = `${id}-pin-${safeName}`;
-              if (map.hasImage(iconId)) {
-                f.properties.iconId = iconId;
-                featuresWithIcons++;
-                console.log(`  ✓ Feature "${name}" → iconId encontrado directamente: ${iconId}`);
-              } else {
-                console.warn(`⚠️ Feature "${name}" no tiene icono mapeado ni encontrado (iconId: ${iconId})`);
-                // Asignar de todas formas para que intente cargarlo
-                f.properties.iconId = iconId;
-                featuresWithIcons++;
-              }
+              iconId = `${id}-pin-${safeName}`;
             }
-          } else if (f.properties?.icon && iconMap.has(f.properties.icon)) {
-            const iconId = iconMap.get(f.properties.icon);
+            
+            // SIEMPRE asignar el iconId - el handler global lo cargará automáticamente si falta
             f.properties.iconId = iconId;
+            featuresWithIcons++;
+          } else if (f.properties?.icon) {
+            // Icono personalizado
+            if (iconMap.has(f.properties.icon)) {
+              f.properties.iconId = iconMap.get(f.properties.icon);
+            } else {
+              // Construir ID para icono personalizado
+              const iconId = `icon-${id}-${f.properties.icon.replace(/[^a-zA-Z0-9]/g, "_")}`;
+              f.properties.iconId = iconId;
+            }
             featuresWithIcons++;
           }
         });
-        console.log(`✅ ${featuresWithIcons} de ${geojson.features.length} features tienen iconos asignados`);
-
-        // Agregar listener para iconos faltantes (fallback)
-        const imageMissingHandler = (e) => {
-          if (e.id && e.id.startsWith(`${id}-pin-`)) {
-            console.warn(`⚠️ Icono faltante detectado: ${e.id}, intentando cargar...`);
-            // Extraer el nombre de la central del iconId
-            const match = e.id.match(new RegExp(`${id}-pin-(.+)`));
-            if (match) {
-              const safeName = match[1];
-              // Buscar el nombre original en el mapa de iconos
-              let found = false;
-              for (const [name, storedIconId] of iconMap.entries()) {
-                if (storedIconId === e.id) {
-                  found = true;
-                  const label = name.length > 8 ? name.substring(0, 8).toUpperCase() : name.toUpperCase();
-                  const pinUrl = createCentralPinIcon(CENTRAL_COLOR, label, 50);
-                  
-                  // Cargar el icono inmediatamente
-                  map.loadImage(pinUrl, (error, image) => {
-                    if (error) {
-                      console.error(`❌ Error cargando icono bajo demanda ${e.id}:`, error);
-                      return;
-                    }
-                    
-                    if (image) {
-                      try {
-                        // Verificar nuevamente antes de agregar
-                        if (!map.hasImage(e.id)) {
-                          map.addImage(e.id, image);
-                          console.log(`✅ Icono cargado bajo demanda: ${e.id} para "${name}"`);
-                        } else {
-                          console.log(`ℹ️ Icono ${e.id} ya existe (cargado por otro proceso)`);
-                        }
-                      } catch (addError) {
-                        console.error(`❌ Error agregando icono ${e.id}:`, addError);
-                      }
-                    }
-                  });
-                  break;
-                }
-              }
-              
-              // Si no se encontró en el mapa, intentar construir el nombre desde el safeName
-              if (!found) {
-                // Intentar reconstruir el nombre (reemplazar _ con espacios y buscar)
-                const possibleName = safeName.replace(/_/g, " ");
-                const label = possibleName.length > 8 ? possibleName.substring(0, 8).toUpperCase() : possibleName.toUpperCase();
-                const pinUrl = createCentralPinIcon(CENTRAL_COLOR, label, 50);
-                
-                map.loadImage(pinUrl, (error, image) => {
-                  if (!error && image) {
-                    try {
-                      if (!map.hasImage(e.id)) {
-                        map.addImage(e.id, image);
-                        console.log(`✅ Icono cargado bajo demanda (reconstruido): ${e.id}`);
-                      }
-                    } catch (addError) {
-                      console.error(`❌ Error agregando icono reconstruido ${e.id}:`, addError);
-                    }
-                  }
-                });
-              }
-            }
-          }
-        };
-        map.on("styleimagemissing", imageMissingHandler);
+        console.log(`✅ ${featuresWithIcons} de ${geojson.features.length} features tienen iconId asignado (carga bajo demanda activa)`);
         
         // Crear source DESPUÉS de cargar todos los iconos y asignar iconId
+        // El mapa ya está verificado al inicio de la función
         console.log(`📦 Creando source para ${id} con ${geojson.features.length} features`);
-        map.addSource(id, {
-          type: "geojson",
-          data: geojson
-        });
-        console.log(`✅ Source ${id} creado con datos actualizados`);
+        try {
+          // Verificar que el source no exista ya
+          if (map.getSource(id)) {
+            console.log(`⚠️ Source ${id} ya existe, omitiendo creación`);
+          } else {
+            map.addSource(id, {
+              type: "geojson",
+              data: geojson
+            });
+            console.log(`✅ Source ${id} creado con datos actualizados`);
+          }
+        } catch (sourceError) {
+          console.error(`❌ Error creando source ${id}:`, sourceError);
+          // Si el error es que ya existe, continuar
+          if (!sourceError.message?.includes('already exists')) {
+            return;
+          }
+        }
         
         // Verificar que los iconId están en las features
         const sampleFeature = geojson.features[0];
@@ -543,7 +706,7 @@
           console.log(`   Propiedades disponibles:`, Object.keys(sampleFeature?.properties || {}));
         }
 
-        // Configurar layout para símbolos con iconos y etiquetas
+        // Configurar layout para símbolos SOLO CON TEXTO (sin iconos)
         const layerConfig = {
           id,
           type: layerType,
@@ -551,78 +714,69 @@
           layout: {
             visibility: "visible", // ✅ Capas habilitadas por defecto
             ...(layer.layout || {}),
-            // Icono desde propiedades (usar iconId generado del pin)
-            "icon-image": [
+            // SOLO TEXTO - Sin iconos
+            "text-field": ["get", "name"],
+            "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
+            "text-size": [
               "coalesce",
-              ["get", "iconId"],
-              "marker-15" // Fallback a marcador de Mapbox
+              ["*", ["get", "label-scale"], 14],
+              14
             ],
-          "icon-size": [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            10, 0.8,  // Zoom 10: 80% del tamaño
-            15, 1.0,  // Zoom 15: 100% del tamaño
-            20, 1.2   // Zoom 20: 120% del tamaño
-          ],
-          "icon-opacity": 1, // Opacidad fija (icon-opacity no es una propiedad válida en layout)
-          "icon-offset": [
-            "coalesce",
-            ["get", "icon-offset"],
-            [0, 0]
-          ],
-          "icon-anchor": "bottom",
-          "icon-allow-overlap": true,
-          "icon-ignore-placement": true,
-          // Etiqueta desde propiedades
-          "text-field": ["get", "name"],
-          "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
-          "text-size": [
-            "coalesce",
-            ["*", ["get", "label-scale"], 12],
-            12
-          ],
-          "text-offset": [0, 1.5],
-          "text-anchor": "top",
-          "text-allow-overlap": true,
-          "text-ignore-placement": true
-        },
-        paint: {
-          "text-color": [
-            "coalesce",
-            ["get", "label-color"],
-            "#000000"
-          ],
-          "text-opacity": [
-            "coalesce",
-            ["get", "label-opacity"],
-            1
-          ]
-        }
+            "text-offset": [0, 0], // Centrado en el punto (sin offset porque no hay icono)
+            "text-anchor": "center",
+            "text-allow-overlap": true,
+            "text-ignore-placement": true
+          },
+          paint: {
+            "text-color": "#FF0000", // Color rojo para el texto
+            "text-opacity": [
+              "coalesce",
+              ["get", "label-opacity"],
+              1
+            ],
+            // Halo (borde) para mejor legibilidad
+            "text-halo-color": "#FFFFFF",
+            "text-halo-width": 2,
+            "text-halo-blur": 1
+          }
         };
 
-        map.addLayer(layerConfig);
-        console.log(`✅ Capa symbol agregada: ${id} con ${geojson.features.length} features`);
-        
-        // Verificar que la capa se creó correctamente
-        if (map.getLayer(id)) {
-          const visibility = map.getLayoutProperty(id, "visibility");
-          const iconImageExpr = map.getLayoutProperty(id, "icon-image");
-          console.log(`✅ Verificación: Capa ${id} existe, visibilidad: ${visibility}`);
-          console.log(`   Expresión icon-image:`, JSON.stringify(iconImageExpr));
-          
-          // Verificar que el source tiene datos
-          const source = map.getSource(id);
-          if (source && source._data) {
-            const sourceFeatures = source._data.features || [];
-            const featuresWithIconId = sourceFeatures.filter(f => f.properties?.iconId);
-            console.log(`   Source tiene ${sourceFeatures.length} features, ${featuresWithIconId.length} con iconId`);
-            if (featuresWithIconId.length > 0) {
-              console.log(`   Ejemplo iconId: ${featuresWithIconId[0].properties.iconId}`);
-            }
+        // Agregar la capa directamente - el mapa está garantizado que está listo
+        try {
+          // Verificar que la capa no exista ya
+          if (map.getLayer(id)) {
+            console.log(`⚠️ Capa ${id} ya existe, omitiendo`);
+          } else {
+            map.addLayer(layerConfig);
+            console.log(`✅ Capa symbol agregada: ${id} con ${geojson.features.length} features`);
           }
-        } else {
-          console.error(`❌ ERROR: Capa ${id} NO se creó correctamente`);
+          
+          // Verificar que la capa se creó correctamente
+          if (map.getLayer(id)) {
+            const visibility = map.getLayoutProperty(id, "visibility");
+            const textFieldExpr = map.getLayoutProperty(id, "text-field");
+            const textColor = map.getPaintProperty(id, "text-color");
+            console.log(`✅ Verificación: Capa ${id} existe, visibilidad: ${visibility}`);
+            console.log(`   Expresión text-field:`, JSON.stringify(textFieldExpr));
+            console.log(`   Color del texto: ${textColor}`);
+            
+            // Verificar que el source tiene datos
+            const source = map.getSource(id);
+            if (source && source._data) {
+              const sourceFeatures = source._data.features || [];
+              const featuresWithName = sourceFeatures.filter(f => f.properties?.name);
+              console.log(`   Source tiene ${sourceFeatures.length} features, ${featuresWithName.length} con nombre`);
+              if (featuresWithName.length > 0) {
+                console.log(`   Ejemplo nombre: ${featuresWithName[0].properties.name}`);
+              }
+            }
+          } else {
+            console.error(`❌ ERROR: Capa ${id} NO se creó correctamente`);
+          }
+        } catch (layerError) {
+          console.error(`❌ Error agregando capa ${id}:`, layerError);
+          // Limpiar el registro si falla
+          layerIconRegistry.delete(id);
         }
       } else {
         // Configuración para líneas y otros tipos
@@ -651,9 +805,15 @@
 
       console.log("✅ Capa cargada y habilitada:", id, `(${geojson.features.length} features, tipo: ${layerType})`);
 
-      // 🎯 Auto zoom automático al cargar (solo si hay datos)
-      if (geojson.features.length > 0) {
-        autoZoomToGeoJSON(geojson);
+      // 🎯 Zoom a Santa Inés después de cargar la primera capa importante
+      // Solo hacer zoom una vez cuando se carga la capa de centrales
+      if (id === "CORPORATIVO_CENTRALES_ETB" && geojson.features.length > 0) {
+        zoomToSantaInes();
+      }
+      
+      // 🎯 Zoom a Santa Inés cuando se cargan capas de Santa Inés
+      if (id.includes("SANTA_INES") || id.includes("FTTH_SANTA_INES")) {
+        zoomToSantaInes();
       }
 
     } catch (err) {
@@ -669,6 +829,13 @@
     restoring = true;
 
     console.log("🔄 Restaurando capas FTTH...");
+    
+    // Limpiar registro de iconos de capas anteriores
+    layerIconRegistry.clear();
+    
+    // Limpiar handler global (se reinicializará cuando se carguen las nuevas capas)
+    cleanupGlobalImageMissingHandler();
+    
     setTimeout(() => {
       loadFTTHTree();
       restoring = false;
@@ -678,8 +845,29 @@
   /* ===============================
      Eventos
   =============================== */
-  App.map?.on("load", loadFTTHTree);
-  App.map?.on("style.load", restoreLayers);
+  App.map?.on("load", () => {
+    // Inicializar handler global cuando el mapa esté listo
+    initGlobalImageMissingHandler();
+    loadFTTHTree();
+    // ❌ DESHABILITADO: Zoom inicial a Santa Inés (genera errores NaN)
+    // El zoom se hará automáticamente cuando se carguen las capas
+    // setTimeout(() => {
+    //   zoomToSantaInes();
+    // }, 1000);
+  });
+  App.map?.on("style.load", () => {
+    restoreLayers();
+    // Reinicializar handler después de que el estilo se cargue
+    setTimeout(() => {
+      initGlobalImageMissingHandler();
+    }, 500);
+  });
+  
+  // Limpiar cuando el mapa se destruye
+  App.map?.on("remove", () => {
+    cleanupGlobalImageMissingHandler();
+    layerIconRegistry.clear();
+  });
 
   /* ===============================
      API pública

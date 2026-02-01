@@ -16,13 +16,13 @@
   const LAYER = "gps-layer";
 
   function start() {
-    if (!navigator.geolocation) {
-      alert("❌ Este dispositivo no soporta GPS");
+    if (!App || !App.map) {
+      console.warn("⚠️ App o mapa no disponible");
       return;
     }
 
-    if (!App.map) {
-      console.warn("⚠️ Mapa no disponible");
+    if (!navigator.geolocation) {
+      alert("❌ Este dispositivo no soporta GPS");
       return;
     }
 

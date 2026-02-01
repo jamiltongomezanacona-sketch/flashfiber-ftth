@@ -3,7 +3,6 @@
 ========================================================= */
 
 import { db } from "./firebase.js";
-
 import {
   collection,
   addDoc,
@@ -14,6 +13,9 @@ import {
   deleteDoc,
   getDoc
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+// ✅ Re-exportar db para que otros módulos puedan importarlo desde aquí
+export { db };
 
 /* =========================================================
    🧹 CLEANUP DE LISTENERS

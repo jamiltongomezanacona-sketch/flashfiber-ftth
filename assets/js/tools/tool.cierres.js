@@ -10,11 +10,31 @@
 (function () {
   "use strict";
 
-  const wait = setInterval(() => {
-    const App = window.__FTTH_APP__;
-    if (!App?.map) return;
+  // ✅ Sistema de inicialización mejorado
+  async function init() {
+    await waitForDependencies();
+    initializeTool();
+  }
 
-    clearInterval(wait);
+  async function waitForDependencies(maxAttempts = 100) {
+    for (let i = 0; i < maxAttempts; i++) {
+      const App = window.__FTTH_APP__;
+      if (App?.map) {
+        console.log("✅ tool.cierres: Dependencias disponibles después de", i + 1, "intentos");
+        return true;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    console.warn("⚠️ tool.cierres: App.map no disponible después de esperar");
+    return false;
+  }
+
+  function initializeTool() {
+    const App = window.__FTTH_APP__;
+    if (!App || !App.map) {
+      console.error("❌ tool.cierres: App o App.map no disponible");
+      return;
+    }
 
     if (!App.tools) App.tools = {};
     if (!App.data) App.data = { cierres: [] };
@@ -164,12 +184,13 @@
       const iconId = `cierre-${tipo}-${label || 'default'}`;
       
       // Si ya está cargado, retornar inmediatamente
-      if (loadedIcons.has(iconId) || App.map?.hasImage(iconId)) {
+      if (!App || !App.map) return iconId;
+      if (loadedIcons.has(iconId) || App.map.hasImage(iconId)) {
         loadedIcons.add(iconId);
         return iconId;
       }
       
-      if (!App.map || !App.map.isStyleLoaded()) return iconId;
+      if (!App.map.isStyleLoaded()) return iconId;
       
       // Si ya está en proceso de carga, retornar el ID
       if (loadingIcons.has(iconId)) return iconId;
@@ -181,6 +202,7 @@
       loadingIcons.set(iconId, true);
       
       // Cargar imagen en Mapbox
+      if (!App || !App.map) return iconId;
       App.map.loadImage(iconUrl, (error, image) => {
         if (error) {
           console.warn("⚠️ Error cargando icono de cierre:", error);
@@ -189,6 +211,7 @@
         }
         
         try {
+          if (!App || !App.map) return;
           if (!App.map.hasImage(iconId)) {
             App.map.addImage(iconId, image);
           }
@@ -207,7 +230,7 @@
     }
 
     function initLayer() {
-      if (!App.map || !App.map.isStyleLoaded()) return;
+      if (!App || !App.map || !App.map.isStyleLoaded()) return;
       if (App.map.getSource(SOURCE_ID)) return;
 
       App.map.addSource(SOURCE_ID, {
@@ -242,6 +265,7 @@
       });
 
       // Click sobre cierre → editar
+      if (!App || !App.map) return;
       App.map.on("click", LAYER_ID, (e) => {
         const f = e.features?.[0];
         if (!f) return;
@@ -249,17 +273,20 @@
       });
 
       // Cursor pointer al pasar sobre cierre
-      App.map.on("mouseenter", LAYER_ID, () => {
-        App.map.getCanvas().style.cursor = "pointer";
-      });
-      App.map.on("mouseleave", LAYER_ID, () => {
-        App.map.getCanvas().style.cursor = "";
-      });
+      if (App && App.map) {
+        App.map.on("mouseenter", LAYER_ID, () => {
+          if (App && App.map) App.map.getCanvas().style.cursor = "pointer";
+        });
+        App.map.on("mouseleave", LAYER_ID, () => {
+          if (App && App.map) App.map.getCanvas().style.cursor = "";
+        });
+      }
 
       console.log("✅ Capa cierres creada (estilo Google Maps)");
     }
 
     function refreshLayer() {
+      if (!App || !App.map) return;
       const source = App.map.getSource(SOURCE_ID);
       if (!source) return;
 
@@ -506,25 +533,29 @@
     /* ===============================
        Rebuild on style change
     =============================== */
-    App.map.on("style.load", () => {
-      // ✅ Limpiar iconos cargados al cambiar estilo
-      loadedIcons.clear();
-      initLayer();
-      refreshLayer();
-    });
+    if (App.map) {
+      App.map.on("style.load", () => {
+        // ✅ Limpiar iconos cargados al cambiar estilo
+        loadedIcons.clear();
+        initLayer();
+        refreshLayer();
+      });
+    }
 
     /* ===============================
        Exponer recarga global para cambios de estilo
     =============================== */
-    App.reloadCierres = function () {
-      console.log("🔄 Recargando capa CIERRES");
+    if (!App.reloadCierres) {
+      App.reloadCierres = function () {
+        console.log("🔄 Recargando capa CIERRES");
 
-      // Volver a crear source + layer si fueron destruidos
-      initLayer();
+        // Volver a crear source + layer si fueron destruidos
+        initLayer();
 
-      // Volver a pintar datos en el mapa
-      refreshLayer();
-    };
+        // Volver a pintar datos en el mapa
+        refreshLayer();
+      };
+    }
 
     initLayer();
 
@@ -534,5 +565,8 @@
     App.tools.cierres = { start, stop };
 
     console.log("🚀 tool.cierres listo (estable)");
-  }, 300);
+  }
+
+  // ✅ Auto-inicializar
+  init();
 })();

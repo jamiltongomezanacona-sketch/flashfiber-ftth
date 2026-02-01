@@ -10,8 +10,8 @@
   if (!App) return;
 
   window.initMapControls = function () {
+    if (!App || !App.map) return;
     const map = App.map;
-    if (!map) return;
 
     const btnRotate = document.getElementById("btnRotate");
     if (!btnRotate) return;

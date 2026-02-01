@@ -24,12 +24,13 @@
      START
   ============================ */
   function start() {
-    if (!App.map || !App.map.isStyleLoaded()) return;
+    if (!App || !App.map || !App.map.isStyleLoaded()) return;
 
     active = true;
     points = [];
     isPanning = false;
 
+    if (!App || !App.map) return;
     App.map.getCanvas().style.cursor = "crosshair";
 
     App.map.on("click", onClick);
@@ -47,17 +48,18 @@
      STOP
   ============================ */
   function stop() {
-    if (!App.map) return;
+    if (!App || !App.map) return;
 
     active = false;
     points = [];
     isPanning = false;
 
-    App.map.off("click", onClick);
-    App.map.off("movestart");
-    App.map.off("moveend");
-
-    App.map.getCanvas().style.cursor = "";
+    if (App && App.map) {
+      App.map.off("click", onClick);
+      App.map.off("movestart");
+      App.map.off("moveend");
+      App.map.getCanvas().style.cursor = "";
+    }
     safeRemove();
 
     console.log("🛑 Ruta detenida");
@@ -174,7 +176,7 @@
   const savedRoutes = new Map(); // Almacenar rutas por ID
 
   function initSavedRoutesLayer() {
-    if (!App.map || !App.map.isStyleLoaded()) return;
+    if (!App || !App.map || !App.map.isStyleLoaded()) return;
     if (App.map.getSource(SAVED_ROUTES_SOURCE)) return;
 
     App.map.addSource(SAVED_ROUTES_SOURCE, {
@@ -207,6 +209,7 @@
     savedRoutes.set(routeId, feature);
 
     // Actualizar source con todas las rutas guardadas
+    if (!App || !App.map) return;
     const allRoutes = Array.from(savedRoutes.values());
     const source = App.map.getSource(SAVED_ROUTES_SOURCE);
     if (source) {
@@ -237,6 +240,7 @@
     });
 
     // Actualizar source
+    if (!App || !App.map) return;
     const source = App.map.getSource(SAVED_ROUTES_SOURCE);
     if (source) {
       source.setData({

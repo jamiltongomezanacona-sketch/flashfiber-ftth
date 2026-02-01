@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="../assets/css/layout.css">
   <link rel="stylesheet" href="../assets/css/map.css">
   <link rel="stylesheet" href="../assets/css/panels.css">
+  <link rel="stylesheet" href="../assets/css/search.css">
 </head>
 
 <body class="app-map">
@@ -27,6 +28,24 @@
     <div class="logo">
       <i class="fas fa-satellite-dish"></i>
       <span>Flash Fiber FTTH</span>
+    </div>
+    
+    <!-- 🔍 BUSCADOR MODERNO -->
+    <div class="search-container">
+      <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+          type="text" 
+          id="searchInput" 
+          class="search-input" 
+          placeholder="Buscar centrales, cables, cierres..."
+          autocomplete="off"
+        />
+        <button id="searchClear" class="search-clear hidden">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div id="searchResults" class="search-results hidden"></div>
     </div>
   </header>
 
@@ -373,6 +392,7 @@
 <!-- UI -->
 <script src="../assets/js/ui/ui.panel.js"></script>
 <script src="../assets/js/ui/ui.layers.tree.js"></script>
+<script src="../assets/js/ui/ui.buscador.js"></script>
 
 
 

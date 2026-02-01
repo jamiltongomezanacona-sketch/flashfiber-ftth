@@ -44,5 +44,18 @@ html, body {
   height: 100%;
   background: var(--dark-primary);
   color: var(--text-primary);
+  /* overflow: hidden solo para app-map, no para app-dashboard */
+}
+
+/* Solo bloquear scroll en modo mapa */
+body.app-map {
   overflow: hidden;
+}
+
+/* Permitir scroll en dashboard/home */
+body.app-dashboard {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: auto;
+  min-height: 100vh;
 }

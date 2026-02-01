@@ -206,8 +206,17 @@ body {
 /* 🧩 HOME / DASHBOARD → SCROLL PERMITIDO */
 body.app-dashboard {
   height: auto;
-  overflow-y: auto;
+  min-height: 100vh;
+  overflow-y: auto !important; /* Forzar scroll en dashboard */
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Asegurar que html también permita scroll en dashboard */
+html:has(body.app-dashboard) {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: auto;
 }
 
 /* 🗺️ MAPA / VISOR → SIN SCROLL */
@@ -226,8 +235,17 @@ body.app-map {
     height: 100vh; /* Fallback */
   }
   
-  /* Prevenir scroll horizontal */
-  html, body {
+  /* Prevenir scroll horizontal SOLO en app-map */
+  body.app-map,
+  html:has(body.app-map) {
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
+  }
+  
+  /* Permitir scroll en dashboard */
+  body.app-dashboard {
+    overflow-y: auto !important;
     overflow-x: hidden;
     position: relative;
     width: 100%;
@@ -237,6 +255,10 @@ body.app-map {
   @supports (-webkit-touch-callout: none) {
     body.app-map {
       height: -webkit-fill-available;
+    }
+    
+    body.app-dashboard {
+      min-height: -webkit-fill-available;
     }
   }
 }

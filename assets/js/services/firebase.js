@@ -24,7 +24,9 @@ import * as DB from "./firebase.db.js";
 /* =========================
    Configuración Firebase
 ========================= */
-const firebaseConfig = {
+// ✅ Obtener configuración desde config.local.js o usar valores por defecto
+const SECRETS = window.__FTTH_SECRETS__ || {};
+const DEFAULT_FIREBASE_CONFIG = {
   apiKey: "AIzaSyD3BNTIERRCZy5jRwN-KcIIQLeXFyg9gY4",
   authDomain: "flashfiber-ftth.firebaseapp.com",
   projectId: "flashfiber-ftth",
@@ -32,6 +34,19 @@ const firebaseConfig = {
   messagingSenderId: "970573359420",
   appId: "1:970573359420:web:1254e4024920aeeff7d639"
 };
+
+const firebaseConfig = SECRETS.FIREBASE || DEFAULT_FIREBASE_CONFIG;
+
+// ✅ Validar que la configuración esté completa
+const requiredKeys = ["apiKey", "authDomain", "projectId", "storageBucket", "messagingSenderId", "appId"];
+const missingKeys = requiredKeys.filter(key => !firebaseConfig[key]);
+
+if (missingKeys.length > 0) {
+  console.error("❌ Firebase config incompleto. Faltan:", missingKeys);
+  console.error("💡 Crea config.local.js basado en config.local.example.js");
+} else if (!SECRETS.FIREBASE) {
+  console.warn("⚠️ Usando configuración Firebase por defecto. Para producción, usa config.local.js");
+}
 
 /* =========================
    Inicialización ÚNICA

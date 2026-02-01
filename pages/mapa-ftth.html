@@ -323,6 +323,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
 <!-- CONFIG -->
+<!-- ✅ Cargar configuración local primero (si existe, NO se versiona) -->
+<script src="../config.local.js" onerror="console.log('ℹ️ config.local.js no encontrado, usando valores por defecto')"></script>
 <script src="../assets/js/config.js"></script>
 
 <!-- FIREBASE CORE -->

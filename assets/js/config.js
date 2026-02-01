@@ -3,12 +3,23 @@
    Configuración central del sistema
 ========================================================= */
 
+// ✅ Obtener credenciales desde archivo local (config.local.js) o usar valores por defecto
+// El archivo config.local.js NO se versiona (está en .gitignore)
+const SECRETS = window.__FTTH_SECRETS__ || {};
+
 window.__FTTH_CONFIG__ = {
 
   APP_NAME: "Flash Fiber FTTH",
   VERSION: "1.0.0",
 
-  MAPBOX_TOKEN: "pk.eyJ1IjoiamFtaWx0b244NCIsImEiOiJjbWpxMjB4eDkydWdmM2RwdTVib3htb284In0.5gk_bRtcnXLshXE9eMeryg",
+  // ✅ Token de Mapbox desde config.local.js o valor por defecto (solo para desarrollo)
+  MAPBOX_TOKEN: SECRETS.MAPBOX_TOKEN || 
+    (() => {
+      console.warn("⚠️ MAPBOX_TOKEN no encontrado en config.local.js. Usando valor por defecto (solo desarrollo)");
+      // ⚠️ Este valor solo debe usarse en desarrollo local
+      // En producción, DEBE estar en config.local.js
+      return "pk.eyJ1IjoiamFtaWx0b244NCIsImEiOiJjbWpxMjB4eDkydWdmM2RwdTVib3htb284In0.5gk_bRtcnXLshXE9eMeryg";
+    })(),
 
   MAP: {
     STYLE_DEFAULT: "mapbox://styles/mapbox/dark-v11",
@@ -19,3 +30,8 @@ window.__FTTH_CONFIG__ = {
   }
 
 };
+
+// ✅ Validar que el token esté presente
+if (!window.__FTTH_CONFIG__.MAPBOX_TOKEN) {
+  console.error("❌ MAPBOX_TOKEN no configurado. Crea config.local.js basado en config.local.example.js");
+}

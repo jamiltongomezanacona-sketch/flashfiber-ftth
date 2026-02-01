@@ -1,6 +1,3 @@
-
-<!-- Deploy test FlashFiber FTTH -->
-
 <!DOCTYPE html>
 <html lang="es">
 
@@ -9,216 +6,60 @@
   <title>Flash Fiber FTTH | Acceso</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#00e5ff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-
-  <!-- Base del proyecto -->
+  <!-- CSS base -->
   <link rel="stylesheet" href="assets/css/theme.css">
   <link rel="stylesheet" href="assets/css/layout.css">
 
-  <!-- Fuente moderna -->
+  <!-- Fuente -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
+  <!-- ================= LOGIN UI (igual al tuyo) ================= -->
   <style>
-    /* ======================================================
-       LOGIN PREMIUM - FLASHFIBER FTTH
-       Estilo Glassmorphism + UX Profesional
-    ====================================================== */
-
-    * {
-      box-sizing: border-box;
-      font-family: 'Inter', system-ui, sans-serif;
-    }
-
+    * { box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
     body {
-      margin: 0;
-      min-height: 100vh;
+      margin: 0; min-height: 100vh;
       background:
         radial-gradient(circle at 20% 20%, #3b82f6 0%, transparent 40%),
         radial-gradient(circle at 80% 80%, #9333ea 0%, transparent 40%),
         linear-gradient(135deg, #050914, #0b1224);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
       color: #e5e7eb;
     }
-
-    /* Fondo animado suave */
-    body::before {
-      content: "";
-      position: absolute;
-      inset: -50%;
-      background:
-        radial-gradient(circle at 30% 30%, rgba(99, 102, 241, .15), transparent 40%),
-        radial-gradient(circle at 70% 70%, rgba(236, 72, 153, .12), transparent 45%);
-      animation: floatBg 18s linear infinite;
-      filter: blur(40px);
-      z-index: 0;
-    }
-
-    @keyframes floatBg {
-      0% {
-        transform: translate(0, 0) rotate(0deg);
-      }
-
-      50% {
-        transform: translate(8%, -6%) rotate(10deg);
-      }
-
-      100% {
-        transform: translate(0, 0) rotate(0deg);
-      }
-    }
-
-    /* Tarjeta principal */
     .login-card {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 420px;
+      width: 100%; max-width: 420px;
       padding: 42px 40px 36px;
       border-radius: 18px;
       background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(18px) saturate(140%);
-      -webkit-backdrop-filter: blur(18px) saturate(140%);
-      border: 1px solid rgba(255, 255, 255, .08);
-      box-shadow:
-        0 30px 80px rgba(0, 0, 0, .55),
-        inset 0 0 0 1px rgba(255, 255, 255, .04);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 30px 80px rgba(0,0,0,.55);
     }
-
-    /* Encabezado */
-    .login-header {
-      text-align: center;
-      margin-bottom: 28px;
-    }
-
-    .logo {
-      font-size: 32px;
-      font-weight: 700;
-      letter-spacing: .5px;
-      color: #fff;
-    }
-
-    .subtitle {
-      margin-top: 6px;
-      font-size: 14px;
-      color: #94a3b8;
-    }
-
-    /* Formulario */
-    .field {
-      margin-bottom: 18px;
-    }
-
-    .field label {
-      display: block;
-      font-size: 13px;
-      color: #cbd5f5;
-      margin-bottom: 6px;
-    }
-
+    .logo { font-size: 32px; font-weight: 700; text-align: center; }
+    .subtitle { text-align: center; font-size: 14px; color: #94a3b8; margin-bottom: 24px; }
+    .field { margin-bottom: 18px; }
+    .field label { font-size: 13px; color: #cbd5f5; display: block; margin-bottom: 6px; }
     .field input {
-      width: 100%;
-      height: 46px;
-      border-radius: 10px;
-      padding: 0 14px;
-      font-size: 14px;
+      width: 100%; height: 46px; border-radius: 10px;
+      padding: 0 14px; font-size: 14px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
       color: #e5e7eb;
-      background: rgba(255, 255, 255, .05);
-      border: 1px solid rgba(255, 255, 255, .08);
-      outline: none;
-      transition: .25s ease;
     }
-
-    .field input::placeholder {
-      color: #94a3b8;
-    }
-
-    .field input:focus {
-      border-color: #60a5fa;
-      box-shadow: 0 0 0 2px rgba(96, 165, 250, .25);
-      background: rgba(255, 255, 255, .08);
-    }
-
-    /* Botón */
     .btn-login {
-      width: 100%;
-      height: 48px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: .3px;
+      width: 100%; height: 48px;
+      border-radius: 12px; border: none;
+      font-weight: 600; cursor: pointer;
+      background: linear-gradient(135deg,#60a5fa,#a78bfa);
       color: #020617;
-      background: linear-gradient(135deg, #60a5fa, #a78bfa);
-      transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
-      margin-top: 10px;
     }
-
-    .btn-login:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.05);
-      box-shadow: 0 10px 30px rgba(96, 165, 250, .35);
-    }
-
-    .btn-login:active {
-      transform: translateY(0);
-      box-shadow: none;
-    }
-
-    /* Mensajes */
-    .error {
-      margin-top: 14px;
-      min-height: 18px;
-      text-align: center;
-      font-size: 13px;
-      color: #f87171;
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 26px;
-      font-size: 12px;
-      color: #64748b;
-    }
-
-    .btn-install {
-      width: 100%;
-      height: 46px;
-      border-radius: 12px;
-      border: 1px dashed rgba(96, 165, 250, .6);
-      background: rgba(96, 165, 250, .08);
-      color: #e5e7eb;
-      font-size: 14px;
-      font-weight: 600;
-      margin-top: 14px;
-      cursor: pointer;
-      transition: .25s ease;
-    }
-
-    .btn-install:hover {
-      background: rgba(96, 165, 250, .15);
-      box-shadow: 0 0 0 2px rgba(96, 165, 250, .25);
-    }
-
-
-    /* Responsive */
-    @media (max-width: 480px) {
-      .login-card {
-        padding: 32px 26px;
-        border-radius: 14px;
-      }
-
-      .logo {
-        font-size: 26px;
-      }
-    }
+    .error { margin-top: 14px; text-align: center; font-size: 13px; color: #f87171; }
+    .footer { text-align: center; margin-top: 26px; font-size: 12px; color: #64748b; }
   </style>
 </head>
 
@@ -226,16 +67,15 @@
 
   <div class="login-card">
 
-    <div class="login-header">
-      <div class="logo">Flash Fiber</div>
-      <div class="subtitle">Plataforma de Gestión FTTH</div>
-    </div>
+    <div class="logo">Flash Fiber</div>
+    <div class="subtitle">Plataforma de Gestión FTTH</div>
 
     <form id="loginForm" autocomplete="off">
 
+      <!-- 🔴 CAMBIO CLAVE: EMAIL -->
       <div class="field">
-        <label for="username">Usuario</label>
-        <input type="text" id="username" placeholder="Ingrese su usuario" required />
+        <label for="email">Correo</label>
+        <input type="email" id="email" placeholder="correo@empresa.com" required />
       </div>
 
       <div class="field">
@@ -249,11 +89,6 @@
 
     </form>
 
-    <button id="btnInstallApp" class="btn-install" style="display:none;">
-      Instalar FlashFiber
-    </button>
-
-
     <div id="errorMessage" class="error"></div>
 
     <div class="footer">
@@ -262,60 +97,33 @@
 
   </div>
 
-  <!-- Lógica de autenticación -->
-  <script src="assets/js/auth.js"></script>
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker
-          .register("/sw.js")
-          .then(reg => {
-            console.log("✅ Service Worker registrado:", reg.scope);
-          })
-          .catch(err => {
-            console.error("❌ Error registrando Service Worker:", err);
-          });
-      });
-    }
-  </script>
+  <!-- ======================================================
+       🔥 FIREBASE CORE (OBLIGATORIO)
+  ======================================================= -->
+  <script type="module" src="assets/js/services/firebase.js"></script>
 
-  <script>
-    let deferredPrompt;
-    const installBtn = document.getElementById("btnInstallApp");
+  <!-- ======================================================
+       🔐 LOGIN REAL
+  ======================================================= -->
+  <script type="module">
+    const form = document.getElementById("loginForm");
+    const errorBox = document.getElementById("errorMessage");
 
-    // Chrome detecta que la PWA es instalable
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();          // Evita el mini-banner automático
-      deferredPrompt = e;
-      installBtn.style.display = "block";
-    });
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    // Click en instalar
-    installBtn.addEventListener("click", async () => {
-      if (!deferredPrompt) return;
+      const email = document.getElementById("email").value.trim();
+      const pass  = document.getElementById("password").value;
 
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-
-      if (choice.outcome === "accepted") {
-        console.log("✅ App instalada");
-      } else {
-        console.log("❌ Instalación cancelada");
+      try {
+        await FTTH_CORE.login(email, pass);
+        window.location.href = "pages/home.html";
+      } catch (err) {
+        console.error(err);
+        errorBox.textContent = "❌ Usuario o contraseña incorrectos";
       }
-
-      deferredPrompt = null;
-      installBtn.style.display = "none";
-    });
-
-    // Ocultar botón si ya está instalada
-    window.addEventListener("appinstalled", () => {
-      installBtn.style.display = "none";
-      console.log("🎉 FlashFiber instalada");
     });
   </script>
-
-
 
 </body>
-
 </html>

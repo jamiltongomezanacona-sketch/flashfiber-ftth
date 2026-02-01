@@ -1,39 +1,107 @@
 /* =========================================================
-   FlashFiber FTTH | Firebase Storage Service
+   FlashFiber FTTH | Firebase Core (App + Auth)
 ========================================================= */
 
-import { getStorage, ref, uploadBytes, getDownloadURL }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-
-import { getApp } 
+// 🔥 Firebase App
+import { initializeApp }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-// 🔥 Obtener app ya inicializada por firebase.db.js
-const app = getApp();
-const storage = getStorage(app);
+// 🔐 Firebase Auth
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* ===============================
-   Subir foto de evento
-=============================== */
-async function subirFotoEvento(eventoId, tipo, file) {
-  if (!eventoId || !file) return null;
+// 🗄️ Firestore (solo para inicializar DB)
+import { getFirestore }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  const ext = file.name.split(".").pop() || "jpg";
-  const filename = `${tipo}_${Date.now()}.${ext}`;
+// 📦 Firestore lógica
+import * as DB from "./firebase.db.js";
 
-  const path = `eventos/${eventoId}/${filename}`;
-  const storageRef = ref(storage, path);
-
-  await uploadBytes(storageRef, file);
-  const url = await getDownloadURL(storageRef);
-
-  console.log("📸 Foto subida:", url);
-  return url;
-}
-
-// 🌍 Exponer a la app global
-window.FTTH_STORAGE = {
-  subirFotoEvento
+/* =========================
+   Configuración Firebase
+========================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyD3BNTIERRCZy5jRwN-KcIIQLeXFyg9gY4",
+  authDomain: "flashfiber-ftth.firebaseapp.com",
+  projectId: "flashfiber-ftth",
+  storageBucket: "flashfiber-ftth.firebasestorage.app",
+  messagingSenderId: "970573359420",
+  appId: "1:970573359420:web:1254e4024920aeeff7d639"
 };
 
-console.log("✅ Firebase Storage listo");
+/* =========================
+   Inicialización ÚNICA
+========================= */
+const app  = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db   = getFirestore(app);
+
+console.log("🔥 Firebase Core inicializado");
+
+/* =========================================================
+   🔐 AUTH
+========================================================= */
+
+async function login(email, password) {
+  const cred = await signInWithEmailAndPassword(auth, email, password);
+  return cred.user;
+}
+
+async function logout() {
+  await signOut(auth);
+}
+
+function onUserChange(callback) {
+  return onAuthStateChanged(auth, callback);
+}
+
+/* =========================================================
+   👤 AUTH + PERFIL (CONEXIÓN CLAVE)
+========================================================= */
+
+onUserChange(async (user) => {
+  if (!user) {
+    window.__USER__ = null;
+    return;
+  }
+
+  const perfil = await DB.obtenerPerfilUsuario(user.uid);
+
+  if (!perfil || perfil.activo !== true) {
+    alert("Usuario no autorizado");
+    await logout();
+    location.href = "/index.html";
+    return;
+  }
+
+  window.__USER__ = {
+    uid: user.uid,
+    email: user.email,
+    ...perfil
+  };
+
+  console.log("👤 Usuario cargado:", window.__USER__);
+});
+
+/* =========================================================
+   🌍 EXPONER CORE GLOBAL
+========================================================= */
+
+window.FTTH_CORE = {
+  auth,
+  db,
+
+  // Auth
+  login,
+  logout,
+  onUserChange,
+
+  // Firestore DB
+  ...DB
+};
+
+console.log("🌍 Firebase Core listo");

@@ -1,40 +1,19 @@
 /* =========================================================
-   FlashFiber FTTH | Firebase Core + Servicios
+   FlashFiber FTTH | Firestore DB Service
 ========================================================= */
 
-import { initializeApp } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { db } from "./firebase.js";
 
-import { 
-  getFirestore,
+import {
   collection,
   addDoc,
   onSnapshot,
   serverTimestamp,
   doc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-/* =========================
-   Configuración Firebase
-========================= */
-const firebaseConfig = {
-  apiKey: "AIzaSyD3BNTIERRCZy5jRwN-KcIIQLeXFyg9gY4",
-  authDomain: "flashfiber-ftth.firebaseapp.com",
-  projectId: "flashfiber-ftth",
-  storageBucket: "flashfiber-ftth.firebasestorage.app",
-  messagingSenderId: "970573359420",
-  appId: "1:970573359420:web:1254e4024920aeeff7d639"
-};
-
-/* =========================
-   Inicialización
-========================= */
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
-
-console.log("🔥 Firebase conectado correctamente");
 
 /* =========================================================
    📦 CIERRES
@@ -42,37 +21,27 @@ console.log("🔥 Firebase conectado correctamente");
 
 const CIERRES_COLLECTION = "cierres";
 
-async function guardarCierre(cierre) {
-  cierre.createdAt = cierre.createdAt || new Date().toISOString();
-
+export async function guardarCierre(cierre) {
   const ref = await addDoc(collection(db, CIERRES_COLLECTION), {
     ...cierre,
+    createdAt: cierre.createdAt || new Date().toISOString(),
     serverTime: serverTimestamp()
   });
-
-  console.log("✅ Cierre guardado con ID:", ref.id);
-  return ref.id;   // ✅ RETORNA ID
+  return ref.id;
 }
 
-function escucharCierres(callback) {
-  return onSnapshot(collection(db, CIERRES_COLLECTION), (snapshot) => {
-    snapshot.docChanges().forEach(change => {
-      callback({
-        id: change.doc.id,
-        ...change.doc.data()
-      });
-    });
+export function escucharCierres(callback) {
+  return onSnapshot(collection(db, CIERRES_COLLECTION), snap => {
+    snap.forEach(d => callback({ id: d.id, ...d.data() }));
   });
 }
 
-async function actualizarCierre(id, data) {
-  const ref = doc(db, CIERRES_COLLECTION, id);
-  await updateDoc(ref, data);
+export async function actualizarCierre(id, data) {
+  await updateDoc(doc(db, CIERRES_COLLECTION, id), data);
 }
 
-async function eliminarCierre(id) {
-  const ref = doc(db, CIERRES_COLLECTION, id);
-  await deleteDoc(ref);
+export async function eliminarCierre(id) {
+  await deleteDoc(doc(db, CIERRES_COLLECTION, id));
 }
 
 /* =========================================================
@@ -81,60 +50,35 @@ async function eliminarCierre(id) {
 
 const EVENTOS_COLLECTION = "eventos";
 
-async function guardarEvento(evento) {
-  evento.createdAt = evento.createdAt || new Date().toISOString();
-
+export async function guardarEvento(evento) {
   const ref = await addDoc(collection(db, EVENTOS_COLLECTION), {
     ...evento,
+    createdAt: evento.createdAt || new Date().toISOString(),
     serverTime: serverTimestamp()
   });
-
-  console.log("✅ Evento guardado con ID:", ref.id);
-  return ref.id;   // ✅ RETORNA ID
+  return ref.id;
 }
 
-function escucharEventos(callback) {
-  return onSnapshot(collection(db, EVENTOS_COLLECTION), (snapshot) => {
-    snapshot.docChanges().forEach(change => {
-      callback({
-        id: change.doc.id,
-        ...change.doc.data()
-      });
-    });
+export function escucharEventos(callback) {
+  return onSnapshot(collection(db, EVENTOS_COLLECTION), snap => {
+    snap.forEach(d => callback({ id: d.id, ...d.data() }));
   });
 }
 
-async function actualizarEvento(id, data) {
-  const ref = doc(db, EVENTOS_COLLECTION, id);
-  await updateDoc(ref, data);
+export async function actualizarEvento(id, data) {
+  await updateDoc(doc(db, EVENTOS_COLLECTION, id), data);
 }
 
-async function eliminarEvento(id) {
-  const ref = doc(db, EVENTOS_COLLECTION, id);
-  await deleteDoc(ref);
+export async function eliminarEvento(id) {
+  await deleteDoc(doc(db, EVENTOS_COLLECTION, id));
 }
 
 /* =========================================================
-   🌍 EXPONER GLOBAL
+   👤 USUARIOS
 ========================================================= */
 
-// 👉 Alias global para compatibilidad total
-window.__FTTH_DB__ = db;
-
-window.FTTH_FIREBASE = {
-  db,
-
-  // Cierres
-  guardarCierre,
-  escucharCierres,
-  actualizarCierre,
-  eliminarCierre,
-
-  // Eventos
-  guardarEvento,
-  escucharEventos,
-  actualizarEvento,
-  eliminarEvento
-};
-
-console.log("🌍 Firebase expuesto globalmente");
+export async function obtenerPerfilUsuario(uid) {
+  const ref = doc(db, "usuarios", uid);
+  const snap = await getDoc(ref);
+  return snap.exists() ? snap.data() : null;
+}

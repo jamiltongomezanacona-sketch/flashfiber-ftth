@@ -45,9 +45,20 @@
   color: var(--accent-cyan);
   cursor: pointer;
   backdrop-filter: blur(6px);
-  transition: .25s;
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.1s ease, box-shadow 0.25s ease;
   touch-action: manipulation;
   -webkit-tap-highlight-color: rgba(0, 180, 216, 0.2);
+  outline: none;
+  will-change: transform, background-color; /* Optimización */
+}
+
+.map-controls button:active {
+  transform: scale(0.95);
+}
+
+.map-controls button:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
 }
 
 /* Tablet y Desktop - Vertical */
@@ -73,6 +84,7 @@
 .map-controls button:hover {
   background: rgba(0,180,216,.2);
   box-shadow: var(--shadow-glow);
+  transform: translateY(-2px); /* Feedback visual */
 }
 
 .map-controls button.active {

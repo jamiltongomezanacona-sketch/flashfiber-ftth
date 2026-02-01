@@ -96,32 +96,12 @@ body {
 
 
 /* ===============================
-   SIDEBAR
+   SIDEBAR (Legacy - No usado en mapa-ftth.html)
+   El sidebar actual está en panels.css
 =============================== */
 
-.sidebar {
-  width: 260px;
-  background: rgba(10, 25, 41, .92);
-  border-right: 1px solid var(--border-soft);
-  display: flex;
-  flex-direction: column;
-  transition: width .3s ease;
-}
-
-.sidebar.collapsed {
-  width: 0;
-  min-width: 0;
-  border-right: none;
-}
-
-.toggle {
-  height: 44px;
-  border: none;
-  background: transparent;
-  color: var(--accent-cyan);
-  cursor: pointer;
-  border-bottom: 1px solid var(--border-soft);
-}
+/* NOTA: Este sidebar es para layouts antiguos.
+   El sidebar overlay actual está definido en panels.css */
 
 /* ===============================
    SIDEBAR CONTENIDO

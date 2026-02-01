@@ -61,9 +61,15 @@ textarea {
 =============================== */
 button,
 .menu-item,
-.map-controls button {
+.map-controls button,
+.route-btn,
+#eventoModal .modal-footer button {
   -webkit-tap-highlight-color: rgba(0, 180, 216, 0.2);
   touch-action: manipulation; /* Previene double-tap zoom */
+  user-select: none; /* Previene selección de texto accidental */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 /* ===============================
@@ -132,4 +138,34 @@ button,
   :root {
     --spacing-mobile: 1.5rem;
   }
+}
+
+/* ===============================
+   Optimizaciones de Rendimiento
+=============================== */
+
+/* Reducir repaints en elementos animados */
+.sidebar,
+.sidebar-overlay,
+.route-card,
+#eventoModal .modal-content {
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optimizar scroll en móvil */
+@media (max-width: 767px) {
+  .sidebar,
+  #eventoModal .modal-content,
+  .route-card {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain; /* Previene scroll bounce */
+  }
+}
+
+/* Mejorar rendimiento de backdrop-filter */
+.sidebar,
+#btnSidebar,
+.map-controls button {
+  transform: translateZ(0); /* Acelera hardware */
 }

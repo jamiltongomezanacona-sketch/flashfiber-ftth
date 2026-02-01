@@ -53,19 +53,45 @@
 }
 /* ===============================
    Panel Capas
+   Mobile First: Full width en móvil
 =============================== */
 
+/* MOBILE FIRST - Base (móvil) */
 .panel-capas {
-  top: 80px;
-  right: 20px;
-  width: 260px;
-  max-height: 60vh;
-  overflow: auto;
-  z-index: 3000; /* 👈 por encima del sidebar y botones */
+  position: fixed;
+  top: 70px;
+  right: 0;
+  left: 0;
+  width: 100vw;
+  max-width: 100%;
+  max-height: calc(100vh - 80px);
+  z-index: 3000;
+  border-radius: 0;
+  margin: 0;
 }
 
 .panel-capas.hidden {
   display: none;
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  .panel-capas {
+    top: 80px;
+    right: 20px;
+    left: auto;
+    width: 320px;
+    max-width: calc(100vw - 40px);
+    max-height: 60vh;
+    border-radius: var(--radius-md);
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .panel-capas {
+    width: 360px;
+  }
 }
 
 .capa-item {
@@ -82,6 +108,7 @@
 }
 /* ===========================
    BOTÓN FLOTANTE
+   Mobile First: Más grande en móvil
 =========================== */
 #btnSidebar {
   position: fixed;
@@ -89,8 +116,10 @@
   left: 14px;
   z-index: 2000;
 
-  width: 48px;
-  height: 48px;
+  width: 52px; /* Más grande en móvil para mejor touch */
+  height: 52px;
+  min-width: 52px;
+  min-height: 52px;
   border-radius: 14px;
 
   background: rgba(15, 18, 30, 0.95);
@@ -104,34 +133,89 @@
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(0,0,0,0.5);
   backdrop-filter: blur(8px);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0, 180, 216, 0.2);
+}
+
+/* Tablet y Desktop */
+@media (min-width: 768px) {
+  #btnSidebar {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+  }
 }
 
 /* ===========================
    SIDEBAR OVERLAY
+   Mobile First: Drawer en móvil, overlay en tablet+
 =========================== */
+
+/* Overlay de fondo para cerrar sidebar */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1899;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(2px);
+}
+
+.sidebar:not(.hidden) ~ .sidebar-overlay,
+.sidebar-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* MOBILE FIRST - Base (móvil) */
 .sidebar {
   position: fixed;
-  top: 65px;
-  left: 12px;
-  bottom: 12px;
-
-  width: 270px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  max-width: 320px;
   z-index: 1900;
 
-  background: rgba(18, 22, 40, 0.88);
+  background: rgba(18, 22, 40, 0.95);
   backdrop-filter: blur(14px);
-  border-radius: 18px;
+  border-radius: 0 18px 18px 0;
 
   box-shadow: 0 15px 40px rgba(0,0,0,0.45);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 
-  transform: translateX(0);
-  transition: all 0.3s ease;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
 }
 
-.sidebar.hidden {
-  transform: translateX(-120%);
-  opacity: 0;
+.sidebar:not(.hidden) {
+  transform: translateX(0);
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  .sidebar {
+    top: 65px;
+    left: 12px;
+    bottom: 12px;
+    right: auto;
+    width: 320px;
+    max-width: 320px;
+    border-radius: 18px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .sidebar {
+    width: 350px;
+    max-width: 350px;
+  }
 }
 
 /* Header */
@@ -184,6 +268,7 @@
 }
 /* ===========================
    MODAL RUTA PROFESIONAL
+   Mobile First: Bottom sheet en móvil, centrado en tablet+
 =========================== */
 
 .route-modal {
@@ -192,22 +277,55 @@
   background: rgba(0,0,0,0.55);
   backdrop-filter: blur(4px);
   display: flex;
-  align-items: center;
+  align-items: flex-end; /* En móvil desde abajo */
   justify-content: center;
   z-index: 9999;
+  padding: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .route-modal.hidden {
   display: none;
 }
 
+/* MOBILE FIRST - Bottom sheet */
 .route-card {
-  width: 330px;
+  width: 100%;
+  max-width: 100%;
+  max-height: 90vh;
   background: #0f172a;
-  border-radius: 16px;
+  border-radius: 20px 20px 0 0; /* Redondeado solo arriba */
   overflow: hidden;
   box-shadow: 0 25px 50px rgba(0,0,0,0.6);
-  animation: routePop 0.25s ease;
+  animation: slideUp 0.3s ease-out;
+  margin: 0;
+}
+
+/* Tablet y Desktop - Centrado */
+@media (min-width: 768px) {
+  .route-modal {
+    align-items: center;
+    padding: 2rem;
+  }
+  
+  .route-card {
+    width: 90%;
+    max-width: 500px;
+    border-radius: 16px;
+    animation: routePop 0.25s ease;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes routePop {
@@ -290,10 +408,22 @@
   background: #020617;
   border: 1px solid #1e293b;
   border-radius: 8px;
-  padding: 8px;
+  padding: 12px; /* Aumentar de 8px para mejor touch */
   color: #e5e7eb;
   margin-top: 4px;
-  font-size: 14px;
+  font-size: 16px; /* Prevenir zoom iOS */
+  min-height: 44px; /* Touch target */
+}
+
+/* Tablet y Desktop */
+@media (min-width: 768px) {
+  .route-body input,
+  .route-body select,
+  .route-body textarea {
+    padding: 8px;
+    font-size: 14px;
+    min-height: auto;
+  }
 }
 
 .route-body textarea {
@@ -309,6 +439,7 @@
 }
 /* ======================================================
    MODAL EVENTO - Estilo Profesional
+   Mobile First: Bottom sheet en móvil, centrado en tablet+
 ====================================================== */
 
 #eventoModal {
@@ -318,25 +449,46 @@
   background: rgba(0,0,0,0.55);
   backdrop-filter: blur(4px);
   display: flex;
-  align-items: center;
+  align-items: flex-end; /* En móvil desde abajo */
   justify-content: center;
+  padding: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 #eventoModal.hidden {
   display: none;
 }
 
+/* MOBILE FIRST - Bottom sheet */
 #eventoModal .modal-content {
-  width: 92%;
-  max-width: 420px;
-  max-height: 90vh;        /* ✅ límite de altura */
+  width: 100%;
+  max-width: 100%;
+  max-height: 90vh;
   background: #111827;
   color: #e5e7eb;
-  border-radius: 14px;
+  border-radius: 20px 20px 0 0; /* Redondeado solo arriba */
   box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-  overflow-y: auto;       /* ✅ scroll vertical */
+  overflow-y: auto;
   overflow-x: hidden;
-  animation: modalIn 0.25s ease-out;
+  -webkit-overflow-scrolling: touch;
+  animation: slideUp 0.3s ease-out;
+  margin: 0;
+}
+
+/* Tablet y Desktop - Centrado */
+@media (min-width: 768px) {
+  #eventoModal {
+    align-items: center;
+    padding: 2rem;
+  }
+  
+  #eventoModal .modal-content {
+    width: 92%;
+    max-width: 500px;
+    border-radius: 14px;
+    animation: modalIn 0.25s ease-out;
+  }
 }
 
 
@@ -364,15 +516,15 @@
 }
 
 /* Body */
+/* MOBILE FIRST - 1 columna en móvil */
 #eventoModal .modal-body {
   padding: 12px 14px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  grid-template-columns: 1fr; /* 1 columna en móvil */
+  gap: 12px; /* Más espacio en móvil */
 }
 
 #eventoModal label {
-  grid-column: span 2;
   font-size: 12px;
   opacity: 0.85;
 }
@@ -380,13 +532,34 @@
 #eventoModal select,
 #eventoModal input,
 #eventoModal textarea {
-  grid-column: span 2;
-  padding: 7px 8px;
+  padding: 12px; /* Aumentar para mejor touch */
   border-radius: 6px;
   border: none;
   background: #1f2933;
   color: #fff;
-  font-size: 13px;
+  font-size: 16px; /* Prevenir zoom iOS */
+  min-height: 44px; /* Touch target */
+}
+
+/* Tablet y Desktop - 2 columnas */
+@media (min-width: 768px) {
+  #eventoModal .modal-body {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  
+  #eventoModal label {
+    grid-column: span 2;
+  }
+  
+  #eventoModal select,
+  #eventoModal input,
+  #eventoModal textarea {
+    grid-column: span 2;
+    padding: 7px 8px;
+    font-size: 13px;
+    min-height: auto;
+  }
 }
 
 #eventoModal textarea {

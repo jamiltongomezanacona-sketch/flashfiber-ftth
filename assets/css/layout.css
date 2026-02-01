@@ -18,9 +18,11 @@ body {
    HEADER
 =============================== */
 
+/* Mobile First - Header responsive */
 .header {
-  height: 56px;
-  padding: 0 16px;
+  height: auto;
+  min-height: 56px;
+  padding: 0.75rem 1rem; /* Reducir padding en móvil */
   background: linear-gradient(135deg,
       var(--dark-primary),
       var(--dark-secondary));
@@ -30,6 +32,8 @@ body {
   border-bottom: 1px solid var(--border-soft);
   box-shadow: var(--shadow);
   z-index: 100;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .logo {
@@ -38,6 +42,33 @@ body {
   gap: 10px;
   font-weight: 600;
   color: var(--accent-cyan);
+  font-size: 1.125rem; /* Reducir en móvil */
+  flex: 1;
+  min-width: 0;
+}
+
+.logo span {
+  display: none; /* Ocultar texto en móvil muy pequeño */
+}
+
+/* Tablet */
+@media (min-width: 480px) {
+  .logo span {
+    display: inline;
+  }
+}
+
+/* Desktop */
+@media (min-width: 768px) {
+  .header {
+    height: 56px;
+    padding: 0 16px;
+    flex-wrap: nowrap;
+  }
+  
+  .logo {
+    font-size: 1.25rem;
+  }
 }
 
 .header-actions button {
@@ -209,10 +240,24 @@ body.app-map {
    FIX VIEWPORT MÓVIL (ANDROID / iOS)
 ===================================================== */
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   body.app-map {
-    height: 100svh;
-    /* viewport real móvil */
+    height: 100svh; /* Safe viewport height */
+    height: 100vh; /* Fallback */
+  }
+  
+  /* Prevenir scroll horizontal */
+  html, body {
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
+  }
+  
+  /* Fix para iOS Safari */
+  @supports (-webkit-touch-callout: none) {
+    body.app-map {
+      height: -webkit-fill-available;
+    }
   }
 }
 

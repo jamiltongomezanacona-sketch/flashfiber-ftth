@@ -1,0 +1,135 @@
+/* =====================================================
+   FlashFiber FTTH - Mobile First Styles
+   Estilos base para móvil (0px+) - Mobile First Approach
+===================================================== */
+
+/* ===============================
+   Variables Responsive
+=============================== */
+:root {
+  --touch-target-min: 44px;
+  --touch-target-comfort: 48px;
+  --spacing-mobile: 1rem;
+  --spacing-tablet: 1.5rem;
+  --spacing-desktop: 2rem;
+}
+
+/* ===============================
+   Base Móvil - Touch Targets
+=============================== */
+
+/* Touch targets mínimos para botones e inputs */
+button,
+input[type="button"],
+input[type="submit"],
+a.button,
+.menu-item {
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  padding: 0.75rem 1rem;
+}
+
+/* Prevenir zoom accidental en iOS al enfocar inputs */
+input,
+select,
+textarea {
+  font-size: 16px; /* iOS no hace zoom si es 16px+ */
+}
+
+@media (min-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 14px; /* En desktop puede ser más pequeño */
+  }
+}
+
+/* ===============================
+   Scroll Mejorado iOS
+=============================== */
+.scrollable,
+.panel-content,
+.sidebar-menu,
+#eventoModal .modal-content,
+.route-card {
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+}
+
+/* ===============================
+   Prevenir Selección Accidental
+=============================== */
+button,
+.menu-item,
+.map-controls button {
+  -webkit-tap-highlight-color: rgba(0, 180, 216, 0.2);
+  touch-action: manipulation; /* Previene double-tap zoom */
+}
+
+/* ===============================
+   Viewport Fixes Móvil
+=============================== */
+@media (max-width: 767px) {
+  /* Fix para iOS Safari - viewport height */
+  body.app-map {
+    height: 100svh;
+    height: -webkit-fill-available; /* Fallback iOS */
+  }
+  
+  /* Prevenir scroll horizontal */
+  html, body {
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
+  }
+}
+
+/* ===============================
+   Utilidades Responsive
+=============================== */
+
+/* Ocultar en móvil */
+@media (max-width: 767px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Mostrar solo en móvil */
+.show-mobile {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .show-mobile {
+    display: block;
+  }
+}
+
+/* Ocultar en tablet y móvil */
+@media (max-width: 1023px) {
+  .hide-tablet {
+    display: none !important;
+  }
+}
+
+/* ===============================
+   Espaciado Responsive
+=============================== */
+@media (max-width: 767px) {
+  :root {
+    --spacing-mobile: 0.75rem;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --spacing-mobile: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --spacing-mobile: 1.5rem;
+  }
+}

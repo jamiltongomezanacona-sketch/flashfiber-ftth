@@ -20,15 +20,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const sidebar = document.getElementById("sidebar");
   const btnSidebar = document.getElementById("btnSidebar");
+  const sidebarOverlay = document.querySelector(".sidebar-overlay");
 
   if (!sidebar || !btnSidebar) {
     console.warn("⚠️ Sidebar overlay no encontrada en DOM");
     return;
   }
 
-  btnSidebar.addEventListener("click", () => {
+  function toggleSidebar() {
+    const isHidden = sidebar.classList.contains("hidden");
     sidebar.classList.toggle("hidden");
-  });
+    
+    // Toggle overlay
+    if (sidebarOverlay) {
+      if (isHidden) {
+        sidebarOverlay.classList.add("active");
+      } else {
+        sidebarOverlay.classList.remove("active");
+      }
+    }
+  }
+
+  btnSidebar.addEventListener("click", toggleSidebar);
+  
+  // Cerrar sidebar al hacer click en overlay
+  if (sidebarOverlay) {
+    sidebarOverlay.addEventListener("click", () => {
+      if (!sidebar.classList.contains("hidden")) {
+        toggleSidebar();
+      }
+    });
+  }
 
   /* ===============================
      TOOL CONTROLLER CENTRAL

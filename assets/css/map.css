@@ -18,20 +18,27 @@
 }
 
 /* Controles flotantes */
+/* Mobile First: Horizontal en móvil, vertical en tablet+ */
 
 .map-controls {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  bottom: 20px; /* Cambiar a bottom en móvil */
+  right: 12px;
+  left: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-direction: row; /* Horizontal en móvil */
+  flex-wrap: wrap;
+  gap: 8px;
   z-index: 10;
+  justify-content: flex-end;
 }
 
 .map-controls button {
-  width: 44px;
-  height: 44px;
+  width: 48px; /* Más grande en móvil */
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  flex-shrink: 0;
   border-radius: var(--radius-md);
   background: rgba(19,47,76,.85);
   border: 1px solid var(--border-soft);
@@ -39,6 +46,28 @@
   cursor: pointer;
   backdrop-filter: blur(6px);
   transition: .25s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0, 180, 216, 0.2);
+}
+
+/* Tablet y Desktop - Vertical */
+@media (min-width: 768px) {
+  .map-controls {
+    top: 20px;
+    bottom: auto;
+    left: auto;
+    right: 20px;
+    flex-direction: column; /* Vertical en tablet+ */
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+  
+  .map-controls button {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
 }
 
 .map-controls button:hover {
@@ -86,6 +115,14 @@
   box-shadow: 0 20px 50px rgba(0,0,0,.6);
   text-align: center;
   color: #eaf4ff;
+}
+
+/* Móvil - Ajustar padding */
+@media (max-width: 767px) {
+  .nav-card {
+    padding: 18px;
+    width: 95%;
+  }
 }
 
 .nav-card h3 {

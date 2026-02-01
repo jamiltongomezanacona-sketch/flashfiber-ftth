@@ -262,34 +262,52 @@
     }
 
     /* ================= RESPONSIVE ================= */
-    @media (max-width: 768px) {
+    @media (max-width: 767px) {
       .container {
-        padding: 2rem 1rem;
+        padding: 1.5rem 1rem; /* Reducir más en móvil */
+      }
+
+      .welcome {
+        margin-bottom: 2rem; /* Reducir */
       }
 
       .welcome h1 {
-        font-size: 2rem;
+        font-size: 1.75rem; /* Reducir de 2rem */
+        line-height: 1.2;
       }
 
       .welcome p {
-        font-size: 1rem;
+        font-size: 0.9375rem; /* Reducir de 1rem */
       }
 
       .grid {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
+        gap: 1rem; /* Reducir de 1.5rem */
       }
 
       .card {
-        padding: 2rem;
+        padding: 1.5rem; /* Reducir de 2rem */
       }
 
       .header {
-        padding: 1rem;
+        padding: 0.75rem 1rem;
       }
 
       .brand .title {
-        font-size: 1.25rem;
+        font-size: 1.125rem; /* Reducir de 1.25rem */
+      }
+      
+      /* Ocultar elementos no esenciales en móvil muy pequeño */
+      .user-name {
+        display: none;
+      }
+    }
+
+    /* Tablet */
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
       }
     }
 

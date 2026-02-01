@@ -18,9 +18,6 @@ import {
 import { getFirestore }
 from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-// 📦 Firestore lógica
-import * as DB from "./firebase.db.js";
-
 /* =========================
    Configuración Firebase
 ========================= */
@@ -84,7 +81,20 @@ onUserChange(async (user) => {
     return;
   }
 
-  const perfil = await DB.obtenerPerfilUsuario(user.uid);
+  // ✅ Obtener perfil desde firebase.db.js (se carga después)
+  // Usar función global si está disponible, sino usar import dinámico
+  let perfil = null;
+  if (window.FTTH_FIREBASE?.obtenerPerfilUsuario) {
+    perfil = await window.FTTH_FIREBASE.obtenerPerfilUsuario(user.uid);
+  } else {
+    // Fallback: import dinámico
+    try {
+      const DB = await import("./firebase.db.js");
+      perfil = await DB.obtenerPerfilUsuario(user.uid);
+    } catch (err) {
+      console.warn("⚠️ No se pudo cargar perfil de usuario:", err);
+    }
+  }
 
   if (!perfil || perfil.activo !== true) {
     alert("Usuario no autorizado");
@@ -113,10 +123,9 @@ window.FTTH_CORE = {
   // Auth
   login,
   logout,
-  onUserChange,
-
-  // Firestore DB
-  ...DB
+  onUserChange
 };
 
+// ✅ Las funciones de DB se exponen en firebase.db.js
+// ✅ Los servicios específicos (cierres, eventos, rutas) se exponen en sus propios archivos
 console.log("🌍 Firebase Core listo");

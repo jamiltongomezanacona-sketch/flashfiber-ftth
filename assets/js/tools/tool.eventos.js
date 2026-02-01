@@ -17,19 +17,34 @@
     initializeTool();
   }
 
-  async function waitForDependencies(maxAttempts = 50) {
+  async function waitForDependencies(maxAttempts = 80) {
     for (let i = 0; i < maxAttempts; i++) {
       const App = window.__FTTH_APP__;
       const FB = window.FTTH_FIREBASE;
 
       if (App?.map && FB?.guardarEvento && FB?.escucharEventos) {
+        console.log("✅ tool.eventos: Dependencias disponibles después de", i + 1, "intentos");
         return true;
       }
 
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     
-    console.error("❌ tool.eventos: Dependencias no disponibles después de esperar");
+    console.warn("⚠️ tool.eventos: Dependencias no disponibles después de esperar", maxAttempts, "intentos");
+    console.warn("💡 Reintentando en 2 segundos...");
+    
+    // ✅ Retry después de 2 segundos
+    setTimeout(async () => {
+      const App = window.__FTTH_APP__;
+      const FB = window.FTTH_FIREBASE;
+      if (App?.map && FB?.guardarEvento && FB?.escucharEventos) {
+        console.log("✅ tool.eventos: Dependencias disponibles en retry");
+        initializeTool();
+      } else {
+        console.error("❌ tool.eventos: Dependencias aún no disponibles después del retry");
+      }
+    }, 2000);
+    
     return false;
   }
 
@@ -274,7 +289,19 @@
 
     // ✅ Escuchar cambios desde Firebase (guardar referencia para cleanup)
     let unsubscribeEventos = null;
-    if (FB.escucharEventos) {
+    
+    function setupEventosListener() {
+      const FB = window.FTTH_FIREBASE;
+      if (!FB?.escucharEventos) {
+        console.warn("⚠️ FB.escucharEventos no disponible aún");
+        return false;
+      }
+      
+      if (unsubscribeEventos) {
+        unsubscribeEventos();
+        unsubscribeEventos = null;
+      }
+      
       unsubscribeEventos = FB.escucharEventos((evt) => {
         if (evt._deleted) {
           // Si el evento fue eliminado, removerlo del mapa
@@ -285,8 +312,17 @@
         }
       });
       console.log("✅ Listener de eventos Firebase activo");
-    } else {
-      console.warn("⚠️ FB.escucharEventos no disponible");
+      return true;
+    }
+    
+    // Intentar configurar listener
+    if (!setupEventosListener()) {
+      // Si falla, reintentar después de 2 segundos
+      setTimeout(() => {
+        if (!unsubscribeEventos) {
+          setupEventosListener();
+        }
+      }, 2000);
     }
 
     /* ===============================

@@ -184,18 +184,30 @@
       });
     }
 
-    async function waitForFirebase(maxAttempts = 20) {
+    async function waitForFirebase(maxAttempts = 50) {
       for (let i = 0; i < maxAttempts; i++) {
         const FB = window.FTTH_FIREBASE;
-        if (FB?.escucharCierres) return true;
+        if (FB?.escucharCierres) {
+          console.log("✅ Firebase cierres disponible después de", i + 1, "intentos");
+          return true;
+        }
         await new Promise(resolve => setTimeout(resolve, 100));
       }
-      console.warn("⚠️ Firebase no disponible después de esperar");
+      console.warn("⚠️ Firebase cierres no disponible después de esperar", maxAttempts, "intentos");
       return false;
     }
 
-    // Inicializar listener
+    // Inicializar listener (con retry automático)
     initFirebaseSync();
+    
+    // ✅ Retry si falla la primera vez (los módulos pueden cargarse después)
+    setTimeout(() => {
+      const FB = window.FTTH_FIREBASE;
+      if (!unsubscribeCierres && FB?.escucharCierres) {
+        console.log("🔄 Reintentando conexión Firebase cierres...");
+        setupFirebaseListener();
+      }
+    }, 2000);
 
     /* ===============================
        Modal helpers

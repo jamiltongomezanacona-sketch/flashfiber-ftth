@@ -132,3 +132,23 @@ if (typeof window !== "undefined") {
   window.addEventListener("beforeunload", cleanup);
   window.addEventListener("pagehide", cleanup);
 }
+
+/* =========================================================
+   🌍 EXPONER FUNCIONES GLOBALMENTE
+========================================================= */
+
+// ✅ Exponer funciones de DB en window.FTTH_FIREBASE
+window.FTTH_FIREBASE = window.FTTH_FIREBASE || {};
+window.FTTH_FIREBASE.db = db;
+window.FTTH_FIREBASE.guardarCierre = guardarCierre;
+window.FTTH_FIREBASE.escucharCierres = escucharCierres;
+window.FTTH_FIREBASE.actualizarCierre = actualizarCierre;
+window.FTTH_FIREBASE.eliminarCierre = eliminarCierre;
+window.FTTH_FIREBASE.guardarEvento = guardarEvento;
+window.FTTH_FIREBASE.escucharEventos = escucharEventos;
+window.FTTH_FIREBASE.actualizarEvento = actualizarEvento;
+window.FTTH_FIREBASE.eliminarEvento = eliminarEvento;
+window.FTTH_FIREBASE.obtenerPerfilUsuario = obtenerPerfilUsuario;
+window.FTTH_FIREBASE.cleanup = cleanup;
+
+console.log("✅ Firebase DB funciones expuestas globalmente");

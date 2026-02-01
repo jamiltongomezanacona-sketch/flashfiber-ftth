@@ -12,8 +12,7 @@ const STATIC_ASSETS = [
   "/assets/css/mobile.css",
 
   "/assets/js/app.js",
-  "/assets/js/config.js",
-  "/assets/js/auth.js"
+  "/assets/js/config.js"
 ];
 
 // 🔹 INSTALACIÓN

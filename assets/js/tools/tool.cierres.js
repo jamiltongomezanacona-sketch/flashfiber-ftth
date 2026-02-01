@@ -347,6 +347,19 @@
       refreshLayer();
     });
 
+    /* ===============================
+       Exponer recarga global para cambios de estilo
+    =============================== */
+    App.reloadCierres = function () {
+      console.log("🔄 Recargando capa CIERRES");
+
+      // Volver a crear source + layer si fueron destruidos
+      initLayer();
+
+      // Volver a pintar datos en el mapa
+      refreshLayer();
+    };
+
     initLayer();
 
     /* ===============================

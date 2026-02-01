@@ -167,6 +167,107 @@
   }
 
   /* ============================
+     RUTAS GUARDADAS - Dibujar en mapa
+  ============================ */
+  const SAVED_ROUTES_SOURCE = "saved-routes-src";
+  const SAVED_ROUTES_LAYER = "saved-routes-layer";
+  const savedRoutes = new Map(); // Almacenar rutas por ID
+
+  function initSavedRoutesLayer() {
+    if (!App.map || !App.map.isStyleLoaded()) return;
+    if (App.map.getSource(SAVED_ROUTES_SOURCE)) return;
+
+    App.map.addSource(SAVED_ROUTES_SOURCE, {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] }
+    });
+
+    App.map.addLayer({
+      id: SAVED_ROUTES_LAYER,
+      type: "line",
+      source: SAVED_ROUTES_SOURCE,
+      paint: {
+        "line-color": "#00e5ff",
+        "line-width": 3,
+        "line-opacity": 0.8
+      }
+    });
+
+    console.log("✅ Capa rutas guardadas creada");
+  }
+
+  function drawSavedRoute(feature) {
+    if (!App.map || !feature?.geometry) return;
+
+    // Inicializar capa si no existe
+    initSavedRoutesLayer();
+
+    // Agregar o actualizar ruta
+    const routeId = feature.id || `route-${Date.now()}`;
+    savedRoutes.set(routeId, feature);
+
+    // Actualizar source con todas las rutas guardadas
+    const allRoutes = Array.from(savedRoutes.values());
+    const source = App.map.getSource(SAVED_ROUTES_SOURCE);
+    if (source) {
+      source.setData({
+        type: "FeatureCollection",
+        features: allRoutes
+      });
+    }
+  }
+
+  /* ============================
+     Exponer recarga global para cambios de estilo
+  ============================ */
+  App.reloadRutas = function () {
+    console.log("🔄 Recargando capa RUTAS");
+
+    // Volver a crear source + layer si fueron destruidos
+    initSavedRoutesLayer();
+
+    // Recargar todas las rutas guardadas
+    const rutas = window.__FTTH_STORAGE__?.getRutas() || [];
+    savedRoutes.clear();
+    rutas.forEach(ruta => {
+      if (ruta?.geometry) {
+        const routeId = ruta.id || `route-${Date.now()}`;
+        savedRoutes.set(routeId, ruta);
+      }
+    });
+
+    // Actualizar source
+    const source = App.map.getSource(SAVED_ROUTES_SOURCE);
+    if (source) {
+      source.setData({
+        type: "FeatureCollection",
+        features: Array.from(savedRoutes.values())
+      });
+    }
+  };
+
+  // Exponer función global para dibujar rutas
+  window.drawSavedRoute = drawSavedRoute;
+
+  // Inicializar capa al cargar
+  if (App.map && App.map.isStyleLoaded()) {
+    initSavedRoutesLayer();
+  } else if (App.map) {
+    App.map.once("load", () => {
+      initSavedRoutesLayer();
+      App.reloadRutas();
+    });
+  }
+
+  // Reconstruir al cambiar estilo
+  if (App.map) {
+    App.map.on("style.load", () => {
+      initSavedRoutesLayer();
+      App.reloadRutas();
+    });
+  }
+
+  /* ============================
      API
   ============================ */
   App.tools.rutas = {
@@ -245,9 +346,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // ✅ Guardado local
     window.__FTTH_DB__?.saveRuta(feature);
 
+    // ✅ Dibujar ruta en el mapa inmediatamente
+    if (window.drawSavedRoute) {
+      window.drawSavedRoute(feature);
+    }
+
     // ☁️ Guardado en Firebase (payload plano)
     if (window.FTTH_FIREBASE?.guardarRuta) {
-
       const payloadCloud = {
         nombre: feature.properties.nombre,
         tipo: feature.properties.tipo,
@@ -265,9 +370,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       console.log("☁️ Enviando a Firebase:", payloadCloud);
 
+      // ✅ Mejorar manejo de errores
       window.FTTH_FIREBASE.guardarRuta(payloadCloud)
-        .then(id => console.log("✅ Ruta sincronizada:", id))
-        .catch(err => console.warn("⚠️ Error Firebase:", err));
+        .then(id => {
+          console.log("✅ Ruta sincronizada:", id);
+          // Actualizar feature con ID de Firebase si es necesario
+          if (id && feature.id) {
+            feature.id = id;
+          }
+        })
+        .catch(err => {
+          console.error("❌ Error Firebase al guardar ruta:", err);
+          App?.ui?.notify?.("⚠️ Ruta guardada localmente, pero no se pudo sincronizar con Firebase");
+        });
     }
 
     App?.ui?.notify?.("✅ Ruta guardada correctamente");

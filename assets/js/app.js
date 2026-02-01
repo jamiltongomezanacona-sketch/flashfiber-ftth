@@ -51,9 +51,8 @@
       this.log("🔄 Recargando capas...");
 
       this.reloadEventos?.();
-      // luego agregaremos:
-      // this.reloadRutas?.();
-      // this.reloadCierres?.();
+      this.reloadRutas?.();
+      this.reloadCierres?.();
     }
   };
 

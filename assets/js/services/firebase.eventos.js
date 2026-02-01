@@ -73,6 +73,12 @@ export function escucharEventos(callback) {
           id: change.doc.id,
           ...data
         };
+        
+        // Manejar diferentes tipos de cambios
+        if (change.type === "removed") {
+          evento._deleted = true;
+        }
+        
         callback(evento);
       });
     }

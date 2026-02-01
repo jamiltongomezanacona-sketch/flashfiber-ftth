@@ -173,7 +173,15 @@
       }
 
       console.log("✅ Firebase cierres conectado");
-      unsubscribeCierres = FB.escucharCierres(addCierreToMap);
+      unsubscribeCierres = FB.escucharCierres((cierre) => {
+        if (cierre._deleted) {
+          // Si el cierre fue eliminado, removerlo del mapa
+          removeCierreFromMap(cierre.id);
+        } else {
+          // Agregar o actualizar cierre en el mapa
+          addCierreToMap(cierre);
+        }
+      });
     }
 
     async function waitForFirebase(maxAttempts = 20) {

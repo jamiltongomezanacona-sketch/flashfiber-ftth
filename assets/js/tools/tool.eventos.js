@@ -276,8 +276,17 @@
     let unsubscribeEventos = null;
     if (FB.escucharEventos) {
       unsubscribeEventos = FB.escucharEventos((evt) => {
-        addEventoToMap(evt);
+        if (evt._deleted) {
+          // Si el evento fue eliminado, removerlo del mapa
+          removeEventoFromMap(evt.id);
+        } else {
+          // Agregar o actualizar evento en el mapa
+          addEventoToMap(evt);
+        }
       });
+      console.log("✅ Listener de eventos Firebase activo");
+    } else {
+      console.warn("⚠️ FB.escucharEventos no disponible");
     }
 
     /* ===============================

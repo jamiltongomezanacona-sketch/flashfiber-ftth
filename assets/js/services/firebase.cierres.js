@@ -2,29 +2,25 @@
    FlashFiber FTTH | Firebase Cierres Service
 ========================================================= */
 
+import { db } from "./firebase.db.js";
+
 import {
   collection,
   addDoc,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
+  doc,
+  updateDoc,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
-
-/* =========================
-   Obtener DB desde core
-========================= */
-function getDB() {
-  // Prioridad: alias global → objeto principal
-  return window.__FTTH_DB__ || window.FTTH_FIREBASE?.db || null;
-}
 
 /* =========================
    Guardar Cierre
 ========================= */
 async function guardarCierre(cierre) {
-  const db = getDB();
   if (!db) {
     console.warn("⏳ Firebase DB aún no disponible...");
-    return;
+    throw new Error("Firebase DB no disponible");
   }
 
   const payload = {
@@ -35,36 +31,31 @@ async function guardarCierre(cierre) {
     notas: cierre.notas || "",
     lat: Number(cierre.lat),
     lng: Number(cierre.lng),
-    createdAt: serverTimestamp()
+    createdAt: cierre.createdAt || new Date().toISOString(),
+    serverTime: serverTimestamp()
   };
 
   const ref = collection(db, "cierres");
-  const doc = await addDoc(ref, payload);
+  const docRef = await addDoc(ref, payload);
 
-  console.log("☁️ Cierre guardado:", doc.id);
-  return doc.id;
+  console.log("☁️ Cierre guardado:", docRef.id);
+  return docRef.id;
 }
-
-import {
-  doc,
-  updateDoc,
-  deleteDoc
-} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 /* =========================
    Actualizar Cierre
 ========================= */
 async function actualizarCierre(id, data) {
-  const db = getDB();
   if (!db) {
     console.warn("⏳ Firebase DB aún no disponible...");
-    return;
+    throw new Error("Firebase DB no disponible");
   }
 
   const ref = doc(db, "cierres", id);
   await updateDoc(ref, {
     ...data,
-    updatedAt: serverTimestamp()
+    updatedAt: new Date().toISOString(),
+    serverTime: serverTimestamp()
   });
 
   console.log("✏️ Cierre actualizado:", id);
@@ -74,10 +65,9 @@ async function actualizarCierre(id, data) {
    Eliminar Cierre
 ========================= */
 async function eliminarCierre(id) {
-  const db = getDB();
   if (!db) {
     console.warn("⏳ Firebase DB aún no disponible...");
-    return;
+    throw new Error("Firebase DB no disponible");
   }
 
   const ref = doc(db, "cierres", id);
@@ -90,10 +80,9 @@ async function eliminarCierre(id) {
    Escuchar Cierres
 ========================= */
 function escucharCierres(callback) {
-  const db = getDB();
   if (!db) {
     console.warn("⏳ Firebase DB aún no disponible...");
-    return;
+    return null;
   }
 
   const ref = collection(db, "cierres");
@@ -101,10 +90,16 @@ function escucharCierres(callback) {
 
   return onSnapshot(ref, snapshot => {
     snapshot.docChanges().forEach(change => {
-      if (change.type === "added") {
+      if (change.type === "added" || change.type === "modified") {
         callback({
           id: change.doc.id,
           ...change.doc.data()
+        });
+      } else if (change.type === "removed") {
+        // Notificar eliminación
+        callback({
+          id: change.doc.id,
+          _deleted: true
         });
       }
     });

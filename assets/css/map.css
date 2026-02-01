@@ -29,8 +29,9 @@
   flex-direction: row; /* Horizontal en móvil */
   flex-wrap: wrap;
   gap: 8px;
-  z-index: 10;
+  z-index: 1000; /* ✅ Aumentado para estar sobre el mapa y otros elementos */
   justify-content: flex-end;
+  pointer-events: none; /* Permite clicks a través del contenedor */
 }
 
 .map-controls button {
@@ -50,6 +51,12 @@
   -webkit-tap-highlight-color: rgba(0, 180, 216, 0.2);
   outline: none;
   will-change: transform, background-color; /* Optimización */
+  display: flex !important; /* ✅ Asegurar que se muestren */
+  align-items: center;
+  justify-content: center;
+  visibility: visible !important; /* ✅ Forzar visibilidad */
+  opacity: 1 !important; /* ✅ Forzar opacidad */
+  pointer-events: auto; /* Los botones sí reciben clicks */
 }
 
 .map-controls button:active {
@@ -59,6 +66,22 @@
 .map-controls button:focus-visible {
   outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
+}
+
+/* ✅ Asegurar visibilidad en móvil */
+@media (max-width: 767px) {
+  .map-controls {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 1000 !important;
+  }
+  
+  .map-controls button {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
 }
 
 /* Tablet y Desktop - Vertical */
@@ -71,6 +94,7 @@
     flex-direction: column; /* Vertical en tablet+ */
     flex-wrap: nowrap;
     gap: 10px;
+    pointer-events: none; /* Mantener para permitir clicks a través */
   }
   
   .map-controls button {
@@ -78,6 +102,10 @@
     height: 44px;
     min-width: 44px;
     min-height: 44px;
+    pointer-events: auto; /* Los botones sí reciben clicks */
+    display: flex !important; /* ✅ Forzar display */
+    visibility: visible !important; /* ✅ Forzar visibilidad */
+    opacity: 1 !important; /* ✅ Forzar opacidad */
   }
 }
 

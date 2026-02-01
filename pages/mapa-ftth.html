@@ -327,6 +327,9 @@
 <script src="../config.local.js" onerror="console.log('ℹ️ config.local.js no encontrado, usando valores por defecto')"></script>
 <script src="../assets/js/config.js"></script>
 
+<!-- ✅ INITIALIZER (debe cargarse antes de otros módulos) -->
+<script type="module" src="../assets/js/core/initializer.js"></script>
+
 <!-- FIREBASE CORE -->
 <script type="module" src="../assets/js/services/firebase.db.js"></script>
 

@@ -59,13 +59,14 @@
 
   window.__FTTH_APP__ = App;
 })();
-// 🔧 Reparación automática de Firebase DB
-setInterval(() => {
-  if (!window.__FTTH_DB__ && window.FTTH_FIREBASE?.db) {
-    window.__FTTH_DB__ = window.FTTH_FIREBASE.db;
-    console.log("✅ Alias __FTTH_DB__ creado automáticamente");
-  }
-}, 500);
+
+// ✅ Sistema de inicialización robusto (reemplaza setInterval)
+// El initializer se carga automáticamente y configura los alias
+if (typeof window !== "undefined" && window.__FTTH_INITIALIZER__) {
+  window.__FTTH_INITIALIZER__.onReady(() => {
+    console.log("✅ App: Sistema inicializado correctamente");
+  });
+}
 
 
 if ("serviceWorker" in navigator) {

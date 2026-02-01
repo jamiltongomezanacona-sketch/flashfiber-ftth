@@ -8,13 +8,39 @@
 (function () {
   "use strict";
 
-  const wait = setInterval(() => {
+  // ✅ Sistema de inicialización mejorado (sin setInterval)
+  async function init() {
+    // Esperar a que App y Firebase estén disponibles
+    await waitForDependencies();
+    
+    // Inicializar tool
+    initializeTool();
+  }
+
+  async function waitForDependencies(maxAttempts = 50) {
+    for (let i = 0; i < maxAttempts; i++) {
+      const App = window.__FTTH_APP__;
+      const FB = window.FTTH_FIREBASE;
+
+      if (App?.map && FB?.guardarEvento && FB?.escucharEventos) {
+        return true;
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    console.error("❌ tool.eventos: Dependencias no disponibles después de esperar");
+    return false;
+  }
+
+  function initializeTool() {
     const App = window.__FTTH_APP__;
-    const FB  = window.FTTH_FIREBASE;
+    const FB = window.FTTH_FIREBASE;
 
-    if (!App?.map || !FB?.guardarEvento || !FB?.escucharEventos) return;
-
-    clearInterval(wait);
+    if (!App?.map || !FB?.guardarEvento || !FB?.escucharEventos) {
+      console.error("❌ tool.eventos: Dependencias no disponibles");
+      return;
+    }
 
     if (!App.tools) App.tools = {};
     if (!App.data) App.data = {};
@@ -579,5 +605,12 @@ btnSave?.addEventListener("click", async (e) => {
     App.tools.eventos = { start, stop };
 
     console.log("🚀 tool.eventos listo (PRO)");
-  }, 300);
+  }
+
+  // ✅ Inicializar cuando el DOM esté listo
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 })();

@@ -148,25 +148,46 @@
     }
 
     /* ===============================
-       Firebase Sync (auto-retry)
+       Firebase Sync (con sistema de inicialización)
     =============================== */
     let unsubscribeCierres = null;
     
-    function tryFirebaseSync() {
-      const FB = window.FTTH_FIREBASE;
-      if (!FB?.escucharCierres) return false;
-
-      console.log("✅ Firebase cierres conectado");
-      // ✅ Guardar referencia del unsubscribe para cleanup
-      unsubscribeCierres = FB.escucharCierres(addCierreToMap);
-      return true;
+    async function initFirebaseSync() {
+      // ✅ Usar initializer si está disponible
+      if (window.__FTTH_INITIALIZER__) {
+        window.__FTTH_INITIALIZER__.onReady(() => {
+          setupFirebaseListener();
+        });
+      } else {
+        // ✅ Fallback: esperar con Promise
+        await waitForFirebase();
+        setupFirebaseListener();
+      }
     }
 
-    tryFirebaseSync();
+    function setupFirebaseListener() {
+      const FB = window.FTTH_FIREBASE;
+      if (!FB?.escucharCierres) {
+        console.warn("⚠️ Firebase cierres no disponible");
+        return;
+      }
 
-    const fbTimer = setInterval(() => {
-      if (tryFirebaseSync()) clearInterval(fbTimer);
-    }, 500);
+      console.log("✅ Firebase cierres conectado");
+      unsubscribeCierres = FB.escucharCierres(addCierreToMap);
+    }
+
+    async function waitForFirebase(maxAttempts = 20) {
+      for (let i = 0; i < maxAttempts; i++) {
+        const FB = window.FTTH_FIREBASE;
+        if (FB?.escucharCierres) return true;
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      console.warn("⚠️ Firebase no disponible después de esperar");
+      return false;
+    }
+
+    // Inicializar listener
+    initFirebaseSync();
 
     /* ===============================
        Modal helpers

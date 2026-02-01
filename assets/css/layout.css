@@ -223,6 +223,15 @@ html:has(body.app-dashboard) {
 body.app-map {
   height: 100vh;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ✅ Asegurar que main.map-wrapper tenga altura */
+body.app-map > main.map-wrapper {
+  flex: 1;
+  min-height: 0;
+  height: calc(100vh - 56px); /* Altura total menos header */
 }
 
 /* =====================================================

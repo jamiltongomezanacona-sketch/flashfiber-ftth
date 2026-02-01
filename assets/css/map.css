@@ -7,7 +7,8 @@
   position: relative;
   background: #000;
   min-height: 100%;   /* 🔴 clave */
-  overflow: visible; /* ✅ Permitir que los botones sean visibles */
+  overflow: visible !important; /* ✅ Permitir que los botones sean visibles */
+  height: 100%; /* ✅ Asegurar altura completa */
 }
 
 /* ⚠️ Mapbox necesita altura absoluta real */
@@ -17,6 +18,30 @@
   width: 100%;
   height: 100%;
   z-index: 1; /* ✅ Asegurar que el mapa esté debajo de los controles */
+  pointer-events: auto; /* ✅ Permitir interacción con el mapa */
+}
+
+/* ✅ Asegurar que el contenedor main tenga altura */
+main.map-wrapper {
+  height: calc(100vh - 56px) !important; /* Altura total menos header */
+  min-height: calc(100vh - 56px) !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* ✅ En móvil, ajustar altura */
+@media (max-width: 767px) {
+  main.map-wrapper {
+    height: calc(100svh - 56px) !important;
+    min-height: calc(100svh - 56px) !important;
+  }
+  
+  @supports (-webkit-touch-callout: none) {
+    main.map-wrapper {
+      height: calc(-webkit-fill-available - 56px) !important;
+      min-height: calc(-webkit-fill-available - 56px) !important;
+    }
+  }
 }
 
 /* Controles flotantes */
@@ -99,15 +124,24 @@
 
 /* Tablet y Desktop - Vertical */
 @media (min-width: 768px) {
+  .map-wrapper {
+    overflow: visible !important; /* ✅ Permitir que los botones sean visibles */
+  }
+  
   .map-controls {
-    top: 20px;
-    bottom: auto;
-    left: auto;
-    right: 20px;
-    flex-direction: column; /* Vertical en tablet+ */
-    flex-wrap: nowrap;
-    gap: 10px;
+    top: 20px !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: 20px !important;
+    flex-direction: column !important; /* Vertical en tablet+ */
+    flex-wrap: nowrap !important;
+    gap: 10px !important;
     pointer-events: none; /* Mantener para permitir clicks a través */
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 9999 !important;
+    position: absolute !important;
   }
   
   .map-controls button {

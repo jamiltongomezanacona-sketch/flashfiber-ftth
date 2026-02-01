@@ -14,8 +14,56 @@
 </head>
 
 <body>
+  <!-- ✅ Fallback visible si JavaScript está deshabilitado -->
+  <noscript>
+    <div style="
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      min-height: 100vh; 
+      background: linear-gradient(135deg, #0a1929 0%, #132f4c 50%, #1e4976 100%);
+      color: #e6f7ff; 
+      font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+      padding: 2rem; 
+      text-align: center;
+    ">
+      <div style="max-width: 500px;">
+        <h1 style="
+          font-size: 2rem; 
+          font-weight: 700; 
+          margin-bottom: 1rem;
+          background: linear-gradient(135deg, #00b4d8, #00e5ff);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        ">
+          JavaScript Requerido
+        </h1>
+        <p style="font-size: 1.125rem; color: #a3d5ff; margin-bottom: 1.5rem; line-height: 1.6;">
+          Esta aplicación requiere JavaScript para funcionar correctamente.
+        </p>
+        <p style="font-size: 0.9375rem; color: #7dd3fc; margin-bottom: 2rem;">
+          Por favor, habilita JavaScript en tu navegador y recarga la página.
+        </p>
+        <a href="pages/home.html" style="
+          display: inline-block;
+          padding: 0.75rem 1.5rem;
+          background: linear-gradient(135deg, #00b4d8, #00e5ff);
+          color: #0a1929;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: 600;
+          transition: transform 0.2s;
+        ">
+          Intentar acceder directamente
+        </a>
+      </div>
+    </div>
+  </noscript>
+
+  <!-- Redirección automática con JavaScript -->
   <script>
-    // Redirección automática sin autenticación
+    // Redirección inmediata sin autenticación
     window.location.href = "pages/home.html";
   </script>
 </body>

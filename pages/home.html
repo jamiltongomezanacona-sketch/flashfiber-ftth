@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Flash Fiber FTTH | Panel Principal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
 
   <!-- CSS base -->
   <link rel="stylesheet" href="../assets/css/theme.css">
@@ -307,9 +307,29 @@
 
     /* Tablet */
     @media (min-width: 768px) and (max-width: 1023px) {
+      .container {
+        padding: 2rem 1.5rem;
+        max-width: 900px;
+      }
+      
       .grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
+      }
+      
+      .card {
+        padding: 2rem;
+      }
+      
+      .welcome h1 {
+        font-size: 2.5rem;
+      }
+    }
+    
+    /* Tablet Landscape - 3 columnas */
+    @media (min-width: 768px) and (max-width: 1023px) and (orientation: landscape) {
+      .grid {
+        grid-template-columns: repeat(3, 1fr);
       }
     }
 

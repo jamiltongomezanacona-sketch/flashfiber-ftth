@@ -141,6 +141,70 @@ button,
 }
 
 /* ===============================
+   Optimizaciones para Tablets
+=============================== */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Tablets en modo portrait y landscape */
+  :root {
+    --spacing-tablet: 1.25rem;
+    --touch-target-tablet: 48px;
+  }
+  
+  /* Aumentar tamaño de botones para tablets */
+  button,
+  input[type="button"],
+  input[type="submit"],
+  a.button,
+  .menu-item {
+    min-height: var(--touch-target-tablet);
+    min-width: var(--touch-target-tablet);
+    padding: 0.875rem 1.25rem;
+  }
+  
+  /* Optimizar tipografía para tablets */
+  body {
+    font-size: 15px;
+  }
+  
+  /* Mejor uso del espacio en tablets */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--spacing-tablet);
+  }
+}
+
+/* Tablets en modo landscape (horizontal) */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+  /* Aprovechar mejor el espacio horizontal */
+  .sidebar {
+    max-width: 380px;
+  }
+  
+  .panel-capas {
+    max-width: 400px;
+  }
+  
+  /* Grid de 3 columnas en landscape */
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Tablets en modo portrait (vertical) */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  /* Grid de 2 columnas en portrait */
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  /* Sidebar más ancho en portrait */
+  .sidebar {
+    max-width: 360px;
+  }
+}
+
+/* ===============================
    Optimizaciones de Rendimiento
 =============================== */
 

@@ -21,6 +21,18 @@
   pointer-events: auto; /* ✅ Permitir interacción con el mapa */
 }
 
+/* ✅ Forzar z-index bajo en el canvas de Mapbox */
+#map .mapboxgl-canvas-container,
+#map .mapboxgl-canvas {
+  z-index: 1 !important;
+  position: relative !important;
+}
+
+/* ✅ Asegurar que los controles de Mapbox no interfieran */
+.mapboxgl-ctrl-group {
+  z-index: 100 !important;
+}
+
 /* ✅ Asegurar que el contenedor main tenga altura */
 main.map-wrapper {
   height: calc(100vh - 56px) !important; /* Altura total menos header */
@@ -48,19 +60,21 @@ main.map-wrapper {
 /* Mobile First: Horizontal en móvil, vertical en tablet+ */
 
 .map-controls {
-  position: absolute;
-  bottom: 20px; /* Cambiar a bottom en móvil */
-  right: 12px;
-  left: 12px;
+  position: fixed !important; /* ✅ Cambiar a fixed para estar fuera del flujo */
+  bottom: 20px !important; /* Cambiar a bottom en móvil */
+  right: 12px !important;
+  left: auto !important; /* ✅ Cambiar left a auto cuando es fixed */
   display: flex !important; /* ✅ Forzar display */
   flex-direction: row; /* Horizontal en móvil */
   flex-wrap: wrap;
   gap: 8px;
-  z-index: 9999 !important; /* ✅ Z-index muy alto para estar sobre todo */
+  z-index: 99999 !important; /* ✅ Z-index extremadamente alto */
   justify-content: flex-end;
   pointer-events: none; /* Permite clicks a través del contenedor */
   visibility: visible !important; /* ✅ Forzar visibilidad */
   opacity: 1 !important; /* ✅ Forzar opacidad */
+  width: auto !important; /* ✅ Ancho automático */
+  max-width: calc(100vw - 24px) !important; /* ✅ No exceder viewport */
 }
 
 .map-controls button {
@@ -104,14 +118,16 @@ main.map-wrapper {
   }
   
   .map-controls {
+    position: fixed !important; /* ✅ Fixed en móvil también */
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
-    z-index: 9999 !important; /* ✅ Z-index muy alto */
-    position: absolute !important; /* ✅ Forzar posición absoluta */
+    z-index: 99999 !important; /* ✅ Z-index extremadamente alto */
     bottom: 20px !important; /* ✅ Forzar posición bottom */
     right: 12px !important;
-    left: 12px !important;
+    left: auto !important; /* ✅ Auto en fixed */
+    width: auto !important;
+    max-width: calc(100vw - 24px) !important;
   }
   
   .map-controls button {
@@ -129,7 +145,8 @@ main.map-wrapper {
   }
   
   .map-controls {
-    top: 20px !important;
+    position: fixed !important; /* ✅ Fixed también en tablet/desktop */
+    top: 76px !important; /* ✅ Debajo del header (56px + 20px margin) */
     bottom: auto !important;
     left: auto !important;
     right: 20px !important;
@@ -140,8 +157,8 @@ main.map-wrapper {
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
-    z-index: 9999 !important;
-    position: absolute !important;
+    z-index: 99999 !important; /* ✅ Z-index extremadamente alto */
+    width: auto !important;
   }
   
   .map-controls button {

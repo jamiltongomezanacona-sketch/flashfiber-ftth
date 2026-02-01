@@ -35,12 +35,13 @@
   });
 
   /* ===============================
-     🔒 BLOQUEO INICIAL (CORRECTO)
+     🔒 BLOQUEO INICIAL CORRECTO
      =============================== */
 
-  map.dragRotate.disable();        // desktop
-  map.touchZoomRotate.disable();   // ⚠️ TODO apagado (NO disableRotation)
-  map.touchPitch.disable();
+  map.dragRotate.disable();                 // Desktop
+  map.touchZoomRotate.disableRotation();    // 👈 SOLO rotación
+  map.touchPitch.enable();                  // Permitir inclinación
+  // ⚠️ NO desactivar touchZoomRotate completo
 
   // 🎛️ Controles nativos
   map.addControl(new mapboxgl.NavigationControl(), "top-right");
@@ -77,7 +78,7 @@
       console.warn("⚠️ Error cargando rutas:", e);
     }
 
-    // 🧭 CONTROLES (rotación ON / OFF)
+    // 🧭 CONTROLES ROTACIÓN ON / OFF
     if (window.initMapControls) {
       window.initMapControls();
     }

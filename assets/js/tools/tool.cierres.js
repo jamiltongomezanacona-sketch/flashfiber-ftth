@@ -75,10 +75,136 @@
     });
 
     /* ===============================
-       Map Layer
+       Map Layer - Estilo Google Maps
     =============================== */
     const SOURCE_ID = "cierres-src";
     const LAYER_ID  = "cierres-layer";
+    const ICON_SIZE = 40; // Tamaño base del icono
+
+    /* ===============================
+       Colores por tipo de cierre
+    =============================== */
+    function getColorByTipo(tipo) {
+      switch (tipo) {
+        case "E1": return "#2196F3"; // Azul - Derivación
+        case "E2": return "#FF9800"; // Naranja - Splitter
+        case "NAP": return "#4CAF50"; // Verde - NAP
+        default: return "#9E9E9E"; // Gris - Sin tipo
+      }
+    }
+
+    /* ===============================
+       Generar icono SVG estilo Google Maps
+    =============================== */
+    function createPinIcon(color, label = "") {
+      const size = ICON_SIZE;
+      const pinHeight = size;
+      const pinWidth = size * 0.6;
+      const labelSize = label ? 12 : 0;
+      
+      // SVG del pin con sombra y etiqueta opcional
+      const svg = `
+        <svg width="${size}" height="${pinHeight + labelSize}" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+              <feOffset dx="0" dy="2" result="offsetblur"/>
+              <feComponentTransfer>
+                <feFuncA type="linear" slope="0.3"/>
+              </feComponentTransfer>
+              <feMerge>
+                <feMergeNode/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          
+          <!-- Sombra del pin -->
+          <ellipse cx="${size / 2}" cy="${pinHeight - 2}" rx="${pinWidth * 0.4}" ry="4" 
+                   fill="#000" opacity="0.2" filter="url(#shadow)"/>
+          
+          <!-- Cuerpo del pin (forma de gota) -->
+          <path d="M ${size / 2} 0 
+                   L ${size / 2 - pinWidth / 2} ${pinHeight * 0.6}
+                   Q ${size / 2 - pinWidth / 2} ${pinHeight * 0.85} ${size / 2} ${pinHeight * 0.9}
+                   Q ${size / 2 + pinWidth / 2} ${pinHeight * 0.85} ${size / 2 + pinWidth / 2} ${pinHeight * 0.6}
+                   Z" 
+                fill="${color}" 
+                stroke="#FFFFFF" 
+                stroke-width="2"
+                filter="url(#shadow)"/>
+          
+          <!-- Etiqueta con texto (si se proporciona) -->
+          ${label ? `
+            <rect x="${size / 2 - pinWidth / 2}" y="${pinHeight}" 
+                  width="${pinWidth}" height="${labelSize + 4}" 
+                  rx="3" fill="#FFFFFF" stroke="${color}" stroke-width="1.5"
+                  filter="url(#shadow)"/>
+            <text x="${size / 2}" y="${pinHeight + labelSize + 1}" 
+                  font-family="Arial, sans-serif" 
+                  font-size="${labelSize}" 
+                  font-weight="bold"
+                  fill="${color}"
+                  text-anchor="middle"
+                  dominant-baseline="middle">${label}</text>
+          ` : ''}
+        </svg>
+      `;
+      
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }
+
+    /* ===============================
+       Cargar iconos en Mapbox
+    =============================== */
+    const loadedIcons = new Set();
+    const loadingIcons = new Map(); // Iconos en proceso de carga
+    
+    function loadIconForTipo(tipo, label = "") {
+      const iconId = `cierre-${tipo}-${label || 'default'}`;
+      
+      // Si ya está cargado, retornar inmediatamente
+      if (loadedIcons.has(iconId) || App.map?.hasImage(iconId)) {
+        loadedIcons.add(iconId);
+        return iconId;
+      }
+      
+      if (!App.map || !App.map.isStyleLoaded()) return iconId;
+      
+      // Si ya está en proceso de carga, retornar el ID
+      if (loadingIcons.has(iconId)) return iconId;
+      
+      const color = getColorByTipo(tipo);
+      const iconUrl = createPinIcon(color, label);
+      
+      // Marcar como en proceso
+      loadingIcons.set(iconId, true);
+      
+      // Cargar imagen en Mapbox
+      App.map.loadImage(iconUrl, (error, image) => {
+        if (error) {
+          console.warn("⚠️ Error cargando icono de cierre:", error);
+          loadingIcons.delete(iconId);
+          return;
+        }
+        
+        try {
+          if (!App.map.hasImage(iconId)) {
+            App.map.addImage(iconId, image);
+          }
+          loadedIcons.add(iconId);
+          loadingIcons.delete(iconId);
+          
+          // Refrescar capa después de cargar el icono
+          refreshLayer();
+        } catch (err) {
+          console.warn("⚠️ Error agregando icono al mapa:", err);
+          loadingIcons.delete(iconId);
+        }
+      });
+      
+      return iconId;
+    }
 
     function initLayer() {
       if (!App.map || !App.map.isStyleLoaded()) return;
@@ -89,15 +215,29 @@
         data: { type: "FeatureCollection", features: [] }
       });
 
+      // ✅ Capa de símbolos estilo Google Maps (en lugar de círculos)
       App.map.addLayer({
         id: LAYER_ID,
-        type: "circle",
+        type: "symbol",
         source: SOURCE_ID,
-        paint: {
-          "circle-radius": 8,
-          "circle-color": "#ff9800",
-          "circle-stroke-width": 2,
-          "circle-stroke-color": "#000"
+        layout: {
+          "icon-image": [
+            "coalesce",
+            ["get", "iconId"],
+            "cierre-E1-default"
+          ],
+          "icon-size": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            10, 0.6,  // Zoom 10: 60% del tamaño
+            15, 1.0,  // Zoom 15: 100% del tamaño
+            20, 1.4   // Zoom 20: 140% del tamaño
+          ],
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+          "icon-anchor": "bottom",
+          "icon-pitch-alignment": "viewport"
         }
       });
 
@@ -108,7 +248,15 @@
         abrirEdicionCierre(f.properties || {});
       });
 
-      console.log("✅ Capa cierres creada");
+      // Cursor pointer al pasar sobre cierre
+      App.map.on("mouseenter", LAYER_ID, () => {
+        App.map.getCanvas().style.cursor = "pointer";
+      });
+      App.map.on("mouseleave", LAYER_ID, () => {
+        App.map.getCanvas().style.cursor = "";
+      });
+
+      console.log("✅ Capa cierres creada (estilo Google Maps)");
     }
 
     function refreshLayer() {
@@ -126,6 +274,13 @@
 
       const index = App.data.cierres.findIndex(c => c.id === cierre.id);
 
+      // ✅ Generar etiqueta para el marcador (código o molécula)
+      const label = cierre.codigo || cierre.molecula || "";
+      const tipo = cierre.tipo || "E1";
+      
+      // ✅ Cargar icono personalizado
+      const iconId = loadIconForTipo(tipo, label.substring(0, 4)); // Máximo 4 caracteres
+
       const feature = {
         id: cierre.id,
         type: "Feature",
@@ -133,13 +288,22 @@
           type: "Point",
           coordinates: [cierre.lng, cierre.lat]
         },
-        properties: cierre
+        properties: {
+          ...cierre,
+          iconId: iconId, // ✅ Agregar ID del icono a las propiedades
+          label: label.substring(0, 4) // Etiqueta corta para el icono
+        }
       };
 
       if (index >= 0) App.data.cierres[index] = feature;
       else App.data.cierres.push(feature);
 
-      refreshLayer();
+      // ✅ Esperar a que el icono se cargue antes de refrescar
+      if (!loadedIcons.has(iconId)) {
+        setTimeout(() => refreshLayer(), 100);
+      } else {
+        refreshLayer();
+      }
     }
 
     function removeCierreFromMap(id) {
@@ -343,6 +507,8 @@
        Rebuild on style change
     =============================== */
     App.map.on("style.load", () => {
+      // ✅ Limpiar iconos cargados al cambiar estilo
+      loadedIcons.clear();
       initLayer();
       refreshLayer();
     });

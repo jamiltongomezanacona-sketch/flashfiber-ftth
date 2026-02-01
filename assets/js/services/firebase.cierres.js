@@ -7,7 +7,7 @@ import {
   addDoc,
   onSnapshot,
   serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 /* =========================
    Obtener DB desde core
@@ -49,7 +49,7 @@ import {
   doc,
   updateDoc,
   deleteDoc
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 /* =========================
    Actualizar Cierre

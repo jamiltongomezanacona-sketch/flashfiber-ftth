@@ -3,10 +3,10 @@
 ========================================================= */
 
 import { getStorage, ref, uploadBytes, getDownloadURL }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+from "https://www.gstatic.com/firebasejs/12.8.0/firebase-storage.js";
 
 import { getApp }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
 
 // 🔥 Obtener app ya inicializada por firebase.js
 const app = getApp();

@@ -4,7 +4,7 @@
 
 // 🔥 Firebase App
 import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
 
 // 🔐 Firebase Auth
 import {
@@ -12,11 +12,11 @@ import {
   signInWithEmailAndPassword,
   onAuthStateChanged,
   signOut
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
 // 🗄️ Firestore (solo para inicializar DB)
 import { getFirestore }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 // 📦 Firestore lógica
 import * as DB from "./firebase.db.js";

@@ -1,4 +1,17 @@
 {
   "label": "CORPORATIVO",
-  "children": []
+  "children": [
+    {
+      "type": "layer",
+      "id": "CORPORATIVO_CENTRALES_ETB",
+      "label": "Centrales ETB",
+      "path": "centrales-etb.geojson",
+      "typeLayer": "symbol",
+      "paint": {},
+      "layout": {
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    }
+  ]
 }

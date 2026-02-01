@@ -108,10 +108,30 @@
     /* =========================
        Toggle capas
     ========================= */
-    checkbox.addEventListener("change", () => {
+    checkbox.addEventListener("change", async () => {
       // ✅ Si es una capa individual, usar su ID directamente
       if (node.type === "layer" && node.id) {
         toggleLayerById(node.id, checkbox.checked);
+        
+        // Si la capa no existe y tiene path, intentar cargarla
+        const App = window.__FTTH_APP__;
+        const map = App?.map;
+        if (map && !map.getLayer(node.id) && node.path) {
+          console.log("🔄 Capa no encontrada, intentando cargar:", node.id);
+          // Forzar recarga del árbol para cargar la capa
+          if (typeof App.loadFTTHTree === "function") {
+            await App.loadFTTHTree();
+            // Esperar un momento y volver a intentar el toggle
+            setTimeout(() => {
+              if (map.getLayer(node.id)) {
+                toggleLayerById(node.id, checkbox.checked);
+              } else {
+                console.warn("⚠️ No se pudo cargar la capa:", node.id);
+                checkbox.checked = false; // Revertir checkbox si falla
+              }
+            }, 1000);
+          }
+        }
       } else {
         // Si es una carpeta, propagar a hijos y buscar por label
         toggleChildren(childrenBox, checkbox.checked);
@@ -205,6 +225,14 @@
     const map = App.map;
     if (!map || !layerId) return;
 
+    // Esperar a que el mapa esté listo si no lo está
+    if (!map.isStyleLoaded()) {
+      map.once("style.load", () => {
+        setTimeout(() => toggleLayerById(layerId, visible), 100);
+      });
+      return;
+    }
+
     if (map.getLayer(layerId)) {
       map.setLayoutProperty(
         layerId,
@@ -214,6 +242,17 @@
       console.log(`${visible ? "✅" : "❌"} Capa ${layerId} ${visible ? "habilitada" : "deshabilitada"}`);
     } else {
       console.warn("⚠️ Capa no encontrada:", layerId);
+      // Intentar cargar la capa si no existe (para capas que se cargan dinámicamente)
+      if (typeof App.loadFTTHTree === "function") {
+        console.log("🔄 Intentando cargar capa:", layerId);
+        App.loadFTTHTree();
+        // Reintentar después de un breve delay
+        setTimeout(() => {
+          if (map.getLayer(layerId)) {
+            toggleLayerById(layerId, visible);
+          }
+        }, 500);
+      }
     }
   }
 

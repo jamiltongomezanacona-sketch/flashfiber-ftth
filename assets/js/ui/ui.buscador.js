@@ -38,13 +38,20 @@
      Inicialización
   ========================= */
   async function init() {
-    // ✅ Cargar centrales y cables inmediatamente (no requieren Firebase ni mapa)
-    await loadCentrales();
-    await loadCables();
-    
-    // ✅ Configurar event listeners de inmediato
+    // ✅ Configurar event listeners de inmediato (antes de cargar datos)
     setupEventListeners();
-    console.log("🔍 Buscador inicializado (centrales y cables cargados)");
+    
+    // ✅ Cargar centrales inmediatamente (rápido)
+    loadCentrales().then(() => {
+      console.log(`✅ Centrales cargadas: ${searchIndex.centrales.length}`);
+    });
+    
+    // ✅ Cargar cables en paralelo (puede tardar más)
+    loadCables().then(() => {
+      console.log(`✅ Cables cargados: ${searchIndex.cables.length}`);
+    });
+    
+    console.log("🔍 Buscador inicializado - cargando datos en segundo plano");
     
     // ✅ Cargar cierres cuando Firebase esté disponible (en segundo plano)
     waitForFirebaseAndLoadCierres();
@@ -112,13 +119,19 @@
   ========================= */
   async function loadCables() {
     try {
+      console.log("🔍 Iniciando carga de cables para buscador...");
       const res = await fetch("../geojson/index.json", { cache: "no-store" });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
       const root = await res.json();
       
       // Recorrer árbol recursivamente
       await walkTreeForCables(root, "../geojson/");
+      
+      console.log(`✅ Cables cargados en buscador: ${searchIndex.cables.length} cables encontrados`);
     } catch (error) {
-      console.warn("⚠️ No se pudieron cargar cables:", error);
+      console.error("❌ Error cargando cables para buscador:", error);
     }
   }
 
@@ -127,9 +140,32 @@
 
     // Si es una capa de tipo "layer"
     if (node.type === "layer") {
+      // ✅ Solo procesar si es un cable (filtrar otros tipos)
+      const isCable = node.id?.toLowerCase().includes("cable") || 
+                     node.path?.toLowerCase().includes("cable") ||
+                     basePath?.toLowerCase().includes("cables");
+      
+      if (!isCable) {
+        return; // Omitir si no es cable
+      }
+      
       try {
-        const url = basePath + node.path;
+        // ✅ Normalizar URL
+        let url = basePath + node.path;
+        url = url.replace(/\/+/g, "/");
+        if (!url.startsWith("../geojson/")) {
+          if (url.startsWith("geojson/")) {
+            url = "../" + url;
+          } else {
+            url = "../geojson/" + url.replace(/^\.\.\/geojson\//, "");
+          }
+        }
+        
         const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) {
+          console.warn(`⚠️ No se pudo cargar cable: ${url} (${res.status})`);
+          return;
+        }
         const geojson = await res.json();
         
         if (geojson.features && geojson.features.length > 0) {
@@ -169,28 +205,51 @@
           });
         }
       } catch (error) {
-        // Ignorar errores de carga individual
+        console.warn(`⚠️ Error cargando cable ${node.id}:`, error.message);
       }
       return;
     }
 
-    // Si tiene hijos, recorrerlos
+    // Si tiene hijos, recorrerlos en paralelo
     if (node.children?.length) {
+      const promises = [];
+      
       for (const child of node.children) {
         if (child.type === "layer") {
-          await walkTreeForCables(child, basePath);
+          promises.push(walkTreeForCables(child, basePath));
         } else if (child.index) {
-          try {
-            const url = basePath + child.index;
-            const res = await fetch(url, { cache: "no-store" });
-            const json = await res.json();
-            const nextBase = basePath + child.index.replace("index.json", "");
-            await walkTreeForCables(json, nextBase);
-          } catch (error) {
-            // Ignorar errores
-          }
+          promises.push(
+            (async () => {
+              try {
+                // ✅ Normalizar URL
+                let url = basePath + child.index;
+                url = url.replace(/\/+/g, "/");
+                if (!url.startsWith("../geojson/")) {
+                  if (url.startsWith("geojson/")) {
+                    url = "../" + url;
+                  } else {
+                    url = "../geojson/" + url.replace(/^\.\.\/geojson\//, "");
+                  }
+                }
+                
+                const res = await fetch(url, { cache: "no-store" });
+                if (!res.ok) {
+                  console.warn(`⚠️ No se pudo cargar índice: ${url} (${res.status})`);
+                  return;
+                }
+                const json = await res.json();
+                const nextBase = basePath + child.index.replace("index.json", "");
+                await walkTreeForCables(json, nextBase);
+              } catch (error) {
+                console.warn(`⚠️ Error cargando índice ${child.index}:`, error.message);
+              }
+            })()
+          );
         }
       }
+      
+      // ✅ Ejecutar todas las promesas en paralelo
+      await Promise.all(promises);
     }
   }
 
@@ -303,7 +362,22 @@
      Realizar búsqueda
   ========================= */
   function performSearch(query) {
+    if (!query || query.trim().length === 0) {
+      hideResults();
+      return;
+    }
+    
     currentSearch = query;
+    
+    // ✅ Verificar si hay datos cargados
+    const totalItems = searchIndex.centrales.length + searchIndex.cables.length + searchIndex.cierres.length;
+    if (totalItems === 0) {
+      console.warn("⚠️ Índice de búsqueda vacío, intentando recargar...");
+      // Intentar recargar en segundo plano
+      loadCentrales();
+      loadCables();
+      return;
+    }
     const lowerQuery = query.toLowerCase();
     
     allResults = [];

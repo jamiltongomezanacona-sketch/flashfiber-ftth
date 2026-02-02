@@ -172,6 +172,16 @@
        Toggle capas
     ========================= */
     checkbox.addEventListener("change", async () => {
+      const nodeLabel = label.textContent;
+      
+      // ✅ Si es una molécula (SI01, SI02, etc.) y se está activando
+      const isMolecula = /^SI\d+$/.test(nodeLabel.trim());
+      
+      if (isMolecula && checkbox.checked) {
+        // Desactivar todas las demás moléculas antes de activar esta
+        deactivateOtherMoleculas(nodeLabel.trim());
+      }
+      
       // ✅ Si es una capa individual, usar su ID directamente
       if (node.type === "layer" && node.id) {
         toggleLayerById(node.id, checkbox.checked);
@@ -198,7 +208,7 @@
       } else {
         // Si es una carpeta, propagar a hijos y buscar por label
         toggleChildren(childrenBox, checkbox.checked);
-        toggleLayers(label.textContent, checkbox.checked);
+        toggleLayers(nodeLabel, checkbox.checked);
       }
     });
 
@@ -246,6 +256,65 @@
       // Si no tiene hijos, ocultar flecha
       toggle.style.visibility = "hidden";
     }
+  }
+
+  /* =========================
+     Desactivar otras moléculas
+  ========================= */
+  function deactivateOtherMoleculas(activeMolecula) {
+    const App = window.__FTTH_APP__;
+    if (!App?.map) return;
+    
+    const map = App.map;
+    const treeContainer = document.getElementById(TREE_CONTAINER_ID);
+    if (!treeContainer) return;
+    
+    // Buscar todos los checkboxes de moléculas (SI01, SI02, etc.)
+    const allCheckboxes = treeContainer.querySelectorAll("input[type=checkbox]");
+    
+    allCheckboxes.forEach(cb => {
+      // Encontrar el label asociado
+      const row = cb.closest(".tree-row");
+      if (!row) return;
+      
+      const rowLabel = row.querySelector("span:not(.tree-toggle)");
+      if (!rowLabel) return;
+      
+      const labelText = rowLabel.textContent.trim();
+      const isMolecula = /^SI\d+$/.test(labelText);
+      
+      // Si es una molécula diferente a la que se está activando, desactivarla
+      if (isMolecula && labelText !== activeMolecula && cb.checked) {
+        console.log(`🔄 Desactivando molécula: ${labelText}`);
+        cb.checked = false;
+        cb.dispatchEvent(new Event("change"));
+        
+        // Desactivar todas las capas de esta molécula
+        deactivateMoleculaLayers(labelText, map);
+      }
+    });
+  }
+  
+  /* =========================
+     Desactivar todas las capas de una molécula
+  ========================= */
+  function deactivateMoleculaLayers(moleculaLabel, map) {
+    if (!map) return;
+    
+    // Buscar todas las capas que pertenecen a esta molécula
+    const allLayers = map.getStyle().layers || [];
+    
+    allLayers.forEach(layer => {
+      const layerId = layer.id;
+      // Si el ID contiene la molécula (ej: FTTH_SANTA_INES_SI01_...)
+      if (layerId.includes(`_${moleculaLabel}_`) || layerId.includes(`_${moleculaLabel}`)) {
+        const visibility = map.getLayoutProperty(layerId, "visibility");
+        if (visibility !== "none") {
+          map.setLayoutProperty(layerId, "visibility", "none");
+          console.log(`  ❌ Capa desactivada: ${layerId}`);
+        }
+      }
+    });
   }
 
   /* =========================

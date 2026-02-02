@@ -1043,10 +1043,14 @@
         }
 
         // Configurar layout para símbolos SOLO CON TEXTO (sin iconos)
-        // ✅ Determinar visibilidad inicial: oculto para cables, visible para otros
+        // ✅ Determinar visibilidad inicial: oculto para cables, visible para otros (centrales, cierres, etc.)
         const isCableLayer = id?.toLowerCase().includes("cable") || 
                             basePath?.toLowerCase().includes("cables");
-        const initialVisibility = isCableLayer ? "none" : (layer.layout?.visibility || "visible");
+        // Las centrales y otros puntos deben iniciar visibles
+        const isCentral = id?.toLowerCase().includes("central") || 
+                         id?.toLowerCase().includes("corporativo");
+        const initialVisibility = isCableLayer ? "none" : 
+                                 (isCentral ? "visible" : (layer.layout?.visibility || "visible"));
         
         const layerConfig = {
           id,
@@ -1126,12 +1130,20 @@
           data: geojson
         });
 
+        // ✅ Determinar visibilidad: oculto para cables, visible para otros (centrales, puntos, etc.)
+        const isCableLayer = id?.toLowerCase().includes("cable") || 
+                            basePath?.toLowerCase().includes("cables");
+        const isCentral = id?.toLowerCase().includes("central") || 
+                         id?.toLowerCase().includes("corporativo");
+        const initialVisibility = isCableLayer ? "none" : 
+                                 (isCentral ? "visible" : "visible");
+        
         const layerConfig = {
           id,
           type: layerType,
           source: id,
           layout: {
-            visibility: "none" // ✅ Iniciar ocultas - solo se activan desde el árbol
+            visibility: initialVisibility // ✅ Cables ocultos, centrales y otros visibles
           },
           paint: layer.paint || {
             "line-color": "#000099",

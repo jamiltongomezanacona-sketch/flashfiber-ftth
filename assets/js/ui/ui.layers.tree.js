@@ -124,6 +124,7 @@
     checkbox.type = "checkbox";
     
     // ✅ Si es una capa (type: "layer"), verificar si está cargada y habilitada
+    // OPTIMIZADO: Solo verificar en el mapa, no hacer fetch innecesario
     let shouldBeChecked = false;
     if (node.type === "layer" && node.id) {
       const App = window.__FTTH_APP__;
@@ -134,32 +135,9 @@
         // Verificar si está visible
         const visibility = map.getLayoutProperty(node.id, "visibility");
         shouldBeChecked = visibility !== "none";
-      } else {
-        // Si no está cargada, verificar si el archivo tiene datos
-        if (node.path) {
-          try {
-            // Construir URL normalizada
-            let layerUrl = basePath + node.path;
-            layerUrl = layerUrl.replace(/\/+/g, "/");
-            if (!layerUrl.startsWith("../geojson/")) {
-              if (layerUrl.startsWith("geojson/")) {
-                layerUrl = "../" + layerUrl;
-              } else {
-                layerUrl = "../geojson/" + layerUrl.replace(/^\.\.\/geojson\//, "");
-              }
-            }
-            const layerRes = await fetch(layerUrl, { cache: "no-store" });
-            const layerData = await layerRes.json();
-            
-            // Habilitar solo si tiene features
-            if (layerData && layerData.features && layerData.features.length > 0) {
-              shouldBeChecked = true;
-            }
-          } catch (err) {
-            console.warn("⚠️ No se pudo verificar capa:", node.path);
-          }
-        }
       }
+      // ❌ REMOVIDO: No hacer fetch para verificar si tiene datos
+      // Esto causa lentitud innecesaria. La capa se verificará cuando se intente activar.
     }
     
     checkbox.checked = shouldBeChecked;
@@ -225,19 +203,20 @@
     });
 
     /* =========================
-       Cargar hijos
+       Cargar hijos (OPTIMIZADO: en paralelo)
     ========================= */
     if (node.children?.length) {
-      for (const child of node.children) {
-        // ✅ Si el child es una capa directa (type: "layer"), renderizarla
-        if (child.type === "layer") {
-          await renderNode(child, childrenBox, basePath, false);
-          continue;
-        }
+      // ✅ Cargar todos los hijos en paralelo para mejor rendimiento
+      const childPromises = node.children.map(async (child) => {
+        try {
+          // ✅ Si el child es una capa directa (type: "layer"), renderizarla
+          if (child.type === "layer") {
+            await renderNode(child, childrenBox, basePath, false);
+            return;
+          }
 
-        // ✅ Si tiene index.json, cargar como carpeta
-        if (child.index) {
-          try {
+          // ✅ Si tiene index.json, cargar como carpeta
+          if (child.index) {
             const nextPath = basePath + child.index;
             const url = "../geojson/" + nextPath;
 
@@ -255,12 +234,14 @@
               basePath + child.index.replace("index.json", ""),
               true // 👈 todos los hijos cerrados
             );
-
-          } catch (err) {
-            console.warn("⚠️ No se pudo cargar:", basePath + child.index);
           }
+        } catch (err) {
+          console.warn("⚠️ No se pudo cargar:", basePath + (child.index || child.path || ""), err.message);
         }
-      }
+      });
+      
+      // ✅ Esperar a que todos los hijos se carguen en paralelo
+      await Promise.allSettled(childPromises);
     } else {
       // Si no tiene hijos, ocultar flecha
       toggle.style.visibility = "hidden";

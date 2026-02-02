@@ -423,6 +423,7 @@
     try {
       console.log("📦 Consolidando SOLO CABLES y CIERRES E1...");
       const allFeatures = [];
+      const loadedUrls = new Set(); // ✅ Cache para evitar cargar el mismo archivo múltiples veces
       
       // Función recursiva para recopilar GeoJSON
       async function collectGeoJSON(node, basePath, currentPath = "") {
@@ -480,7 +481,24 @@
           console.log(`✅ Incluyendo capa: ${node.id}, tipo: ${isCable ? 'CABLE' : 'CIERRE'}, path: ${fullPath}`);
           
           try {
-            const url = basePath + node.path;
+            // ✅ Normalizar URL para evitar duplicados
+            let url = basePath + node.path;
+            url = url.replace(/\/+/g, "/");
+            if (!url.startsWith("../geojson/")) {
+              if (url.startsWith("geojson/")) {
+                url = "../" + url;
+              } else {
+                url = "../geojson/" + url.replace(/^\.\.\/geojson\//, "");
+              }
+            }
+            
+            // ✅ Verificar si ya se cargó este archivo
+            if (loadedUrls.has(url)) {
+              console.log(`⏭️ Archivo ya cargado (cache): ${url}`);
+              return;
+            }
+            loadedUrls.add(url);
+            
             const res = await fetch(url, { cache: "no-store" });
             if (!res.ok) {
               console.warn(`⚠️ No se pudo cargar: ${url}`);
@@ -540,24 +558,35 @@
         
         // Si tiene hijos, recorrerlos
         if (node.children?.length) {
+          // ✅ OPTIMIZACIÓN: Cargar índices en paralelo
+          const indexPromises = [];
+          const layerPromises = [];
+          
           for (const child of node.children) {
             if (child.type === "layer") {
-              // Pasar el path actualizado que incluye esta carpeta
-              await collectGeoJSON(child, basePath, newPath);
+              // Agregar a promesas de capas para procesar en paralelo
+              layerPromises.push(collectGeoJSON(child, basePath, newPath));
             } else if (child.index) {
-              try {
-                const url = basePath + child.index;
-                const res = await fetch(url, { cache: "no-store" });
-                const json = await res.json();
-                const nextBase = basePath + child.index.replace("index.json", "");
-                // Pasar el path actualizado que incluye esta carpeta y la siguiente
-                const updatedPath = newPath + (json.label ? "/" + json.label : "");
-                await collectGeoJSON(json, nextBase, updatedPath);
-              } catch (err) {
-                console.warn(`⚠️ No se pudo cargar: ${child.index}`);
-              }
+              // Agregar a promesas de índices para cargar en paralelo
+              indexPromises.push(
+                (async () => {
+                  try {
+                    const url = basePath + child.index;
+                    const res = await fetch(url, { cache: "no-store" });
+                    const json = await res.json();
+                    const nextBase = basePath + child.index.replace("index.json", "");
+                    const updatedPath = newPath + (json.label ? "/" + json.label : "");
+                    await collectGeoJSON(json, nextBase, updatedPath);
+                  } catch (err) {
+                    console.warn(`⚠️ No se pudo cargar: ${child.index}`);
+                  }
+                })()
+              );
             }
           }
+          
+          // ✅ Ejecutar todas las promesas en paralelo
+          await Promise.all([...layerPromises, ...indexPromises]);
         }
       }
       

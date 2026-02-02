@@ -3,13 +3,13 @@
   "children": [
     {
       "type": "layer",
-      "id": "SI21FH144",
-      "label": "SI21FH144",
-      "path": "SI21/cables/SI21FH144.geojson",
+      "id": "FTTH_SANTA_INES_SI21_SI21FH144",
+      "label": "SI21FH144 · Troncal 144F",
+      "path": "SI21FH144.geojson",
       "typeLayer": "line",
       "paint": {
         "line-color": "#000099",
-        "line-width": 3
+        "line-width": 4
       }
     }
   ]

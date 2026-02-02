@@ -43,9 +43,12 @@
       type: "line",
       source: "ftth-src",
       filter: ["==", ["geometry-type"], "LineString"],
+      layout: {
+        visibility: "none" // ✅ Iniciar oculto - sin cables visibles
+      },
       paint: {
         "line-width": 2,
-        "line-color": "#00e5ff"
+        "line-color": "#000099"
       }
     });
 
@@ -57,6 +60,9 @@
       type: "circle",
       source: "ftth-src",
       filter: ["==", ["geometry-type"], "Point"],
+      layout: {
+        visibility: "visible" // ✅ Asegurar que sea visible por defecto
+      },
       paint: {
         "circle-radius": 5,
         "circle-color": "#ffaa00",
@@ -64,6 +70,22 @@
         "circle-stroke-color": "#000"
       }
     });
+    
+    // ✅ Registrar en el sistema de capas FTTH (después de crear ambas capas)
+    const App = window.__FTTH_APP__;
+    if (App) {
+      if (!App.__ftthLayerIds) {
+        App.__ftthLayerIds = [];
+      }
+      if (!App.__ftthLayerIds.includes("ftth-cables")) {
+        App.__ftthLayerIds.push("ftth-cables");
+        console.log(`✅ Capa ftth-cables registrada en sistema FTTH`);
+      }
+      if (!App.__ftthLayerIds.includes("ftth-puntos")) {
+        App.__ftthLayerIds.push("ftth-puntos");
+        console.log(`✅ Capa ftth-puntos registrada en sistema FTTH`);
+      }
+    }
 
     console.log("✅ Capas FTTH cargadas");
   }

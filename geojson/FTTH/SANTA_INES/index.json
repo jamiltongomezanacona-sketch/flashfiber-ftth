@@ -3,8 +3,138 @@
   "children": [
     {
       "type": "folder",
+      "label": "SI01",
+      "index": "SI01/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI02",
+      "index": "SI02/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI03",
+      "index": "SI03/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI04",
+      "index": "SI04/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI05",
+      "index": "SI05/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI06",
+      "index": "SI06/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI07",
+      "index": "SI07/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI08",
+      "index": "SI08/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI09",
+      "index": "SI09/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI10",
+      "index": "SI10/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI11",
+      "index": "SI11/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI12",
+      "index": "SI12/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI13",
+      "index": "SI13/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI14",
+      "index": "SI14/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI15",
+      "index": "SI15/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI16",
+      "index": "SI16/index.json"
+    },
+    {
+      "type": "folder",
       "label": "SI17",
       "index": "SI17/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI18",
+      "index": "SI18/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI19",
+      "index": "SI19/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI20",
+      "index": "SI20/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI21",
+      "index": "SI21/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI22",
+      "index": "SI22/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI23",
+      "index": "SI23/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI24",
+      "index": "SI24/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI25",
+      "index": "SI25/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI26",
+      "index": "SI26/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "SI27",
+      "index": "SI27/index.json"
     }
   ]
 }

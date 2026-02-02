@@ -13,6 +13,30 @@
     await waitForDependencies();
     console.log("🌳 UI Layers Tree listo");
     loadRoot();
+    
+    // ✅ Recargar árbol después de que las capas consolidadas se registren
+    const App = window.__FTTH_APP__;
+    if (App) {
+      // Esperar a que se carguen las capas consolidadas
+      const checkInterval = setInterval(() => {
+        if (App.__ftthLayerIds && App.__ftthLayerIds.length > 0) {
+          const hasConsolidated = App.__ftthLayerIds.some(id => 
+            id.startsWith("geojson-") || id.startsWith("ftth-")
+          );
+          if (hasConsolidated) {
+            clearInterval(checkInterval);
+            // Recargar árbol para incluir capas consolidadas
+            setTimeout(() => {
+              loadRoot();
+              console.log("🔄 Árbol recargado con capas consolidadas");
+            }, 1000);
+          }
+        }
+      }, 500);
+      
+      // Limpiar después de 10 segundos si no se encuentran capas
+      setTimeout(() => clearInterval(checkInterval), 10000);
+    }
   }
 
   async function waitForDependencies(maxAttempts = 100) {
@@ -39,6 +63,44 @@
       const root = await res.json();
       const container = document.getElementById(TREE_CONTAINER_ID);
       container.innerHTML = "";
+      
+      // ✅ Agregar capas consolidadas al árbol
+      const App = window.__FTTH_APP__;
+      if (App && App.__ftthLayerIds && App.__ftthLayerIds.length > 0) {
+        // Crear nodo para capas consolidadas
+        const consolidatedNode = {
+          label: "📦 Capas Consolidadas",
+          type: "folder",
+          children: []
+        };
+        
+        // Agregar capas consolidadas como hijos
+        App.__ftthLayerIds.forEach(layerId => {
+          if (layerId.startsWith("geojson-") || layerId.startsWith("ftth-")) {
+            const layerName = layerId === "geojson-lines" ? "🧵 Cables (Consolidado)" :
+                             layerId === "ftth-cables" ? "🧵 Cables FTTH" :
+                             layerId === "ftth-puntos" ? "📍 Puntos FTTH" :
+                             layerId === "geojson-points" ? "📍 Puntos (Consolidado)" :
+                             layerId;
+            
+            consolidatedNode.children.push({
+              type: "layer",
+              id: layerId,
+              label: layerName
+            });
+          }
+        });
+        
+        // Si hay capas consolidadas, agregarlas al root
+        if (consolidatedNode.children.length > 0) {
+          if (!root.children) {
+            root.children = [];
+          }
+          root.children.unshift(consolidatedNode); // Agregar al inicio
+          console.log(`✅ Agregadas ${consolidatedNode.children.length} capas consolidadas al árbol`);
+        }
+      }
+      
       await renderNode(root, container, "", true);   // 👈 raíz cerrada
     } catch (err) {
       console.error("❌ Error cargando árbol raíz", err);

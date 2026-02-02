@@ -69,6 +69,10 @@ async function logout() {
 }
 
 function onUserChange(callback) {
+  if (!auth) {
+    console.error("❌ Auth no inicializado");
+    return () => {};
+  }
   return onAuthStateChanged(auth, callback);
 }
 

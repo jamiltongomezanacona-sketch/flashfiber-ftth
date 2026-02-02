@@ -47,14 +47,23 @@ document.addEventListener("DOMContentLoaded", () => {
          2️⃣ Toggle de capas FTTH reales
       ========================= */
       const layers = map.getStyle().layers || [];
+      
+      // ✅ Buscar capas FTTH individuales (FTTH_*) y consolidadas (geojson-*, ftth-*)
       const ftthLayers = layers
         .map(l => l.id)
-        .filter(id => id.startsWith("FTTH_"));
+        .filter(id => 
+          id.startsWith("FTTH_") || 
+          id.startsWith("geojson-") || 
+          id.startsWith("ftth-")
+        );
 
       if (!ftthLayers.length) {
         console.warn("⚠️ No hay capas FTTH creadas todavía");
+        console.log("🔍 Capas disponibles:", layers.map(l => l.id).join(", "));
         return;
       }
+      
+      console.log(`✅ Encontradas ${ftthLayers.length} capas FTTH:`, ftthLayers.join(", "));
 
       ftthLayers.forEach(id => {
         if (!map.getLayer(id)) return;

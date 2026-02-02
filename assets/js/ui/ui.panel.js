@@ -196,6 +196,11 @@ btnBaseMap?.addEventListener("click", () => {
   App.map.once("idle", () => {
     console.log("✅ Estilo estable → restaurando capas y datos");
 
+    // ✅ CARGAR TODO EL GEOJSON CONSOLIDADO EN EL MAPA BASE
+    if (App.loadConsolidatedGeoJSONToBaseMap) {
+      App.loadConsolidatedGeoJSONToBaseMap();
+    }
+
     // 🗺️ Capas FTTH (GeoJSON base)
     App.layers?.reload?.();
 
@@ -238,14 +243,20 @@ btnBaseMap?.addEventListener("click", () => {
 
   // Abrir desde botón HUD
   btnCapasMap?.addEventListener("click", () => {
-    App.tools.capas.open();
+    console.log("🔘 Botón Capas (HUD) clickeado");
+    App.tools.capas?.open();
   });
 
   // Abrir desde sidebar
-  document.getElementById("btnOpenLayers")
-    ?.addEventListener("click", () => {
-      App.tools.capas.open();
+  const btnOpenLayers = document.getElementById("btnOpenLayers");
+  if (btnOpenLayers) {
+    btnOpenLayers.addEventListener("click", () => {
+      console.log("🔘 Botón Capas (Sidebar) clickeado");
+      App.tools.capas?.open();
     });
+  } else {
+    console.warn("⚠️ Botón btnOpenLayers no encontrado en DOM");
+  }
 
   // Cerrar panel
   document.getElementById("btnCloseLayers")

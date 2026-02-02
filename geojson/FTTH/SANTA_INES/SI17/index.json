@@ -5,6 +5,11 @@
       "type": "folder",
       "label": "Cables",
       "index": "cables/index.json"
+    },
+    {
+      "type": "folder",
+      "label": "Cierres",
+      "index": "cierres/index.json"
     }
   ]
 }

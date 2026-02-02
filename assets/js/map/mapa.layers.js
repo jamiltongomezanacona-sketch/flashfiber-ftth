@@ -417,6 +417,291 @@
   }
 
   /* ===============================
+     Consolidar SOLO CABLES y CIERRES E1
+  =============================== */
+  async function consolidateAllGeoJSON() {
+    try {
+      console.log("📦 Consolidando SOLO CABLES y CIERRES E1...");
+      const allFeatures = [];
+      
+      // Función recursiva para recopilar GeoJSON
+      async function collectGeoJSON(node, basePath, currentPath = "") {
+        if (!node) return;
+        
+        // Actualizar ruta actual
+        const newPath = currentPath + (node.label ? "/" + node.label : "");
+        
+        // Si este nodo es una capa, cargar su GeoJSON
+        if (node.type === "layer") {
+          // ✅ SOLO incluir si es de cables o cierres
+          // Verificar en la ruta completa (currentPath + newPath)
+          const fullPath = (currentPath + newPath).toLowerCase();
+          const pathIncludesCables = fullPath.includes("cables") || 
+                                     fullPath.includes("/cables/") ||
+                                     fullPath.includes("/cables");
+          const pathIncludesCierres = fullPath.includes("cierres") || 
+                                      fullPath.includes("/cierres/") ||
+                                      fullPath.includes("/cierres");
+          
+          // Verificar también en el ID y label del nodo
+          const nodeIdLower = (node.id || "").toLowerCase();
+          const nodeLabelLower = (node.label || "").toLowerCase();
+          const nodePathLower = (node.path || "").toLowerCase();
+          
+          const isCable = (pathIncludesCables || 
+                          nodeIdLower.includes("cable") ||
+                          nodeLabelLower.includes("cable") ||
+                          nodePathLower.includes("cable")) &&
+                         !fullPath.includes("corporativo");
+          
+          const isCierre = (pathIncludesCierres || 
+                          nodeIdLower.includes("cierre") ||
+                          nodeLabelLower.includes("cierre") ||
+                          nodePathLower.includes("cierre")) &&
+                         !fullPath.includes("corporativo");
+          
+          // Excluir explícitamente CORPORATIVO, eventos, rutas, mantenimientos
+          const isExcluded = fullPath.includes("corporativo") ||
+                            fullPath.includes("eventos") ||
+                            fullPath.includes("rutas") ||
+                            fullPath.includes("mantenimientos") ||
+                            nodeIdLower.includes("corporativo") ||
+                            nodeIdLower.includes("evento") ||
+                            nodeIdLower.includes("ruta") ||
+                            nodeIdLower.includes("mantenimiento") ||
+                            nodeIdLower.includes("central") ||
+                            nodeIdLower.includes("centrales");
+          
+          if (isExcluded || (!isCable && !isCierre)) {
+            console.log(`⏭️ Omitiendo capa (solo cables y cierres E1): ${node.id}, path: ${fullPath}`);
+            return;
+          }
+          
+          console.log(`✅ Incluyendo capa: ${node.id}, tipo: ${isCable ? 'CABLE' : 'CIERRE'}, path: ${fullPath}`);
+          
+          try {
+            const url = basePath + node.path;
+            const res = await fetch(url, { cache: "no-store" });
+            if (!res.ok) {
+              console.warn(`⚠️ No se pudo cargar: ${url}`);
+              return;
+            }
+            const geojson = await res.json();
+            
+            // Validar que tenga features
+            if (geojson && geojson.features && geojson.features.length > 0) {
+              // Si es cierre, filtrar solo E1
+              if (isCierre) {
+                const e1Features = geojson.features.filter(feature => {
+                  const tipo = feature.properties?.tipo || 
+                              feature.properties?.type ||
+                              feature.properties?.name?.toUpperCase();
+                  // Verificar si es E1 (puede estar en diferentes propiedades)
+                  const isE1 = tipo === "E1" || 
+                               tipo?.includes("E1") ||
+                               feature.properties?.codigo?.includes("E1") ||
+                               feature.properties?.name?.includes("E1");
+                  return isE1;
+                });
+                
+                if (e1Features.length === 0) {
+                  console.log(`⏭️ Omitiendo cierres (ninguno es E1): ${node.id}`);
+                  return;
+                }
+                
+                // Agregar metadata de la capa a cada feature E1
+                e1Features.forEach(feature => {
+                  if (!feature.properties) feature.properties = {};
+                  feature.properties._layerId = node.id;
+                  feature.properties._layerLabel = node.label;
+                  feature.properties._layerType = node.typeLayer || "symbol";
+                });
+                
+                allFeatures.push(...e1Features);
+                console.log(`✅ ${e1Features.length} cierres E1 de ${node.id} (de ${geojson.features.length} totales)`);
+              } else {
+                // Es cable, incluir todos los features
+                geojson.features.forEach(feature => {
+                  if (!feature.properties) feature.properties = {};
+                  feature.properties._layerId = node.id;
+                  feature.properties._layerLabel = node.label;
+                  feature.properties._layerType = node.typeLayer || "line";
+                });
+                
+                allFeatures.push(...geojson.features);
+                console.log(`✅ ${geojson.features.length} features de cable ${node.id}`);
+              }
+            }
+          } catch (err) {
+            console.warn(`⚠️ Error cargando ${node.id}:`, err);
+          }
+          return;
+        }
+        
+        // Si tiene hijos, recorrerlos
+        if (node.children?.length) {
+          for (const child of node.children) {
+            if (child.type === "layer") {
+              // Pasar el path actualizado que incluye esta carpeta
+              await collectGeoJSON(child, basePath, newPath);
+            } else if (child.index) {
+              try {
+                const url = basePath + child.index;
+                const res = await fetch(url, { cache: "no-store" });
+                const json = await res.json();
+                const nextBase = basePath + child.index.replace("index.json", "");
+                // Pasar el path actualizado que incluye esta carpeta y la siguiente
+                const updatedPath = newPath + (json.label ? "/" + json.label : "");
+                await collectGeoJSON(json, nextBase, updatedPath);
+              } catch (err) {
+                console.warn(`⚠️ No se pudo cargar: ${child.index}`);
+              }
+            }
+          }
+        }
+      }
+      
+      // Cargar árbol raíz y consolidar
+      const res = await fetch(ROOT_INDEX, { cache: "no-store" });
+      const root = await res.json();
+      await collectGeoJSON(root, "../geojson/", "");
+      
+      // Crear FeatureCollection consolidado
+      const consolidated = {
+        type: "FeatureCollection",
+        features: allFeatures
+      };
+      
+      console.log(`✅ GeoJSON consolidado: ${allFeatures.length} features (SOLO CABLES y CIERRES E1)`);
+      return consolidated;
+    } catch (err) {
+      console.error("❌ Error consolidando GeoJSON", err);
+      return { type: "FeatureCollection", features: [] };
+    }
+  }
+
+  /* ===============================
+     Cargar GeoJSON consolidado en mapa base
+  =============================== */
+  async function loadConsolidatedGeoJSONToBaseMap() {
+    const map = App.map;
+    if (!map || !map.isStyleLoaded()) {
+      console.warn("⚠️ Mapa no disponible para cargar GeoJSON consolidado");
+      return;
+    }
+    
+    try {
+      const consolidated = await consolidateAllGeoJSON();
+      
+      if (!consolidated.features || consolidated.features.length === 0) {
+        console.warn("⚠️ No hay features para cargar en mapa base");
+        return;
+      }
+      
+      // Verificar si el source ya existe
+      if (map.getSource("geojson-consolidado")) {
+        console.log("🔄 Actualizando GeoJSON consolidado existente");
+        map.getSource("geojson-consolidado").setData(consolidated);
+      } else {
+        // Crear source consolidado
+        map.addSource("geojson-consolidado", {
+          type: "geojson",
+          data: consolidated
+        });
+        console.log("✅ Source consolidado creado");
+      }
+      
+      // Separar features por tipo de geometría
+      const lineFeatures = consolidated.features.filter(f => 
+        f.geometry && f.geometry.type === "LineString"
+      );
+      const pointFeatures = consolidated.features.filter(f => 
+        f.geometry && f.geometry.type === "Point"
+      );
+      const polygonFeatures = consolidated.features.filter(f => 
+        f.geometry && (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon")
+      );
+      
+      // Capa de líneas (cables, rutas, etc.)
+      if (lineFeatures.length > 0 && !map.getLayer("geojson-lines")) {
+        map.addLayer({
+          id: "geojson-lines",
+          type: "line",
+          source: "geojson-consolidado",
+          filter: ["==", ["geometry-type"], "LineString"],
+          layout: {
+            visibility: "none" // ✅ Iniciar oculto - sin cables visibles
+          },
+          paint: {
+            "line-color": "#000099",
+            "line-width": 4,
+            "line-opacity": 0.8
+          }
+        });
+        console.log(`✅ Capa de líneas creada: ${lineFeatures.length} features`);
+        
+        // ✅ Registrar en el sistema de capas FTTH
+        if (!App.__ftthLayerIds) {
+          App.__ftthLayerIds = [];
+        }
+        if (!App.__ftthLayerIds.includes("geojson-lines")) {
+          App.__ftthLayerIds.push("geojson-lines");
+          console.log(`✅ Capa geojson-lines registrada en sistema FTTH`);
+        }
+      }
+      
+      // Capa de puntos (centrales, cierres, etc.)
+      if (pointFeatures.length > 0 && !map.getLayer("geojson-points")) {
+        map.addLayer({
+          id: "geojson-points",
+          type: "circle",
+          source: "geojson-consolidado",
+          filter: ["==", ["geometry-type"], "Point"],
+          paint: {
+            "circle-radius": 6,
+            "circle-color": "#ffaa00",
+            "circle-stroke-width": 2,
+            "circle-stroke-color": "#000",
+            "circle-opacity": 0.9
+          }
+        });
+        console.log(`✅ Capa de puntos creada: ${pointFeatures.length} features`);
+      }
+      
+      // Capa de polígonos
+      if (polygonFeatures.length > 0 && !map.getLayer("geojson-polygons")) {
+        map.addLayer({
+          id: "geojson-polygons",
+          type: "fill",
+          source: "geojson-consolidado",
+          filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
+          paint: {
+            "fill-color": "#00e5ff",
+            "fill-opacity": 0.3
+          }
+        });
+        
+        // Borde de polígonos
+        map.addLayer({
+          id: "geojson-polygons-outline",
+          type: "line",
+          source: "geojson-consolidado",
+          filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
+          paint: {
+            "line-color": "#00e5ff",
+            "line-width": 2
+          }
+        });
+        console.log(`✅ Capa de polígonos creada: ${polygonFeatures.length} features`);
+      }
+      
+      console.log(`✅ GeoJSON consolidado cargado en mapa base: ${consolidated.features.length} features totales`);
+    } catch (err) {
+      console.error("❌ Error cargando GeoJSON consolidado en mapa base:", err);
+    }
+  }
+
+  /* ===============================
      Cargar árbol raíz
   =============================== */
   async function loadFTTHTree() {
@@ -448,6 +733,20 @@
     // 🟢 Si tiene hijos → recorrerlos
     if (node.children?.length) {
       for (const child of node.children) {
+        // ✅ OMITIR solo carpeta de cables - ya están en mapa consolidado
+        // PERO permitir cierres y eventos para control granular individual
+        if (child.index) {
+          const isCablesFolder = child.index.toLowerCase().includes("cables/") ||
+                                child.label?.toLowerCase().includes("cables");
+          
+          // Solo omitir cables, NO cierres ni eventos
+          if (isCablesFolder) {
+            console.log(`⏭️ Omitiendo carpeta de cables (ya está en mapa consolidado): ${child.label || child.index}`);
+            continue;
+          }
+          
+          // ✅ PERMITIR carpetas de cierres y eventos para cargar capas individuales
+        }
 
         // 👉 CASO 1: hijo es capa directa
         if (child.type === "layer") {
@@ -489,6 +788,21 @@
 
     const id  = layer.id;
     const url = basePath + layer.path;
+    
+    // ✅ OMITIR solo cables - ya están en el mapa consolidado
+    // PERO permitir cierres y eventos individuales para control granular
+    const isCable = basePath.toLowerCase().includes("cables") || 
+                   id?.toLowerCase().includes("cable") ||
+                   layer.label?.toLowerCase().includes("cable");
+    
+    // Solo omitir cables, NO cierres ni eventos
+    if (isCable) {
+      console.log(`⏭️ Omitiendo capa de cable (ya está en mapa consolidado): ${id}`);
+      return;
+    }
+    
+    // ✅ PERMITIR cierres y eventos individuales para control granular
+    // Estos se cargarán como capas separadas para poder activarlos/desactivarlos individualmente
     
     console.log(`🔍 Creando capa: ${id}, URL: ${url}, basePath: ${basePath}, path: ${layer.path}`);
 
@@ -793,7 +1107,7 @@
             visibility: "visible" // ✅ Capas habilitadas por defecto
           },
           paint: layer.paint || {
-            "line-color": "#00ff90",
+            "line-color": "#000099",
             "line-width": 4
           }
         };
@@ -848,7 +1162,13 @@
   App.map?.on("load", () => {
     // Inicializar handler global cuando el mapa esté listo
     initGlobalImageMissingHandler();
+    
+    // ✅ CARGAR TODO EL GEOJSON CONSOLIDADO EN EL MAPA BASE
+    loadConsolidatedGeoJSONToBaseMap();
+    
+    // También cargar el árbol individual (para compatibilidad)
     loadFTTHTree();
+    
     // ❌ DESHABILITADO: Zoom inicial a Santa Inés (genera errores NaN)
     // El zoom se hará automáticamente cuando se carguen las capas
     // setTimeout(() => {
@@ -860,6 +1180,8 @@
     // Reinicializar handler después de que el estilo se cargue
     setTimeout(() => {
       initGlobalImageMissingHandler();
+      // ✅ Recargar GeoJSON consolidado cuando cambia el estilo
+      loadConsolidatedGeoJSONToBaseMap();
     }, 500);
   });
   
@@ -873,5 +1195,7 @@
      API pública
   =============================== */
   App.loadFTTHTree = loadFTTHTree;
+  App.consolidateAllGeoJSON = consolidateAllGeoJSON;
+  App.loadConsolidatedGeoJSONToBaseMap = loadConsolidatedGeoJSONToBaseMap;
 
 })();

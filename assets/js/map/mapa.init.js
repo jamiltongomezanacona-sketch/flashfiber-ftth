@@ -60,6 +60,12 @@
   map.on("load", () => {
     console.log("🗺️ MAPA CARGADO CORRECTAMENTE");
 
+    // ✅ CARGAR TODO EL GEOJSON CONSOLIDADO EN EL MAPA BASE
+    // Esto se ejecuta automáticamente desde mapa.layers.js, pero lo aseguramos aquí también
+    if (App.loadConsolidatedGeoJSONToBaseMap) {
+      App.loadConsolidatedGeoJSONToBaseMap();
+    }
+
     // 🌍 Capas FTTH
     App.layers?.loadIndex();
 

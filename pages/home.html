@@ -411,9 +411,25 @@
   </main>
 
   <!-- ================= SCRIPT ================= -->
+  <!-- Firebase Core -->
+  <script type="module" src="../assets/js/services/firebase.js"></script>
+  <script type="module" src="../assets/js/services/firebase.db.js"></script>
+  
+  <!-- Auth Guard - Protección de rutas -->
+  <script type="module" src="../assets/js/core/auth.guard.js"></script>
+
   <script>
-    // Acceso directo sin autenticación
-    document.getElementById("usernameDisplay").textContent = "Usuario";
+    // Esperar a que el usuario esté cargado
+    const waitForUser = setInterval(() => {
+      if (window.__USER__) {
+        clearInterval(waitForUser);
+        // Mostrar nombre del usuario
+        const usernameDisplay = document.getElementById("usernameDisplay");
+        if (usernameDisplay) {
+          usernameDisplay.textContent = window.__USER__.nombre || window.__USER__.email || "Usuario";
+        }
+      }
+    }, 100);
 
     // Navegación de tarjetas
     document.querySelectorAll(".card[data-link]").forEach(card => {

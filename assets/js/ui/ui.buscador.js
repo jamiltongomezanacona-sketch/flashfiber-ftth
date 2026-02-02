@@ -140,10 +140,20 @@
 
     // Si es una capa de tipo "layer"
     if (node.type === "layer") {
-      // ✅ Solo procesar si es un cable (filtrar otros tipos)
-      const isCable = node.id?.toLowerCase().includes("cable") || 
-                     node.path?.toLowerCase().includes("cable") ||
-                     basePath?.toLowerCase().includes("cables");
+      // ✅ Detectar cables de múltiples formas:
+      // 1. Si el path contiene "cables" o "cable"
+      // 2. Si el basePath contiene "cables"
+      // 3. Si el typeLayer es "line" (los cables son líneas)
+      // 4. Si el ID contiene patrones de cables (FH, etc.)
+      const pathLower = (node.path || "").toLowerCase();
+      const basePathLower = (basePath || "").toLowerCase();
+      const idLower = (node.id || "").toLowerCase();
+      const typeLayer = (node.typeLayer || "").toLowerCase();
+      
+      const isCable = pathLower.includes("cable") || 
+                     basePathLower.includes("cables") ||
+                     typeLayer === "line" ||
+                     idLower.match(/si\d+fh\d+/i); // Patrón: SI##FH##
       
       if (!isCable) {
         return; // Omitir si no es cable
@@ -188,19 +198,24 @@
             }
             
             if (coordinates && id) {
-              searchIndex.cables.push({
-                id: id,
-                name: codigo,
-                type: "cable",
-                layerId: node.id,
-                coordinates: coordinates,
-                icon: "🧵",
-                subtitle: `${central}${molecula ? " · " + molecula : ""}${tipo ? " · " + tipo : ""}${fibras ? " · " + fibras + "F" : ""}`,
-                central: central,
-                molecula: molecula,
-                tipo: tipo,
-                fibras: fibras
-              });
+              // ✅ Evitar duplicados
+              const exists = searchIndex.cables.some(c => c.id === id);
+              if (!exists) {
+                searchIndex.cables.push({
+                  id: id,
+                  name: codigo,
+                  type: "cable",
+                  layerId: node.id,
+                  coordinates: coordinates,
+                  icon: "🧵",
+                  subtitle: `${central}${molecula ? " · " + molecula : ""}${tipo ? " · " + tipo : ""}${fibras ? " · " + fibras + "F" : ""}`,
+                  central: central,
+                  molecula: molecula,
+                  tipo: tipo,
+                  fibras: fibras
+                });
+                console.log(`✅ Cable agregado al buscador: ${id}`);
+              }
             }
           });
         }
@@ -249,7 +264,7 @@
       }
       
       // ✅ Ejecutar todas las promesas en paralelo
-      await Promise.all(promises);
+      await Promise.allSettled(promises);
     }
   }
 

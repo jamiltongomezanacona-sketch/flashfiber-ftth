@@ -38,25 +38,34 @@
      Inicialización
   ========================= */
   async function init() {
-    await waitForDependencies();
-    await loadSearchIndex();
+    // ✅ Cargar centrales y cables inmediatamente (no requieren Firebase ni mapa)
+    await loadCentrales();
+    await loadCables();
+    
+    // ✅ Configurar event listeners de inmediato
     setupEventListeners();
-    console.log("🔍 Buscador inicializado");
+    console.log("🔍 Buscador inicializado (centrales y cables cargados)");
+    
+    // ✅ Cargar cierres cuando Firebase esté disponible (en segundo plano)
+    waitForFirebaseAndLoadCierres();
   }
 
-  async function waitForDependencies(maxAttempts = 100) {
+  async function waitForFirebaseAndLoadCierres(maxAttempts = 100) {
+    // Esperar solo por Firebase para cargar cierres
     for (let i = 0; i < maxAttempts; i++) {
-      if (App?.map && window.FTTH_FIREBASE) {
+      if (window.FTTH_FIREBASE) {
+        await loadCierres();
+        console.log(`✅ Cierres cargados: ${searchIndex.cierres.length} cierres`);
         return true;
       }
       await new Promise(resolve => setTimeout(resolve, 100));
     }
-    console.warn("⚠️ Dependencias del buscador no disponibles");
+    console.warn("⚠️ Firebase no disponible para cargar cierres");
     return false;
   }
 
   /* =========================
-     Cargar índice de búsqueda
+     Cargar índice de búsqueda (DEPRECADO - usar funciones individuales)
   ========================= */
   async function loadSearchIndex() {
     try {

@@ -138,7 +138,16 @@
         // Si no está cargada, verificar si el archivo tiene datos
         if (node.path) {
           try {
-            const layerUrl = "../geojson/" + basePath + node.path;
+            // Construir URL normalizada
+            let layerUrl = basePath + node.path;
+            layerUrl = layerUrl.replace(/\/+/g, "/");
+            if (!layerUrl.startsWith("../geojson/")) {
+              if (layerUrl.startsWith("geojson/")) {
+                layerUrl = "../" + layerUrl;
+              } else {
+                layerUrl = "../geojson/" + layerUrl.replace(/^\.\.\/geojson\//, "");
+              }
+            }
             const layerRes = await fetch(layerUrl, { cache: "no-store" });
             const layerData = await layerRes.json();
             

@@ -733,19 +733,10 @@
     // 🟢 Si tiene hijos → recorrerlos
     if (node.children?.length) {
       for (const child of node.children) {
-        // ✅ OMITIR solo carpeta de cables - ya están en mapa consolidado
-        // PERO permitir cierres y eventos para control granular individual
+        // ✅ PERMITIR todas las carpetas, incluyendo cables
+        // Los cables están en el consolidado pero también permitimos control individual
         if (child.index) {
-          const isCablesFolder = child.index.toLowerCase().includes("cables/") ||
-                                child.label?.toLowerCase().includes("cables");
-          
-          // Solo omitir cables, NO cierres ni eventos
-          if (isCablesFolder) {
-            console.log(`⏭️ Omitiendo carpeta de cables (ya está en mapa consolidado): ${child.label || child.index}`);
-            continue;
-          }
-          
-          // ✅ PERMITIR carpetas de cierres y eventos para cargar capas individuales
+          // No omitir ninguna carpeta - permitir carga de todas las capas
         }
 
         // 👉 CASO 1: hijo es capa directa
@@ -787,22 +778,24 @@
     }
 
     const id  = layer.id;
-    const url = basePath + layer.path;
+    // ✅ Construir URL correcta - normalizar rutas para que funcionen en dominio
+    let url = basePath + layer.path;
     
-    // ✅ OMITIR solo cables - ya están en el mapa consolidado
-    // PERO permitir cierres y eventos individuales para control granular
-    const isCable = basePath.toLowerCase().includes("cables") || 
-                   id?.toLowerCase().includes("cable") ||
-                   layer.label?.toLowerCase().includes("cable");
+    // Normalizar la ruta: eliminar dobles barras
+    url = url.replace(/\/+/g, "/");
     
-    // Solo omitir cables, NO cierres ni eventos
-    if (isCable) {
-      console.log(`⏭️ Omitiendo capa de cable (ya está en mapa consolidado): ${id}`);
-      return;
+    // Si la basePath ya tiene ../geojson/, no duplicar
+    if (url.startsWith("../geojson/")) {
+      // Ya está bien formada
+    } else if (url.startsWith("geojson/")) {
+      url = "../" + url;
+    } else if (!url.startsWith("../")) {
+      // Asegurar que comience con ../geojson/
+      url = "../geojson/" + url.replace(/^\.\.\/geojson\//, "");
     }
     
-    // ✅ PERMITIR cierres y eventos individuales para control granular
-    // Estos se cargarán como capas separadas para poder activarlos/desactivarlos individualmente
+    // ✅ PERMITIR cargar todas las capas individuales (cables, cierres, eventos)
+    // Esto permite control granular desde el árbol de capas
     
     console.log(`🔍 Creando capa: ${id}, URL: ${url}, basePath: ${basePath}, path: ${layer.path}`);
 

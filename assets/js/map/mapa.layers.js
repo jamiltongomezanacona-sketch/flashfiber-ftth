@@ -15,6 +15,7 @@
 
   const ROOT_INDEX = "../geojson/index.json";
   let restoring = false;
+  let loadingTree = false; // ✅ Bloqueo para evitar cargas duplicadas
 
   App.__ftthLayerIds = App.__ftthLayerIds || [];
   
@@ -613,9 +614,18 @@
      Cargar GeoJSON consolidado en mapa base
   =============================== */
   async function loadConsolidatedGeoJSONToBaseMap() {
-    const map = App.map;
-    if (!map || !map.isStyleLoaded()) {
+    const map = App?.map;
+    if (!map) {
       console.warn("⚠️ Mapa no disponible para cargar GeoJSON consolidado");
+      return;
+    }
+    
+    // ✅ Esperar a que el estilo esté completamente cargado
+    if (!map.isStyleLoaded()) {
+      console.log("⏳ Esperando a que el estilo del mapa se cargue...");
+      map.once("style.load", () => {
+        setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), 100);
+      });
       return;
     }
     
@@ -734,6 +744,13 @@
      Cargar árbol raíz
   =============================== */
   async function loadFTTHTree() {
+    // ✅ Evitar cargas duplicadas simultáneas
+    if (loadingTree) {
+      console.log("⚠️ loadFTTHTree ya está en ejecución, omitiendo llamada duplicada");
+      return;
+    }
+    
+    loadingTree = true;
     try {
       console.log("📂 Cargando árbol FTTH...");
       const res = await fetch(ROOT_INDEX, { cache: "no-store" });
@@ -744,6 +761,8 @@
       console.log("🌳 Árbol FTTH procesado");
     } catch (err) {
       console.error("❌ Error cargando árbol FTTH", err);
+    } finally {
+      loadingTree = false; // ✅ Liberar bloqueo
     }
   }
 
@@ -828,8 +847,21 @@
     
     console.log(`🔍 Creando capa: ${id}, URL: ${url}, basePath: ${basePath}, path: ${layer.path}`);
 
+    // ✅ Verificar si el source o la layer ya existen (evitar duplicados)
     if (map.getSource(id)) {
-      console.log(`⚠️ Source ${id} ya existe, omitiendo`);
+      console.log(`⚠️ Source ${id} ya existe, omitiendo creación`);
+      // Si el source existe pero la layer no, crear la layer
+      if (!map.getLayer(id)) {
+        console.log(`⚠️ Source existe pero layer no, creando layer: ${id}`);
+        // Continuar para crear la layer
+      } else {
+        return; // Ambos existen, omitir completamente
+      }
+    }
+    
+    // ✅ Verificar si la layer ya existe
+    if (map.getLayer(id)) {
+      console.log(`⚠️ Layer ${id} ya existe, omitiendo`);
       return;
     }
 
@@ -1125,10 +1157,20 @@
         }
       } else {
         // Configuración para líneas y otros tipos
-        map.addSource(id, {
-          type: "geojson",
-          data: geojson
-        });
+        // ✅ Verificar nuevamente antes de agregar (evitar race conditions)
+        if (!map.getSource(id)) {
+          map.addSource(id, {
+            type: "geojson",
+            data: geojson
+          });
+        } else {
+          console.log(`⚠️ Source ${id} ya existe al intentar agregar, usando existente`);
+          // Actualizar datos del source existente
+          const source = map.getSource(id);
+          if (source && source.setData) {
+            source.setData(geojson);
+          }
+        }
 
         // ✅ Determinar visibilidad: oculto para cables, visible para otros (centrales, puntos, etc.)
         const isCableLayer = id?.toLowerCase().includes("cable") || 
@@ -1151,10 +1193,18 @@
           }
         };
 
-        map.addLayer(layerConfig);
+        // ✅ Verificar nuevamente antes de agregar layer (evitar duplicados)
+        if (!map.getLayer(id)) {
+          map.addLayer(layerConfig);
+        } else {
+          console.log(`⚠️ Layer ${id} ya existe, omitiendo agregar`);
+        }
       }
-
-      App.__ftthLayerIds.push(id);
+      
+      // ✅ Solo agregar a la lista si no está ya registrado
+      if (!App.__ftthLayerIds.includes(id)) {
+        App.__ftthLayerIds.push(id);
+      }
 
       const visibility = map.getLayoutProperty(id, "visibility");
       console.log(`✅ Capa cargada: ${id} (${geojson.features.length} features, tipo: ${layerType}, visibilidad: ${visibility})`);
@@ -1221,7 +1271,10 @@
     setTimeout(() => {
       initGlobalImageMissingHandler();
       // ✅ Recargar GeoJSON consolidado cuando cambia el estilo
-      loadConsolidatedGeoJSONToBaseMap();
+      // Esperar un poco más para asegurar que el mapa esté completamente listo
+      setTimeout(() => {
+        loadConsolidatedGeoJSONToBaseMap();
+      }, 300);
     }, 500);
   });
   

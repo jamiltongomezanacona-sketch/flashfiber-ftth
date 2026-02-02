@@ -72,7 +72,7 @@
     });
     
     // ✅ Registrar en el sistema de capas FTTH (después de crear ambas capas)
-    const App = window.__FTTH_APP__;
+    // App ya está declarado arriba en la función
     if (App) {
       if (!App.__ftthLayerIds) {
         App.__ftthLayerIds = [];

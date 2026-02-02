@@ -1043,12 +1043,17 @@
         }
 
         // Configurar layout para símbolos SOLO CON TEXTO (sin iconos)
+        // ✅ Determinar visibilidad inicial: oculto para cables, visible para otros
+        const isCableLayer = id?.toLowerCase().includes("cable") || 
+                            basePath?.toLowerCase().includes("cables");
+        const initialVisibility = isCableLayer ? "none" : (layer.layout?.visibility || "visible");
+        
         const layerConfig = {
           id,
           type: layerType,
           source: id,
           layout: {
-            visibility: "visible", // ✅ Capas habilitadas por defecto
+            visibility: initialVisibility, // ✅ Cables ocultos por defecto, otros visibles
             ...(layer.layout || {}),
             // SOLO TEXTO - Sin iconos
             "text-field": ["get", "name"],
@@ -1126,7 +1131,7 @@
           type: layerType,
           source: id,
           layout: {
-            visibility: "visible" // ✅ Capas habilitadas por defecto
+            visibility: "none" // ✅ Iniciar ocultas - solo se activan desde el árbol
           },
           paint: layer.paint || {
             "line-color": "#000099",
@@ -1139,7 +1144,8 @@
 
       App.__ftthLayerIds.push(id);
 
-      console.log("✅ Capa cargada y habilitada:", id, `(${geojson.features.length} features, tipo: ${layerType})`);
+      const visibility = map.getLayoutProperty(id, "visibility");
+      console.log(`✅ Capa cargada: ${id} (${geojson.features.length} features, tipo: ${layerType}, visibilidad: ${visibility})`);
 
       // 🎯 Zoom a Santa Inés después de cargar la primera capa importante
       // Solo hacer zoom una vez cuando se carga la capa de centrales

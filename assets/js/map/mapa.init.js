@@ -60,6 +60,11 @@
   map.on("load", () => {
     console.log("🗺️ MAPA CARGADO CORRECTAMENTE");
 
+    // ✅ CARGAR CENTRALES DE FORMA FIJA (PRIMERO - SIEMPRE VISIBLES)
+    if (App.loadCentralesFijas) {
+      App.loadCentralesFijas();
+    }
+
     // ✅ CARGAR TODO EL GEOJSON CONSOLIDADO EN EL MAPA BASE
     // Esto se ejecuta automáticamente desde mapa.layers.js, pero lo aseguramos aquí también
     if (App.loadConsolidatedGeoJSONToBaseMap) {

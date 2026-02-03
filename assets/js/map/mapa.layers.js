@@ -826,6 +826,13 @@
     }
 
     const id  = layer.id;
+    
+    // ✅ OMITIR centrales - se cargan de forma fija e independiente
+    if (id === "CORPORATIVO_CENTRALES_ETB" || 
+        id?.toLowerCase().includes("centrales") && id?.toLowerCase().includes("corporativo")) {
+      console.log("ℹ️ Centrales se cargan de forma fija, omitiendo carga desde árbol");
+      return;
+    }
     // ✅ Construir URL correcta - normalizar rutas para que funcionen en dominio
     let url = basePath + layer.path;
     
@@ -1247,29 +1254,128 @@
   }
 
   /* ===============================
+     Cargar centrales de forma fija e independiente
+  =============================== */
+  async function loadCentralesFijas() {
+    const map = App?.map;
+    if (!map || !map.isStyleLoaded()) {
+      // Esperar a que el mapa esté listo
+      map?.once("style.load", () => {
+        setTimeout(() => loadCentralesFijas(), 100);
+      });
+      return;
+    }
+    
+    const CENTRALES_ID = "CORPORATIVO_CENTRALES_ETB";
+    const CENTRALES_SOURCE = "centrales-etb-source";
+    
+    // Si ya está cargado, asegurar que esté visible
+    if (map.getLayer(CENTRALES_ID)) {
+      map.setLayoutProperty(CENTRALES_ID, "visibility", "visible");
+      console.log("✅ Centrales ya cargadas, asegurando visibilidad");
+      return;
+    }
+    
+    try {
+      console.log("🏢 Cargando centrales ETB (fijas)...");
+      
+      // Cargar GeoJSON de centrales
+      const res = await fetch("../geojson/CORPORATIVO/centrales-etb.geojson", { cache: "no-store" });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+      const geojson = await res.json();
+      
+      if (!geojson || !geojson.features || geojson.features.length === 0) {
+        console.warn("⚠️ No hay centrales para cargar");
+        return;
+      }
+      
+      // Crear source si no existe
+      if (!map.getSource(CENTRALES_SOURCE)) {
+        map.addSource(CENTRALES_SOURCE, {
+          type: "geojson",
+          data: geojson
+        });
+      } else {
+        // Actualizar datos si el source ya existe
+        map.getSource(CENTRALES_SOURCE).setData(geojson);
+      }
+      
+      // ✅ NO generar iconos - solo usar texto
+      // Actualizar datos
+      map.getSource(CENTRALES_SOURCE).setData(geojson);
+      
+      // Crear layer si no existe (solo texto, sin iconos)
+      if (!map.getLayer(CENTRALES_ID)) {
+        map.addLayer({
+          id: CENTRALES_ID,
+          type: "symbol",
+          source: CENTRALES_SOURCE,
+          layout: {
+            "text-field": ["get", "name"], // ✅ Solo mostrar el nombre
+            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+            "text-size": 14,
+            "text-anchor": "center",
+            "text-offset": [0, 1.5], // Posicionar texto debajo del punto
+            "text-allow-overlap": true,
+            "text-ignore-placement": true,
+            "visibility": "visible" // ✅ SIEMPRE VISIBLE
+          },
+          paint: {
+            "text-color": "#2196F3", // Azul corporativo
+            "text-halo-color": "#FFFFFF",
+            "text-halo-width": 2,
+            "text-halo-blur": 1
+          }
+        });
+        
+        // Registrar en el sistema
+        if (!App.__ftthLayerIds.includes(CENTRALES_ID)) {
+          App.__ftthLayerIds.push(CENTRALES_ID);
+        }
+      } else {
+        // Asegurar que esté visible
+        map.setLayoutProperty(CENTRALES_ID, "visibility", "visible");
+      }
+      
+      console.log(`✅ Centrales ETB cargadas (fijas): ${geojson.features.length} centrales`);
+      
+      // Zoom a Santa Inés después de cargar centrales
+      if (geojson.features.length > 0) {
+        zoomToSantaInes();
+      }
+      
+    } catch (err) {
+      console.error("❌ Error cargando centrales fijas:", err);
+    }
+  }
+
+  /* ===============================
      Eventos
   =============================== */
   App.map?.on("load", () => {
     // Inicializar handler global cuando el mapa esté listo
     initGlobalImageMissingHandler();
     
+    // ✅ CARGAR CENTRALES DE FORMA FIJA E INDEPENDIENTE (PRIMERO)
+    loadCentralesFijas();
+    
     // ✅ CARGAR TODO EL GEOJSON CONSOLIDADO EN EL MAPA BASE
     loadConsolidatedGeoJSONToBaseMap();
     
     // También cargar el árbol individual (para compatibilidad)
     loadFTTHTree();
-    
-    // ❌ DESHABILITADO: Zoom inicial a Santa Inés (genera errores NaN)
-    // El zoom se hará automáticamente cuando se carguen las capas
-    // setTimeout(() => {
-    //   zoomToSantaInes();
-    // }, 1000);
   });
   App.map?.on("style.load", () => {
     restoreLayers();
     // Reinicializar handler después de que el estilo se cargue
     setTimeout(() => {
       initGlobalImageMissingHandler();
+      
+      // ✅ RECARGAR CENTRALES DE FORMA FIJA (siempre visibles)
+      loadCentralesFijas();
+      
       // ✅ Recargar GeoJSON consolidado cuando cambia el estilo
       // Esperar un poco más para asegurar que el mapa esté completamente listo
       setTimeout(() => {
@@ -1290,5 +1396,6 @@
   App.loadFTTHTree = loadFTTHTree;
   App.consolidateAllGeoJSON = consolidateAllGeoJSON;
   App.loadConsolidatedGeoJSONToBaseMap = loadConsolidatedGeoJSONToBaseMap;
+  App.loadCentralesFijas = loadCentralesFijas; // ✅ Exportar función de centrales fijas
 
 })();

@@ -339,6 +339,7 @@
   
   /* =========================
      Desactivar todas las capas de una molécula
+     (NO desactiva centrales - siempre visibles)
   ========================= */
   function deactivateMoleculaLayers(moleculaLabel, map) {
     if (!map) return;
@@ -349,6 +350,12 @@
     
     allLayers.forEach(layer => {
       const layerId = layer.id;
+      
+      // ✅ NO desactivar centrales - siempre deben estar visibles
+      if (layerId.includes("CENTRALES") || layerId.includes("CORPORATIVO")) {
+        return;
+      }
+      
       // Si el ID contiene la molécula (ej: FTTH_SANTA_INES_SI01_...)
       if (layerId.includes(`_${moleculaLabel}_`) || 
           layerId.endsWith(`_${moleculaLabel}`) ||
@@ -379,6 +386,7 @@
 
   /* =========================
      Control real de capas
+     (NO afecta centrales - siempre visibles)
   ========================= */
   function toggleLayers(label, visible) {
     const App = window.__FTTH_APP__;
@@ -391,6 +399,11 @@
 
     ids.forEach(id => {
       if (!map.getLayer(id)) return;
+      
+      // ✅ NO afectar centrales - siempre deben estar visibles
+      if (id.includes("CENTRALES") || id.includes("CORPORATIVO")) {
+        return;
+      }
 
       if (key === "GEOJSON" || id.toUpperCase().includes(key)) {
         map.setLayoutProperty(

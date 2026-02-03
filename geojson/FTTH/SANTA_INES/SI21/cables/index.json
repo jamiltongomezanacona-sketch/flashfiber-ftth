@@ -8,7 +8,7 @@
       "path": "SI21FH144.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#000099",
+        "line-color": "#C000FF",
         "line-width": 4
       }
     }

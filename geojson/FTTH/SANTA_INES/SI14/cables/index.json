@@ -8,7 +8,7 @@
       "path": "SI14FH144.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#000099",
+        "line-color": "#4000FF",
         "line-width": 4
       }
     },
@@ -19,7 +19,7 @@
       "path": "SI14FH96.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#000099",
+        "line-color": "#4000FF",
         "line-width": 4
       }
     }

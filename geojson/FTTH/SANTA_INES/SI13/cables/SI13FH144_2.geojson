@@ -1,0 +1,38 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-74.08860548076241, 4.555698231294109],
+          [-74.08956918295456, 4.553582121699835],
+          [-74.08980502862559, 4.553656044402772],
+          [-74.09051938634065, 4.553978490834186],
+          [-74.09063394636753, 4.55334028725666],
+          [-74.09061373754754, 4.552332608044266]
+        ]
+      },
+      "properties": {
+        "id": "SI13FH144_2",
+        "codigo": "SI13FH144_2",
+        "central": "SANTA_INES",
+        "molecula": "SI13",
+        "tipo": "FH",
+        "fibras": "144",
+        "origen": "KML",
+        "name": "SI13FH144_2",
+        "visibility": false,
+        "fill-opacity": 0.6196078431372549,
+        "fill": "#ff5454",
+        "stroke-opacity": 1,
+        "stroke": "#9e0a9e",
+        "stroke-width": 4,
+        "label-opacity": 1,
+        "label-color": "#ffffff",
+        "label-scale": 1
+      }
+    }
+  ]
+}

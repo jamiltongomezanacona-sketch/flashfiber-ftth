@@ -172,14 +172,24 @@
        Toggle capas
     ========================= */
     checkbox.addEventListener("change", async () => {
-      const nodeLabel = label.textContent;
+      const nodeLabel = label.textContent.trim();
       
       // ✅ Si es una molécula (SI01, SI02, etc.) y se está activando
-      const isMolecula = /^SI\d+$/.test(nodeLabel.trim());
+      const isMolecula = /^SI\d+$/.test(nodeLabel);
       
-      if (isMolecula && checkbox.checked) {
-        // Desactivar todas las demás moléculas antes de activar esta
-        deactivateOtherMoleculas(nodeLabel.trim());
+      if (isMolecula) {
+        if (checkbox.checked) {
+          // ✅ Estilo ArcGIS/Google Earth: Desactivar todas las demás moléculas hermanas
+          console.log(`🔵 Activando molécula: ${nodeLabel}`);
+          deactivateOtherMoleculas(nodeLabel);
+        } else {
+          // Si se desactiva, también desactivar todas sus capas
+          console.log(`⚪ Desactivando molécula: ${nodeLabel}`);
+          const App = window.__FTTH_APP__;
+          if (App?.map) {
+            deactivateMoleculaLayers(nodeLabel, App.map);
+          }
+        }
       }
       
       // ✅ Si es una capa individual, usar su ID directamente
@@ -259,7 +269,8 @@
   }
 
   /* =========================
-     Desactivar otras moléculas
+     Desactivar otras moléculas (estilo ArcGIS/Google Earth)
+     Solo desactiva hermanas del mismo nivel
   ========================= */
   function deactivateOtherMoleculas(activeMolecula) {
     const App = window.__FTTH_APP__;
@@ -269,28 +280,59 @@
     const treeContainer = document.getElementById(TREE_CONTAINER_ID);
     if (!treeContainer) return;
     
-    // Buscar todos los checkboxes de moléculas (SI01, SI02, etc.)
-    const allCheckboxes = treeContainer.querySelectorAll("input[type=checkbox]");
+    // Buscar el checkbox activo y su contenedor padre (Santa Inés)
+    const allRows = treeContainer.querySelectorAll(".tree-row");
+    let activeRow = null;
+    let parentContainer = null;
     
-    allCheckboxes.forEach(cb => {
-      // Encontrar el label asociado
-      const row = cb.closest(".tree-row");
-      if (!row) return;
-      
+    // Encontrar la fila de la molécula activa
+    allRows.forEach(row => {
+      const rowLabel = row.querySelector("span:not(.tree-toggle)");
+      if (rowLabel && rowLabel.textContent.trim() === activeMolecula) {
+        activeRow = row;
+        // Encontrar el contenedor padre (childrenBox de Santa Inés)
+        let parent = row.parentElement;
+        while (parent && parent !== treeContainer) {
+          if (parent.classList.contains("tree-children")) {
+            parentContainer = parent;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+      }
+    });
+    
+    if (!parentContainer) {
+      console.warn("⚠️ No se encontró el contenedor padre para molécula:", activeMolecula);
+      return;
+    }
+    
+    // Buscar todas las moléculas hermanas (mismo nivel) en el contenedor padre
+    const siblingRows = parentContainer.querySelectorAll(".tree-row");
+    
+    siblingRows.forEach(row => {
       const rowLabel = row.querySelector("span:not(.tree-toggle)");
       if (!rowLabel) return;
       
       const labelText = rowLabel.textContent.trim();
       const isMolecula = /^SI\d+$/.test(labelText);
       
-      // Si es una molécula diferente a la que se está activando, desactivarla
-      if (isMolecula && labelText !== activeMolecula && cb.checked) {
-        console.log(`🔄 Desactivando molécula: ${labelText}`);
-        cb.checked = false;
-        cb.dispatchEvent(new Event("change"));
-        
-        // Desactivar todas las capas de esta molécula
-        deactivateMoleculaLayers(labelText, map);
+      // Si es una molécula diferente a la activa y está marcada, desactivarla
+      if (isMolecula && labelText !== activeMolecula) {
+        const cb = row.querySelector("input[type=checkbox]");
+        if (cb && cb.checked) {
+          console.log(`🔄 Desactivando molécula hermana: ${labelText}`);
+          cb.checked = false;
+          
+          // Desactivar todas las capas de esta molécula
+          deactivateMoleculaLayers(labelText, map);
+          
+          // Desactivar todos los hijos (cables, cierres, etc.)
+          const childrenBox = row.nextElementSibling;
+          if (childrenBox && childrenBox.classList.contains("tree-children")) {
+            toggleChildren(childrenBox, false);
+          }
+        }
       }
     });
   }
@@ -303,18 +345,25 @@
     
     // Buscar todas las capas que pertenecen a esta molécula
     const allLayers = map.getStyle().layers || [];
+    let deactivatedCount = 0;
     
     allLayers.forEach(layer => {
       const layerId = layer.id;
       // Si el ID contiene la molécula (ej: FTTH_SANTA_INES_SI01_...)
-      if (layerId.includes(`_${moleculaLabel}_`) || layerId.includes(`_${moleculaLabel}`)) {
+      if (layerId.includes(`_${moleculaLabel}_`) || 
+          layerId.endsWith(`_${moleculaLabel}`) ||
+          layerId.startsWith(`${moleculaLabel}_`)) {
         const visibility = map.getLayoutProperty(layerId, "visibility");
         if (visibility !== "none") {
           map.setLayoutProperty(layerId, "visibility", "none");
-          console.log(`  ❌ Capa desactivada: ${layerId}`);
+          deactivatedCount++;
         }
       }
     });
+    
+    if (deactivatedCount > 0) {
+      console.log(`  ❌ ${deactivatedCount} capas desactivadas de ${moleculaLabel}`);
+    }
   }
 
   /* =========================

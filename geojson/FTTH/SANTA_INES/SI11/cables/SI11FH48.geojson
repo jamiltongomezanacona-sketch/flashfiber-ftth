@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-74.0878840303985, 4.562301491523734],
+          [-74.0880167688215, 4.561998508181747],
+          [-74.08892176825712, 4.562370663084386],
+          [-74.08889430398499, 4.562433850982546],
+          [-74.08934189895812, 4.562627109654422],
+          [-74.08968349017671, 4.563005214518721],
+          [-74.09010880499777, 4.563504978748523],
+          [-74.09061739864823, 4.564120661492051]
+        ]
+      },
+      "properties": {
+        "id": "SI11FH48",
+        "codigo": "SI11FH48",
+        "central": "SANTA_INES",
+        "molecula": "SI11",
+        "tipo": "FH",
+        "fibras": "48",
+        "origen": "KML",
+        "name": "SI11FH48",
+        "visibility": false,
+        "fill-opacity": 0.6431372549019608,
+        "fill": "#ff5454",
+        "stroke-opacity": 1,
+        "stroke": "#99ff00",
+        "stroke-width": 4,
+        "label-opacity": 1,
+        "label-color": "#ffffff",
+        "label-scale": 1
+      }
+    }
+  ]
+}

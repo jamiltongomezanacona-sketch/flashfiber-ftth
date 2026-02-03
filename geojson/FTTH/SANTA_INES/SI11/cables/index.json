@@ -11,6 +11,17 @@
         "line-color": "#99ff00",
         "line-width": 4
       }
+    },
+    {
+      "type": "layer",
+      "id": "FTTH_SANTA_INES_SI11_SI11FH48",
+      "label": "SI11FH48 · Troncal 48F",
+      "path": "SI11FH48.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#99ff00",
+        "line-width": 4
+      }
     }
   ]
 }

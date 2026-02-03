@@ -1,4 +1,16 @@
 {
   "label": "Cables",
-  "children": []
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_SANTA_INES_SI04_SI04FH144",
+      "label": "SI04FH144 · Troncal 144F",
+      "path": "SI04FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#00ffff",
+        "line-width": 4
+      }
+    }
+  ]
 }

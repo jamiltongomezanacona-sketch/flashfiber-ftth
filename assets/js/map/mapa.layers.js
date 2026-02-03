@@ -1256,13 +1256,32 @@
   /* ===============================
      Cargar centrales de forma fija e independiente
   =============================== */
-  async function loadCentralesFijas() {
+  async function loadCentralesFijas(retryCount = 0) {
     const map = App?.map;
-    if (!map || !map.isStyleLoaded()) {
-      // Esperar a que el mapa esté listo
-      map?.once("style.load", () => {
-        setTimeout(() => loadCentralesFijas(), 100);
-      });
+    const MAX_RETRIES = 5;
+    
+    if (!map) {
+      console.warn("⚠️ Mapa no disponible, reintentando...", retryCount);
+      if (retryCount < MAX_RETRIES) {
+        setTimeout(() => loadCentralesFijas(retryCount + 1), 500);
+      }
+      return;
+    }
+    
+    // Esperar a que el estilo esté cargado
+    if (!map.isStyleLoaded()) {
+      console.log("⏳ Esperando que el estilo del mapa esté cargado...", retryCount);
+      if (retryCount < MAX_RETRIES) {
+        map.once("style.load", () => {
+          setTimeout(() => loadCentralesFijas(0), 200);
+        });
+        // También intentar después de un timeout
+        setTimeout(() => {
+          if (!map.isStyleLoaded() && retryCount < MAX_RETRIES) {
+            loadCentralesFijas(retryCount + 1);
+          }
+        }, 1000);
+      }
       return;
     }
     
@@ -1291,63 +1310,100 @@
         return;
       }
       
+      console.log(`📊 GeoJSON cargado: ${geojson.features.length} centrales`);
+      
       // Crear source si no existe
       if (!map.getSource(CENTRALES_SOURCE)) {
-        map.addSource(CENTRALES_SOURCE, {
-          type: "geojson",
-          data: geojson
-        });
+        try {
+          map.addSource(CENTRALES_SOURCE, {
+            type: "geojson",
+            data: geojson
+          });
+          console.log("✅ Source creado:", CENTRALES_SOURCE);
+        } catch (err) {
+          // Si el source ya existe, actualizar datos
+          if (err.message && err.message.includes("already exists")) {
+            console.log("⚠️ Source ya existe, actualizando datos...");
+            map.getSource(CENTRALES_SOURCE).setData(geojson);
+          } else {
+            throw err;
+          }
+        }
       } else {
         // Actualizar datos si el source ya existe
         map.getSource(CENTRALES_SOURCE).setData(geojson);
+        console.log("✅ Source actualizado:", CENTRALES_SOURCE);
       }
-      
-      // ✅ NO generar iconos - solo usar texto
-      // Actualizar datos
-      map.getSource(CENTRALES_SOURCE).setData(geojson);
       
       // Crear layer si no existe (solo texto, sin iconos)
       if (!map.getLayer(CENTRALES_ID)) {
-        map.addLayer({
-          id: CENTRALES_ID,
-          type: "symbol",
-          source: CENTRALES_SOURCE,
-          layout: {
-            "text-field": ["get", "name"], // ✅ Solo mostrar el nombre
-            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-            "text-size": 14,
-            "text-anchor": "center",
-            "text-offset": [0, 1.5], // Posicionar texto debajo del punto
-            "text-allow-overlap": true,
-            "text-ignore-placement": true,
-            "visibility": "visible" // ✅ SIEMPRE VISIBLE
-          },
-          paint: {
-            "text-color": "#2196F3", // Azul corporativo
-            "text-halo-color": "#FFFFFF",
-            "text-halo-width": 2,
-            "text-halo-blur": 1
+        try {
+          map.addLayer({
+            id: CENTRALES_ID,
+            type: "symbol",
+            source: CENTRALES_SOURCE,
+            layout: {
+              "text-field": ["get", "name"], // ✅ Solo mostrar el nombre
+              "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+              "text-size": 14,
+              "text-anchor": "center",
+              "text-offset": [0, 1.5], // Posicionar texto debajo del punto
+              "text-allow-overlap": true,
+              "text-ignore-placement": true,
+              "visibility": "visible" // ✅ SIEMPRE VISIBLE
+            },
+            paint: {
+              "text-color": "#2196F3", // Azul corporativo
+              "text-halo-color": "#FFFFFF",
+              "text-halo-width": 2,
+              "text-halo-blur": 1
+            }
+          });
+          
+          console.log("✅ Layer creado:", CENTRALES_ID);
+          
+          // Registrar en el sistema
+          if (!App.__ftthLayerIds.includes(CENTRALES_ID)) {
+            App.__ftthLayerIds.push(CENTRALES_ID);
           }
-        });
-        
-        // Registrar en el sistema
-        if (!App.__ftthLayerIds.includes(CENTRALES_ID)) {
-          App.__ftthLayerIds.push(CENTRALES_ID);
+        } catch (err) {
+          console.error("❌ Error creando layer:", err);
+          // Si el layer ya existe, solo asegurar visibilidad
+          if (map.getLayer(CENTRALES_ID)) {
+            map.setLayoutProperty(CENTRALES_ID, "visibility", "visible");
+          }
         }
       } else {
         // Asegurar que esté visible
         map.setLayoutProperty(CENTRALES_ID, "visibility", "visible");
+        console.log("✅ Layer ya existe, asegurando visibilidad");
       }
       
-      console.log(`✅ Centrales ETB cargadas (fijas): ${geojson.features.length} centrales`);
+      // Verificar que el layer esté visible
+      const layer = map.getLayer(CENTRALES_ID);
+      if (layer) {
+        const visibility = map.getLayoutProperty(CENTRALES_ID, "visibility");
+        console.log(`✅ Centrales ETB cargadas (fijas): ${geojson.features.length} centrales, visibilidad: ${visibility}`);
+      } else {
+        console.warn("⚠️ Layer no encontrado después de crearlo");
+      }
       
-      // Zoom a Santa Inés después de cargar centrales
-      if (geojson.features.length > 0) {
-        zoomToSantaInes();
+      // Zoom a Santa Inés después de cargar centrales (solo la primera vez)
+      if (geojson.features.length > 0 && retryCount === 0) {
+        setTimeout(() => {
+          if (typeof zoomToSantaInes === "function") {
+            zoomToSantaInes();
+          }
+        }, 500);
       }
       
     } catch (err) {
       console.error("❌ Error cargando centrales fijas:", err);
+      // Reintentar si no se ha excedido el límite
+      if (retryCount < MAX_RETRIES) {
+        console.log(`🔄 Reintentando carga de centrales... (${retryCount + 1}/${MAX_RETRIES})`);
+        setTimeout(() => loadCentralesFijas(retryCount + 1), 1000);
+      }
     }
   }
 
@@ -1359,7 +1415,10 @@
     initGlobalImageMissingHandler();
     
     // ✅ CARGAR CENTRALES DE FORMA FIJA E INDEPENDIENTE (PRIMERO)
-    loadCentralesFijas();
+    // Esperar un poco para asegurar que el estilo esté completamente cargado
+    setTimeout(() => {
+      loadCentralesFijas();
+    }, 300);
     
     // ✅ CARGAR TODO EL GEOJSON CONSOLIDADO EN EL MAPA BASE
     loadConsolidatedGeoJSONToBaseMap();

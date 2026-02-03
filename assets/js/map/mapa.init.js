@@ -61,8 +61,11 @@
     console.log("🗺️ MAPA CARGADO CORRECTAMENTE");
 
     // ✅ CARGAR CENTRALES DE FORMA FIJA (PRIMERO - SIEMPRE VISIBLES)
+    // Esperar un poco para asegurar que el estilo esté completamente cargado
     if (App.loadCentralesFijas) {
-      App.loadCentralesFijas();
+      setTimeout(() => {
+        App.loadCentralesFijas();
+      }, 500);
     }
 
     // ✅ CARGAR TODO EL GEOJSON CONSOLIDADO EN EL MAPA BASE

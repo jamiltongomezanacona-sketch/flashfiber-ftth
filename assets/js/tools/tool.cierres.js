@@ -728,9 +728,13 @@
       selectedLngLat = null;
 
       App.map.getCanvas().style.cursor = "crosshair";
+      
+      // ✅ Asegurar que el listener se agregue correctamente (igual que eventos)
+      App.map.off("click", handleMapClick); // Remover si existe para evitar duplicados
       App.map.on("click", handleMapClick);
 
       console.log("📦 Montar Cierre ACTIVADO");
+      console.log("✅ Listener de click registrado, active:", active);
     }
 
     function stop() {

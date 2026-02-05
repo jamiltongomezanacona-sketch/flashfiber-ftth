@@ -93,6 +93,13 @@
         ]
       },
       "properties": {
+        "id": "SI22FH144",
+        "codigo": "SI22FH144",
+        "central": "SANTA_INES",
+        "molecula": "SI22",
+        "tipo": "FH",
+        "fibras": "144",
+        "origen": "KML",
         "name": "SI22FH144",
         "visibility": false,
         "description": {

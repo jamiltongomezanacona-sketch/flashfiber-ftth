@@ -319,12 +319,21 @@
     =============================== */
     function refreshLayer() {
       const source = App.map.getSource(SOURCE_ID);
-      if (!source) return;
+      if (!source) {
+        // Si el source no existe, inicializar la capa
+        initLayer();
+        return;
+      }
 
       source.setData({
         type: "FeatureCollection",
         features: App.data.eventos
       });
+      
+      // ✅ Asegurar que la capa esté visible
+      if (App.map.getLayer(LAYER_ID)) {
+        App.map.setLayoutProperty(LAYER_ID, "visibility", "visible");
+      }
     }
 
     function addEventoToMap(evt) {
@@ -625,6 +634,7 @@ btnSave?.addEventListener("click", async (e) => {
       delete update.createdAt;
       update.updatedAt = new Date().toISOString();
       await FB.actualizarEvento(editId, update);
+      eventoId = editId;
     } else {
       eventoId = await FB.guardarEvento(evento); // ⚠️ debe devolver ID
     }
@@ -673,6 +683,16 @@ btnSave?.addEventListener("click", async (e) => {
         fotos: fotosURLs
       });
     }
+    
+    // ✅ Agregar/actualizar evento en el mapa inmediatamente después de guardarlo
+    const eventoCompleto = {
+      id: eventoId,
+      ...evento,
+      fotos: fotosURLs.length > 0 ? fotosURLs : (editId ? undefined : [])
+    };
+    addEventoToMap(eventoCompleto);
+    
+    console.log("✅ Evento agregado al mapa:", eventoId);
     
     closeModal();
   } catch (err) {

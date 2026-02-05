@@ -396,6 +396,9 @@
 
         const p = f.properties || {};
         const lngLat = e.lngLat;
+        
+        // Debug: mostrar todas las propiedades en consola
+        console.log("🔍 Propiedades del cierre:", p);
 
         const fecha = p.createdAt ? new Date(p.createdAt).toLocaleString() : "Sin fecha";
         const fechaActualizado = p.updatedAt ? new Date(p.updatedAt).toLocaleString() : null;
@@ -434,10 +437,21 @@
     </div>
     ` : ''}
 
+    <div style="margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.05);border-radius:6px;max-height:200px;overflow-y:auto">
+      <b>📋 Todas las propiedades:</b>
+      ${Object.keys(p).filter(k => k !== "iconId" && k !== "label").map(key => {
+        let value = p[key];
+        if (value === null || value === undefined) value = "N/A";
+        if (typeof value === "object") value = JSON.stringify(value);
+        if (key === "lng" || key === "lat") value = Number(value).toFixed(6);
+        return `<div style="margin:2px 0"><b>${key.charAt(0).toUpperCase() + key.slice(1)}:</b> ${value}</div>`;
+      }).join("") || "<div style='opacity:0.6'>No hay propiedades adicionales</div>"}
+    </div>
+
     <div style="font-size:11px;opacity:0.7;border-top:1px solid rgba(255,255,255,0.1);padding-top:6px;margin-top:8px">
       <div>📅 Creado: ${fecha}</div>
       ${fechaActualizado ? `<div>✏️ Actualizado: ${fechaActualizado}</div>` : ""}
-      ${p.lat && p.lng ? `<div>📍 Coord: ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}</div>` : ""}
+      ${p.lat && p.lng ? `<div>📍 Coord: ${Number(p.lat).toFixed(6)}, ${Number(p.lng).toFixed(6)}</div>` : ""}
     </div>
 
     <hr style="margin:10px 0;border-color:rgba(255,255,255,0.1)">

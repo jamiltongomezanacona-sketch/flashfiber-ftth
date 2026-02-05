@@ -222,60 +222,54 @@
     }
 
     /* ===============================
-       Generar icono SVG estilo Google Maps
+       Generar icono SVG estilo eventos (pin con círculo)
     =============================== */
     function createPinIconSVG(color, label = "") {
       const size = ICON_SIZE;
-      const pinHeight = size;
       const pinWidth = size * 0.6;
-      const labelSize = label ? 12 : 0;
+      const pinHeight = size * 0.8;
+      const labelText = label.substring(0, 2).toUpperCase() || "🔒";
       
-      // SVG del pin con sombra y etiqueta opcional
+      // Emoji o texto según el tipo
+      let displayText = "🔒"; // Emoji de candado por defecto
+      if (label && label.length <= 2) {
+        displayText = label.toUpperCase();
+      } else if (label && label.length > 2) {
+        displayText = label.substring(0, 2).toUpperCase();
+      }
+
       const svg = `
-        <svg width="${size}" height="${pinHeight + labelSize}" xmlns="http://www.w3.org/2000/svg">
+        <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
-              <feOffset dx="0" dy="2" result="offsetblur"/>
-              <feComponentTransfer>
-                <feFuncA type="linear" slope="0.3"/>
-              </feComponentTransfer>
-              <feMerge>
-                <feMergeNode/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
+            <filter id="shadow-cierre-${color.replace('#', '')}">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
             </filter>
           </defs>
-          
-          <!-- Sombra del pin -->
-          <ellipse cx="${size / 2}" cy="${pinHeight - 2}" rx="${pinWidth * 0.4}" ry="4" 
-                   fill="#000" opacity="0.2" filter="url(#shadow)"/>
-          
-          <!-- Cuerpo del pin (forma de gota) -->
-          <path d="M ${size / 2} 0 
-                   L ${size / 2 - pinWidth / 2} ${pinHeight * 0.6}
-                   Q ${size / 2 - pinWidth / 2} ${pinHeight * 0.85} ${size / 2} ${pinHeight * 0.9}
-                   Q ${size / 2 + pinWidth / 2} ${pinHeight * 0.85} ${size / 2 + pinWidth / 2} ${pinHeight * 0.6}
+          <!-- Pin body -->
+          <path d="M ${size/2} ${size*0.15} 
+                   Q ${size*0.2} ${size*0.15} ${size*0.2} ${size*0.4}
+                   L ${size*0.2} ${size*0.7}
+                   Q ${size*0.2} ${size*0.85} ${size*0.35} ${size*0.85}
+                   L ${size*0.5} ${size}
+                   L ${size*0.65} ${size*0.85}
+                   Q ${size*0.8} ${size*0.85} ${size*0.8} ${size*0.7}
+                   L ${size*0.8} ${size*0.4}
+                   Q ${size*0.8} ${size*0.15} ${size*0.5} ${size*0.15}
                    Z" 
                 fill="${color}" 
-                stroke="#FFFFFF" 
-                stroke-width="2"
-                filter="url(#shadow)"/>
-          
-          <!-- Etiqueta con texto (si se proporciona) -->
-          ${label ? `
-            <rect x="${size / 2 - pinWidth / 2}" y="${pinHeight}" 
-                  width="${pinWidth}" height="${labelSize + 4}" 
-                  rx="3" fill="#FFFFFF" stroke="${color}" stroke-width="1.5"
-                  filter="url(#shadow)"/>
-            <text x="${size / 2}" y="${pinHeight + labelSize + 1}" 
-                  font-family="Arial, sans-serif" 
-                  font-size="${labelSize}" 
-                  font-weight="bold"
-                  fill="${color}"
-                  text-anchor="middle"
-                  dominant-baseline="middle">${label}</text>
-          ` : ''}
+                stroke="#000" 
+                stroke-width="1.5"
+                filter="url(#shadow-cierre-${color.replace('#', '')})"/>
+          <!-- Label circle -->
+          <circle cx="${size/2}" cy="${size*0.4}" r="${size*0.25}" 
+                  fill="#fff" stroke="${color}" stroke-width="2"/>
+          <!-- Text/Emoji -->
+          <text x="${size/2}" y="${size*0.48}" 
+                font-size="${size*0.25}" 
+                text-anchor="middle" 
+                dominant-baseline="middle"
+                font-family="Arial, sans-serif"
+                font-weight="bold">${displayText}</text>
         </svg>
       `;
       
@@ -284,116 +278,28 @@
 
     /* ===============================
        Convertir SVG a Image para Mapbox
-       (Mapbox no soporta SVGs directamente)
-       Dibuja directamente en canvas como en mapa.layers.js
+       (Usa el mismo estilo que eventos: pin con círculo)
     =============================== */
     function createPinIcon(color, label = "") {
       return new Promise((resolve, reject) => {
         try {
-          const size = ICON_SIZE;
-          const pinHeight = size;
-          const pinWidth = size * 0.6;
-          const labelSize = label ? 12 : 0;
-          const totalHeight = pinHeight + labelSize;
-          
-          // Crear canvas
-          const canvas = document.createElement('canvas');
-          canvas.width = size;
-          canvas.height = totalHeight;
-          const ctx = canvas.getContext('2d');
-          
-          // Configurar calidad de renderizado
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = 'high';
-          
-          // Dibujar sombra del pin (ellipse)
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-          ctx.beginPath();
-          ctx.ellipse(size / 2, pinHeight - 2, pinWidth * 0.4, 4, 0, 0, 2 * Math.PI);
-          ctx.fill();
-          
-          // Dibujar cuerpo del pin (forma de gota estilo Google Maps)
-          ctx.fillStyle = color;
-          ctx.strokeStyle = '#FFFFFF';
-          ctx.lineWidth = 2;
-          
-          ctx.beginPath();
-          ctx.moveTo(size / 2, 0); // Punto superior
-          ctx.lineTo(size / 2 - pinWidth / 2, pinHeight * 0.6); // Lado izquierdo
-          ctx.quadraticCurveTo(
-            size / 2 - pinWidth / 2, pinHeight * 0.85,
-            size / 2, pinHeight * 0.9
-          ); // Curva inferior izquierda
-          ctx.quadraticCurveTo(
-            size / 2 + pinWidth / 2, pinHeight * 0.85,
-            size / 2 + pinWidth / 2, pinHeight * 0.6
-          ); // Curva inferior derecha
-          ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
-          
-          // Dibujar etiqueta si existe
-          if (label) {
-            const labelY = pinHeight;
-            const labelHeight = labelSize + 4;
-            
-            // Fondo de etiqueta (rectángulo redondeado)
-            ctx.fillStyle = '#FFFFFF';
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            // Usar roundRect si está disponible, sino usar arcos manuales
-            if (ctx.roundRect) {
-              ctx.roundRect(
-                size / 2 - pinWidth / 2,
-                labelY,
-                pinWidth,
-                labelHeight,
-                3
-              );
-            } else {
-              // Fallback para navegadores antiguos
-              const x = size / 2 - pinWidth / 2;
-              const y = labelY;
-              const w = pinWidth;
-              const h = labelHeight;
-              const r = 3;
-              ctx.moveTo(x + r, y);
-              ctx.lineTo(x + w - r, y);
-              ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-              ctx.lineTo(x + w, y + h - r);
-              ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-              ctx.lineTo(x + r, y + h);
-              ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-              ctx.lineTo(x, y + r);
-              ctx.quadraticCurveTo(x, y, x + r, y);
-              ctx.closePath();
-            }
-            ctx.fill();
-            ctx.stroke();
-            
-            // Texto de etiqueta
-            ctx.fillStyle = color;
-            ctx.font = `bold ${labelSize}px Arial, sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(
-              label,
-              size / 2,
-              labelY + labelHeight / 2
-            );
-          }
-          
-          // Convertir canvas a imagen PNG
+          const svg = createPinIconSVG(color, label);
           const img = new Image();
+          const svgBlob = new Blob([svg], { type: "image/svg+xml" });
+          const url = URL.createObjectURL(svgBlob);
+
           img.onload = () => {
             resolve(img);
+            URL.revokeObjectURL(url);
           };
-          img.onerror = (err) => {
-            reject(new Error(`Error creando imagen desde canvas: ${err}`));
-          };
-          img.src = canvas.toDataURL('image/png');
           
+          img.onerror = (err) => {
+            console.warn("⚠️ Error cargando icono SVG de cierre:", err);
+            URL.revokeObjectURL(url);
+            reject(new Error(`Error creando imagen desde SVG: ${err}`));
+          };
+          
+          img.src = url;
         } catch (err) {
           reject(new Error(`Error en createPinIcon: ${err.message}`));
         }
@@ -406,52 +312,49 @@
     const loadedIcons = new Set();
     const loadingIcons = new Map(); // Iconos en proceso de carga
     
+    // ✅ Cargar iconos de forma síncrona (igual que eventos)
+    function loadCierreIconSync(tipo, label = "") {
+      const color = getColorByTipo(tipo);
+      const iconId = `cierre-${tipo}-${label || 'default'}`;
+      
+      if (!App || !App.map) return iconId;
+      if (App.map.hasImage(iconId)) {
+        return iconId;
+      }
+
+      const svg = createPinIconSVG(color, label);
+      const img = new Image();
+      const svgBlob = new Blob([svg], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(svgBlob);
+
+      img.onload = () => {
+        if (!App.map.hasImage(iconId)) {
+          App.map.addImage(iconId, img);
+        }
+        URL.revokeObjectURL(url);
+      };
+      img.onerror = () => {
+        console.warn(`⚠️ Error cargando icono de cierre: ${iconId}`);
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+      
+      return iconId;
+    }
+    
     function loadIconForTipo(tipo, label = "") {
       const iconId = `cierre-${tipo}-${label || 'default'}`;
       
       // Si ya está cargado, retornar inmediatamente
       if (!App || !App.map) return iconId;
-      if (loadedIcons.has(iconId) || App.map.hasImage(iconId)) {
-        loadedIcons.add(iconId);
+      if (App.map.hasImage(iconId)) {
         return iconId;
       }
       
       if (!App.map.isStyleLoaded()) return iconId;
       
-      // Si ya está en proceso de carga, retornar el ID
-      if (loadingIcons.has(iconId)) return iconId;
-      
-      const color = getColorByTipo(tipo);
-      
-      // Marcar como en proceso
-      loadingIcons.set(iconId, true);
-      
-      // ✅ Convertir SVG a Image y luego cargar en Mapbox
-      createPinIcon(color, label)
-        .then((image) => {
-          try {
-            if (!App || !App.map) {
-              loadingIcons.delete(iconId);
-              return;
-            }
-            
-            if (!App.map.hasImage(iconId)) {
-              App.map.addImage(iconId, image);
-            }
-            loadedIcons.add(iconId);
-            loadingIcons.delete(iconId);
-            
-            // Refrescar capa después de cargar el icono
-            refreshLayer();
-          } catch (err) {
-            console.warn("⚠️ Error agregando icono al mapa:", err);
-            loadingIcons.delete(iconId);
-          }
-        })
-        .catch((error) => {
-          console.warn("⚠️ Error creando icono de cierre:", error);
-          loadingIcons.delete(iconId);
-        });
+      // Cargar icono de forma síncrona
+      loadCierreIconSync(tipo, label);
       
       return iconId;
     }
@@ -465,15 +368,8 @@
         data: { type: "FeatureCollection", features: [] }
       });
       
-      // ✅ Pre-cargar icono por defecto en gris
-      const colorGris = "#9E9E9E";
-      createPinIcon(colorGris, "")
-        .then((image) => {
-          if (App.map && !App.map.hasImage("cierre-E1-default")) {
-            App.map.addImage("cierre-E1-default", image);
-          }
-        })
-        .catch(err => console.warn("⚠️ Error cargando icono por defecto:", err));
+      // ✅ Pre-cargar icono por defecto en gris (estilo eventos)
+      loadCierreIconSync("E1", ""); // Cargar icono por defecto
 
       // ✅ Capa de símbolos estilo Google Maps (en lugar de círculos)
       App.map.addLayer({
@@ -552,21 +448,11 @@
       const label = cierre.codigo || cierre.molecula || "";
       const tipo = cierre.tipo || "E1";
       
-      // ✅ Cargar icono personalizado (siempre gris)
-      const iconId = loadIconForTipo(tipo, label.substring(0, 4)); // Máximo 4 caracteres
+      // ✅ Cargar icono personalizado (siempre gris, estilo eventos)
+      const iconId = loadIconForTipo(tipo, label.substring(0, 2)); // Máximo 2 caracteres para el círculo
       
       // ✅ Asegurar que el icono se cargue
-      if (!App.map.hasImage(iconId)) {
-        const color = getColorByTipo(tipo); // Siempre gris ahora
-        createPinIcon(color, label.substring(0, 4))
-          .then((image) => {
-            if (App.map && !App.map.hasImage(iconId)) {
-              App.map.addImage(iconId, image);
-              refreshLayer();
-            }
-          })
-          .catch(err => console.warn("⚠️ Error cargando icono:", err));
-      }
+      loadCierreIconSync(tipo, label.substring(0, 2));
 
       const feature = {
         id: cierre.id,

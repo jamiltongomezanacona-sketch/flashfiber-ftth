@@ -76,7 +76,6 @@
     const elTipo    = document.getElementById("eventoTipo");
     const elAccion  = document.getElementById("eventoAccion");
     const elEstado  = document.getElementById("eventoEstado");
-    const elImpacto = document.getElementById("eventoImpacto");
     const elTecnico = document.getElementById("eventoTecnico");
     const elNotas   = document.getElementById("eventoNotas");
 
@@ -84,15 +83,12 @@
     const elCentralEvento  = document.getElementById("eventoCentral");
     const elMoleculaEvento = document.getElementById("eventoMolecula");
 
-    // 📸 Inputs de fotos
-    const fotoAntesInput     = document.getElementById("fotoAntesInput");
-    const fotoDespuesInput   = document.getElementById("fotoDespuesInput");
-    const fotoAntesPreview   = document.getElementById("fotoAntesPreview");
-    const fotoDespuesPreview = document.getElementById("fotoDespuesPreview");
+    // 📸 Input de fotos
+    const fotoInput     = document.getElementById("fotoInput");
+    const fotoPreview   = document.getElementById("fotoPreview");
 
-    // Buffers temporales
-    let fotosAntes = [];
-    let fotosDespues = [];
+    // Buffer temporal de fotos
+    let fotos = [];
 
     if (!modal || !btnSave || !btnClose || !elTipo || !elAccion || !elEstado) {
       console.error("❌ Modal de eventos no encontrado. Revisa el HTML (eventoModal y campos).");
@@ -120,14 +116,9 @@
       });
     }
 
-    fotoAntesInput?.addEventListener("change", (e) => {
-      fotosAntes = Array.from(e.target.files || []);
-      renderPreview(fotoAntesPreview, fotosAntes);
-    });
-
-    fotoDespuesInput?.addEventListener("change", (e) => {
-      fotosDespues = Array.from(e.target.files || []);
-      renderPreview(fotoDespuesPreview, fotosDespues);
+    fotoInput?.addEventListener("change", (e) => {
+      fotos = Array.from(e.target.files || []);
+      renderPreview(fotoPreview, fotos);
     });
 
     /* ===============================
@@ -285,7 +276,6 @@
     <b>🏢 Central:</b> ${p.central || "N/A"}<br>
     <b>🧬 Molécula:</b> ${p.molecula || "N/A"}<br>
 
-    <b>📍 Impacto:</b> ${p.impacto || "N/A"}<br>
     <b>👤 Técnico:</b> ${p.tecnico || "N/A"}<br>
     <b>📅 Creado:</b> ${fecha}<br>
 
@@ -445,7 +435,6 @@
       if (elTipo) elTipo.value = "";
       if (elAccion) elAccion.value = "";
       if (elEstado) elEstado.value = "PROVISIONAL";
-      if (elImpacto) elImpacto.value = "";
       if (elTecnico) elTecnico.value = "";
       if (elNotas) elNotas.value = "";
 
@@ -457,12 +446,9 @@
       }
 
       // ✅ limpiar fotos temporales
-      fotosAntes = [];
-      fotosDespues = [];
-      if (fotoAntesInput) fotoAntesInput.value = "";
-      if (fotoDespuesInput) fotoDespuesInput.value = "";
-      if (fotoAntesPreview) fotoAntesPreview.innerHTML = "";
-      if (fotoDespuesPreview) fotoDespuesPreview.innerHTML = "";
+      fotos = [];
+      if (fotoInput) fotoInput.value = "";
+      if (fotoPreview) fotoPreview.innerHTML = "";
     }
 
     btnClose?.addEventListener("click", closeModal);
@@ -472,7 +458,6 @@
       elTipo.value = evt.tipo || "";
       elAccion.value = evt.accion || "";
       elEstado.value = evt.estado || "PROVISIONAL";
-      elImpacto.value = evt.impacto || "";
       elTecnico.value = evt.tecnico || "";
       elNotas.value = evt.notas || "";
 
@@ -611,7 +596,6 @@ btnSave?.addEventListener("click", async (e) => {
     tipo: (elTipo.value || "").trim(),
     accion: (elAccion.value || "").trim(),
     estado: (elEstado.value || "").trim(),
-    impacto: (elImpacto.value || "").trim(),
     tecnico: (elTecnico.value || "").trim(),
     notas: (elNotas.value || "").trim(),
     
@@ -652,48 +636,29 @@ btnSave?.addEventListener("click", async (e) => {
     /* =========================
        2️⃣ Subir fotos a Storage (con manejo de errores mejorado)
     ========================= */
-    const fotosAntesURLs = [];
-    const fotosDespuesURLs = [];
+    const fotosURLs = [];
     
-    // ✅ Subir fotos "antes" con Promise.allSettled para manejar errores individuales
-    if (fotosAntes.length > 0) {
-      const uploadAntesResults = await Promise.allSettled(
-        fotosAntes.map(file => 
-          window.FTTH_STORAGE.subirFotoEvento(eventoId, "antes", file)
+    // ✅ Subir todas las fotos con Promise.allSettled para manejar errores individuales
+    if (fotos.length > 0) {
+      const uploadResults = await Promise.allSettled(
+        fotos.map(file => 
+          window.FTTH_STORAGE.subirFotoEvento(eventoId, "fotos", file)
         )
       );
       
-      uploadAntesResults.forEach((result, index) => {
+      uploadResults.forEach((result, index) => {
         if (result.status === "fulfilled" && result.value) {
-          fotosAntesURLs.push(result.value);
+          fotosURLs.push(result.value);
         } else {
           const errorMsg = result.reason?.message || "Error desconocido";
-          console.warn(`⚠️ Error subiendo foto antes #${index + 1}:`, errorMsg);
-        }
-      });
-    }
-    
-    // ✅ Subir fotos "después" con Promise.allSettled
-    if (fotosDespues.length > 0) {
-      const uploadDespuesResults = await Promise.allSettled(
-        fotosDespues.map(file => 
-          window.FTTH_STORAGE.subirFotoEvento(eventoId, "despues", file)
-        )
-      );
-      
-      uploadDespuesResults.forEach((result, index) => {
-        if (result.status === "fulfilled" && result.value) {
-          fotosDespuesURLs.push(result.value);
-        } else {
-          const errorMsg = result.reason?.message || "Error desconocido";
-          console.warn(`⚠️ Error subiendo foto después #${index + 1}:`, errorMsg);
+          console.warn(`⚠️ Error subiendo foto #${index + 1}:`, errorMsg);
         }
       });
     }
     
     // ✅ Mostrar resumen si hubo errores
-    const totalFotos = fotosAntes.length + fotosDespues.length;
-    const fotosExitosas = fotosAntesURLs.length + fotosDespuesURLs.length;
+    const totalFotos = fotos.length;
+    const fotosExitosas = fotosURLs.length;
     const fotosFallidas = totalFotos - fotosExitosas;
     
     if (fotosFallidas > 0 && totalFotos > 0) {
@@ -703,12 +668,9 @@ btnSave?.addEventListener("click", async (e) => {
     /* =========================
        3️⃣ Guardar URLs en Firestore
     ========================= */
-    if (fotosAntesURLs.length || fotosDespuesURLs.length) {
+    if (fotosURLs.length > 0) {
       await FB.actualizarEvento(eventoId, {
-        fotos: {
-          antes: fotosAntesURLs,
-          despues: fotosDespuesURLs
-        }
+        fotos: fotosURLs
       });
     }
     

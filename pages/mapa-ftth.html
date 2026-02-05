@@ -311,20 +311,13 @@
           <option value="">Seleccione Molécula</option>
         </select>
 
-        <label>Impacto</label>
-        <input id="eventoImpacto" placeholder="Ej: Troncal BA01 - 48 fibras">
-
         <label>Técnico</label>
         <input id="eventoTecnico" placeholder="Nombre técnico">
 
         <!-- 📸 FOTOS DEL EVENTO -->
-        <label>📷 Foto Antes</label>
-        <input type="file" id="fotoAntesInput" accept="image/*" capture="environment">
-        <div id="fotoAntesPreview" class="foto-preview"></div>
-
-        <label>📸 Foto Después</label>
-        <input type="file" id="fotoDespuesInput" accept="image/*" capture="environment">
-        <div id="fotoDespuesPreview" class="foto-preview"></div>
+        <label>📷 Fotos</label>
+        <input type="file" id="fotoInput" accept="image/*" capture="environment" multiple>
+        <div id="fotoPreview" class="foto-preview"></div>
 
         <label>Notas</label>
         <textarea id="eventoNotas"></textarea>

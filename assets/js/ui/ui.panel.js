@@ -65,6 +65,13 @@ document.addEventListener("DOMContentLoaded", () => {
   eventos: document.querySelector('[data-action="eventos"]')   // 🚨 NUEVO
 };
 
+  // ✅ Debug: Verificar que el botón de eventos se encontró
+  if (!toolButtons.eventos) {
+    console.warn("⚠️ Botón de eventos no encontrado en el DOM");
+  } else {
+    console.log("✅ Botón de eventos encontrado:", toolButtons.eventos);
+  }
+
 
   const toolState = {
   gps: false,
@@ -104,7 +111,27 @@ if (tool === "eventos") App.tools.eventos?.stop();   // 🚨
     if (tool === "medir") App.tools.medicion?.start();
     if (tool === "navegar") App.tools.navegacion?.start();
     if (tool === "ruta") App.tools.rutas?.start();
-    if (tool === "eventos") App.tools.eventos?.start();
+
+    // ✅ EVENTOS con espera automática (robusto)
+    if (tool === "eventos") {
+      let intentos = 0;
+
+      const timer = setInterval(() => {
+        intentos++;
+
+        if (App.tools.eventos?.start) {
+          clearInterval(timer);
+          console.log("✅ tool.eventos detectado → encendiendo");
+          App.tools.eventos.start();
+          return;
+        }
+
+        if (intentos >= 30) {   // ~3 segundos
+          clearInterval(timer);
+          console.warn("❌ tool.eventos no cargó a tiempo");
+        }
+      }, 100);
+    }
 
     // ✅ CIERRES con espera automática (robusto)
     if (tool === "cierres") {
@@ -153,7 +180,14 @@ toolButtons.medir?.addEventListener("click", () => toggleTool("medir"));
 toolButtons.navegar?.addEventListener("click", () => toggleTool("navegar"));
 toolButtons.ruta?.addEventListener("click", () => toggleTool("ruta"));
 toolButtons.cierres?.addEventListener("click", () => toggleTool("cierres"));
-toolButtons.eventos?.addEventListener("click", () => toggleTool("eventos"));  // 🚨
+if (toolButtons.eventos) {
+  toolButtons.eventos.addEventListener("click", () => {
+    console.log("🔘 Botón Eventos clickeado");
+    toggleTool("eventos");
+  });
+} else {
+  console.error("❌ No se pudo agregar listener al botón de eventos: botón no encontrado");
+}
   /* ===============================
      BOTONES FLOTANTES (MAP HUD)
   =============================== */

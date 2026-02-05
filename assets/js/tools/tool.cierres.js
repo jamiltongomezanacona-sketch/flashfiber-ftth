@@ -25,7 +25,20 @@
       }
       await new Promise(resolve => setTimeout(resolve, 100));
     }
-    console.warn("⚠️ tool.cierres: App.map no disponible después de esperar");
+    console.warn("⚠️ tool.cierres: App.map no disponible después de esperar", maxAttempts, "intentos");
+    console.warn("💡 Reintentando en 2 segundos...");
+    
+    // ✅ Retry después de 2 segundos (igual que eventos)
+    setTimeout(async () => {
+      const App = window.__FTTH_APP__;
+      if (App?.map) {
+        console.log("✅ tool.cierres: Dependencias disponibles en retry");
+        initializeTool();
+      } else {
+        console.error("❌ tool.cierres: Dependencias aún no disponibles después del retry");
+      }
+    }, 2000);
+    
     return false;
   }
 

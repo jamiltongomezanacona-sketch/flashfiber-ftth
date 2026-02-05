@@ -391,8 +391,11 @@
       // Click sobre cierre → popup resumen + botón editar
       if (!App || !App.map) return;
       App.map.on("click", LAYER_ID, (e) => {
-        // ✅ Si el tool está activo, no abrir popup (dejar que handleMapClick maneje)
+        // ✅ Si el tool está activo, NO hacer nada aquí (dejar que handleMapClick maneje)
+        // Pero necesitamos prevenir que el evento se propague
         if (active) {
+          e.preventDefault?.();
+          e.stopPropagation?.();
           return;
         }
 
@@ -744,13 +747,26 @@
     }
 
     function handleMapClick(e) {
-      if (!active) return;
-
-      if (blockNextClick) {
-        blockNextClick = false;
+      console.log("🔍 handleMapClick llamado, active:", active);
+      if (!active) {
+        console.log("⚠️ Tool no está activo, ignorando click");
         return;
       }
 
+      // ✅ Prevenir que el click en la capa interfiera
+      const target = e.originalEvent?.target;
+      if (target && target.closest('.mapboxgl-popup')) {
+        console.log("⚠️ Click en popup, ignorando");
+        return;
+      }
+
+      if (blockNextClick) {
+        blockNextClick = false;
+        console.log("⚠️ blockNextClick activo, ignorando");
+        return;
+      }
+
+      console.log("✅ Abriendo modal de creación de cierre");
       selectedLngLat = e.lngLat;
       modal.dataset.editId = ""; // creación nueva
       openModal();

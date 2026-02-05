@@ -217,12 +217,8 @@
        Colores por tipo de cierre
     =============================== */
     function getColorByTipo(tipo) {
-      switch (tipo) {
-        case "E1": return "#2196F3"; // Azul - Derivación
-        case "E2": return "#FF9800"; // Naranja - Splitter
-        case "NAP": return "#4CAF50"; // Verde - NAP
-        default: return "#9E9E9E"; // Gris - Sin tipo
-      }
+      // ✅ Todos los cierres en gris
+      return "#9E9E9E"; // Gris para todos los tipos
     }
 
     /* ===============================
@@ -468,6 +464,16 @@
         type: "geojson",
         data: { type: "FeatureCollection", features: [] }
       });
+      
+      // ✅ Pre-cargar icono por defecto en gris
+      const colorGris = "#9E9E9E";
+      createPinIcon(colorGris, "")
+        .then((image) => {
+          if (App.map && !App.map.hasImage("cierre-E1-default")) {
+            App.map.addImage("cierre-E1-default", image);
+          }
+        })
+        .catch(err => console.warn("⚠️ Error cargando icono por defecto:", err));
 
       // ✅ Capa de símbolos estilo Google Maps (en lugar de círculos)
       App.map.addLayer({
@@ -491,7 +497,8 @@
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
           "icon-anchor": "bottom",
-          "icon-pitch-alignment": "viewport"
+          "icon-pitch-alignment": "viewport",
+          "visibility": "visible" // ✅ Asegurar que esté visible
         }
       });
 
@@ -519,12 +526,21 @@
     function refreshLayer() {
       if (!App || !App.map) return;
       const source = App.map.getSource(SOURCE_ID);
-      if (!source) return;
+      if (!source) {
+        // Si el source no existe, inicializar la capa
+        initLayer();
+        return;
+      }
 
       source.setData({
         type: "FeatureCollection",
         features: App.data.cierres
       });
+      
+      // ✅ Asegurar que la capa esté visible
+      if (App.map.getLayer(LAYER_ID)) {
+        App.map.setLayoutProperty(LAYER_ID, "visibility", "visible");
+      }
     }
 
     function addCierreToMap(cierre) {
@@ -536,8 +552,21 @@
       const label = cierre.codigo || cierre.molecula || "";
       const tipo = cierre.tipo || "E1";
       
-      // ✅ Cargar icono personalizado
+      // ✅ Cargar icono personalizado (siempre gris)
       const iconId = loadIconForTipo(tipo, label.substring(0, 4)); // Máximo 4 caracteres
+      
+      // ✅ Asegurar que el icono se cargue
+      if (!App.map.hasImage(iconId)) {
+        const color = getColorByTipo(tipo); // Siempre gris ahora
+        createPinIcon(color, label.substring(0, 4))
+          .then((image) => {
+            if (App.map && !App.map.hasImage(iconId)) {
+              App.map.addImage(iconId, image);
+              refreshLayer();
+            }
+          })
+          .catch(err => console.warn("⚠️ Error cargando icono:", err));
+      }
 
       const feature = {
         id: cierre.id,

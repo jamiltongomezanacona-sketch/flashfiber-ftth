@@ -388,12 +388,77 @@
         }
       });
 
-      // Click sobre cierre → editar
+      // Click sobre cierre → popup resumen + botón editar
       if (!App || !App.map) return;
       App.map.on("click", LAYER_ID, (e) => {
         const f = e.features?.[0];
         if (!f) return;
-        abrirEdicionCierre(f.properties || {});
+
+        const p = f.properties || {};
+        const lngLat = e.lngLat;
+
+        const fecha = p.createdAt ? new Date(p.createdAt).toLocaleString() : "Sin fecha";
+        const fechaActualizado = p.updatedAt ? new Date(p.updatedAt).toLocaleString() : null;
+
+        // Formatear tipo
+        let tipoBadge = "";
+        if (p.tipo === "E1") {
+          tipoBadge = '<span style="background:#2196F3;padding:2px 6px;border-radius:4px;font-size:11px">E1 - Derivación</span>';
+        } else if (p.tipo === "E2") {
+          tipoBadge = '<span style="background:#FF9800;padding:2px 6px;border-radius:4px;font-size:11px">E2 - Splitter</span>';
+        } else if (p.tipo === "NAP") {
+          tipoBadge = '<span style="background:#4CAF50;padding:2px 6px;border-radius:4px;font-size:11px">NAP</span>';
+        } else {
+          tipoBadge = p.tipo || "N/A";
+        }
+
+        const html = `
+  <div class="popup" style="min-width:240px;max-width:350px;font-size:13px;line-height:1.6">
+    <div style="border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px">
+      <div style="font-size:16px;font-weight:bold;margin-bottom:4px">🔒 ${p.codigo || "Cierre"}</div>
+      <div style="font-size:12px;opacity:0.8">ID: ${p.id || "N/A"}</div>
+    </div>
+    
+    <div style="margin-bottom:8px">
+      <b>📦 Tipo:</b> ${tipoBadge}<br>
+      <b>🏢 Central:</b> ${p.central || "N/A"}<br>
+      <b>🧬 Molécula:</b> ${p.molecula || "N/A"}<br>
+    </div>
+
+    ${p.notas ? `
+    <div style="margin-bottom:8px">
+      <b>📝 Notas:</b>
+      <div style="margin:4px 0;padding:6px;background:rgba(255,255,255,0.05);border-radius:4px;font-size:12px;max-height:80px;overflow-y:auto">
+        ${p.notas}
+      </div>
+    </div>
+    ` : ''}
+
+    <div style="font-size:11px;opacity:0.7;border-top:1px solid rgba(255,255,255,0.1);padding-top:6px;margin-top:8px">
+      <div>📅 Creado: ${fecha}</div>
+      ${fechaActualizado ? `<div>✏️ Actualizado: ${fechaActualizado}</div>` : ""}
+      ${p.lat && p.lng ? `<div>📍 Coord: ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}</div>` : ""}
+    </div>
+
+    <hr style="margin:10px 0;border-color:rgba(255,255,255,0.1)">
+    <button id="btnEditCierrePopup" class="popup-btn" style="width:100%;background:linear-gradient(135deg, #2196f3, #1565c0)">
+      ✏️ Editar
+    </button>
+  </div>
+`;
+
+        const popup = new mapboxgl.Popup({ closeButton: true })
+          .setLngLat(lngLat)
+          .setHTML(html)
+          .addTo(App.map);
+
+        setTimeout(() => {
+          const btnEdit = document.getElementById("btnEditCierrePopup");
+          btnEdit?.addEventListener("click", () => {
+            popup.remove();
+            abrirEdicionCierre(p);
+          });
+        }, 80);
       });
 
       // Cursor pointer al pasar sobre cierre

@@ -346,9 +346,14 @@
     </div>
 
     <hr style="margin:10px 0;border-color:rgba(255,255,255,0.1)">
-    <button id="btnEditEventoPopup" class="popup-btn">
-      ✏️ Editar evento
-    </button>
+    <div style="display:flex;gap:8px">
+      <button id="btnEditEventoPopup" class="popup-btn" style="flex:1;background:linear-gradient(135deg, #2196f3, #1565c0)">
+        ✏️ Editar
+      </button>
+      <button id="btnDeleteEventoPopup" class="popup-btn" style="flex:1;background:linear-gradient(135deg, #dc2626, #991b1b)">
+        🗑️ Eliminar
+      </button>
+    </div>
   </div>
 `;
 
@@ -358,10 +363,33 @@
           .addTo(App.map);
 
         setTimeout(() => {
-          const btn = document.getElementById("btnEditEventoPopup");
-          btn?.addEventListener("click", () => {
+          // Botón editar
+          const btnEdit = document.getElementById("btnEditEventoPopup");
+          btnEdit?.addEventListener("click", () => {
             popup.remove();
             abrirEdicionEvento(p);
+          });
+          
+          // Botón eliminar
+          const btnDelete = document.getElementById("btnDeleteEventoPopup");
+          btnDelete?.addEventListener("click", async () => {
+            if (!confirm("¿Estás seguro de eliminar este evento?")) {
+              return;
+            }
+            
+            try {
+              const FB = window.FTTH_FIREBASE;
+              if (FB?.eliminarEvento && p.id) {
+                await FB.eliminarEvento(p.id);
+                popup.remove();
+                console.log("✅ Evento eliminado:", p.id);
+              } else {
+                alert("❌ No se pudo eliminar el evento");
+              }
+            } catch (err) {
+              console.error("❌ Error eliminando evento:", err);
+              alert("❌ Error al eliminar el evento");
+            }
           });
         }, 80);
       });

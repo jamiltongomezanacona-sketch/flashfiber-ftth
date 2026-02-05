@@ -730,28 +730,13 @@
     function handleMapClick(e) {
       if (!active) return;
 
-      // ✅ Prevenir que se abra el modal si se está haciendo click en un popup
-      const target = e.originalEvent?.target;
-      if (target && (target.closest('.mapboxgl-popup') || target.closest('.popup'))) {
-        return;
-      }
-
-      const BLOCK_LAYERS = [LAYER_ID].filter(id => App.map.getLayer(id));
-      if (BLOCK_LAYERS.length) {
-        const hits = App.map.queryRenderedFeatures(e.point, { layers: BLOCK_LAYERS });
-        if (hits.length) {
-          // Si hay hits, el popup se abrirá desde el click handler de la capa
-          // No abrir el modal de creación
-          return;
-        }
-      }
-
       if (blockNextClick) {
         blockNextClick = false;
         return;
       }
 
       selectedLngLat = e.lngLat;
+      modal.dataset.editId = ""; // creación nueva
       openModal();
     }
 

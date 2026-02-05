@@ -689,13 +689,14 @@
         }
       }
       
-      // Capa de puntos (centrales, cierres, etc.)
+      // Capa de puntos (oculta por defecto; solo visible desde árbol de capas o buscador)
       if (pointFeatures.length > 0 && !map.getLayer("geojson-points")) {
         map.addLayer({
           id: "geojson-points",
           type: "circle",
           source: "geojson-consolidado",
           filter: ["==", ["geometry-type"], "Point"],
+          layout: { visibility: "none" },
           paint: {
             "circle-radius": 6,
             "circle-color": "#ffaa00",
@@ -704,34 +705,38 @@
             "circle-opacity": 0.9
           }
         });
-        console.log(`✅ Capa de puntos creada: ${pointFeatures.length} features`);
+        if (!App.__ftthLayerIds.includes("geojson-points")) App.__ftthLayerIds.push("geojson-points");
+        console.log(`✅ Capa de puntos creada: ${pointFeatures.length} features (oculta por defecto)`);
       }
       
-      // Capa de polígonos
+      // Capa de polígonos (oculta por defecto; solo visible desde árbol de capas o buscador)
       if (polygonFeatures.length > 0 && !map.getLayer("geojson-polygons")) {
         map.addLayer({
           id: "geojson-polygons",
           type: "fill",
           source: "geojson-consolidado",
           filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
+          layout: { visibility: "none" },
           paint: {
             "fill-color": "#00e5ff",
             "fill-opacity": 0.3
           }
         });
+        if (!App.__ftthLayerIds.includes("geojson-polygons")) App.__ftthLayerIds.push("geojson-polygons");
         
-        // Borde de polígonos
         map.addLayer({
           id: "geojson-polygons-outline",
           type: "line",
           source: "geojson-consolidado",
           filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
+          layout: { visibility: "none" },
           paint: {
             "line-color": "#00e5ff",
             "line-width": 2
           }
         });
-        console.log(`✅ Capa de polígonos creada: ${polygonFeatures.length} features`);
+        if (!App.__ftthLayerIds.includes("geojson-polygons-outline")) App.__ftthLayerIds.push("geojson-polygons-outline");
+        console.log(`✅ Capa de polígonos creada: ${polygonFeatures.length} features (oculta por defecto)`);
       }
       
       console.log(`✅ GeoJSON consolidado cargado en mapa base: ${consolidated.features.length} features totales`);
@@ -1082,14 +1087,12 @@
         }
 
         // Configurar layout para símbolos SOLO CON TEXTO (sin iconos)
-        // ✅ Determinar visibilidad inicial: oculto para cables, visible para otros (centrales, cierres, etc.)
+        // ✅ Solo centrales visibles por defecto; el resto solo desde árbol de capas o buscador
         const isCableLayer = id?.toLowerCase().includes("cable") || 
                             basePath?.toLowerCase().includes("cables");
-        // Las centrales y otros puntos deben iniciar visibles
         const isCentral = id?.toLowerCase().includes("central") || 
                          id?.toLowerCase().includes("corporativo");
-        const initialVisibility = isCableLayer ? "none" : 
-                                 (isCentral ? "visible" : (layer.layout?.visibility || "visible"));
+        const initialVisibility = isCentral ? "visible" : "none";
         
         const layerConfig = {
           id,
@@ -1179,13 +1182,12 @@
           }
         }
 
-        // ✅ Determinar visibilidad: oculto para cables, visible para otros (centrales, puntos, etc.)
+        // ✅ Solo centrales visibles por defecto; el resto solo desde árbol de capas o buscador
         const isCableLayer = id?.toLowerCase().includes("cable") || 
                             basePath?.toLowerCase().includes("cables");
         const isCentral = id?.toLowerCase().includes("central") || 
                          id?.toLowerCase().includes("corporativo");
-        const initialVisibility = isCableLayer ? "none" : 
-                                 (isCentral ? "visible" : "visible");
+        const initialVisibility = isCentral ? "visible" : "none";
         
         const layerConfig = {
           id,

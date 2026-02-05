@@ -49,8 +49,11 @@
     const btnClose   = document.getElementById("closeCierreModal");
     const btnDelete  = document.getElementById("btnDeleteCierre");
 
+    const selectTipo = document.getElementById("cierreTipo");
     const selectCentral  = document.getElementById("cierreCentral");
     const selectMolecula = document.getElementById("cierreMolecula");
+    const inputCodigo = document.getElementById("cierreCodigo");
+    const camposDinamicos = document.getElementById("cierreCamposDinamicos");
 
     /* ===============================
        Prefijos por central
@@ -74,9 +77,115 @@
       );
     }
 
+    /* ===============================
+       Generar código automáticamente
+    =============================== */
+    function generarCodigo() {
+      const tipo = selectTipo?.value || "";
+      const central = selectCentral?.value || "";
+      const molecula = selectMolecula?.value || "";
+      
+      if (!tipo || !central || !molecula) {
+        inputCodigo.value = "";
+        return;
+      }
+
+      if (tipo === "E1") {
+        // E1: E1SI01-1, E1SI01-2, ... E1SI01-10
+        const sufijo = document.getElementById("cierreSufijoE1")?.value || "";
+        if (sufijo) {
+          inputCodigo.value = `${tipo}${molecula}-${sufijo}`;
+        } else {
+          inputCodigo.value = "";
+        }
+      } else if (tipo === "E2") {
+        // E2: E2SI03-A1, E2SI03-B2, etc.
+        const submolecula = document.getElementById("cierreSubmolecula")?.value || "";
+        const numero = document.getElementById("cierreNumeroE2")?.value || "";
+        if (submolecula && numero) {
+          inputCodigo.value = `${tipo}${molecula}-${submolecula}${numero}`;
+        } else {
+          inputCodigo.value = "";
+        }
+      } else if (tipo === "NAP") {
+        // NAP: mantener formato manual por ahora
+        inputCodigo.value = "";
+      }
+    }
+
+    /* ===============================
+       Actualizar campos dinámicos según tipo
+    =============================== */
+    function actualizarCamposDinamicos() {
+      const tipo = selectTipo?.value || "";
+      camposDinamicos.innerHTML = "";
+
+      if (tipo === "E1") {
+        // E1: Solo necesita sufijo (1-10)
+        camposDinamicos.innerHTML = `
+          <label>🔢 Sufijo</label>
+          <select id="cierreSufijoE1">
+            <option value="">Seleccione Sufijo</option>
+            ${Array.from({ length: 10 }, (_, i) => 
+              `<option value="${i + 1}">${i + 1}</option>`
+            ).join("")}
+          </select>
+        `;
+        
+        const selectSufijo = document.getElementById("cierreSufijoE1");
+        selectSufijo?.addEventListener("change", generarCodigo);
+      } else if (tipo === "E2") {
+        // E2: Submolécula (A, B, C) + Número
+        camposDinamicos.innerHTML = `
+          <label>🔤 Submolécula</label>
+          <select id="cierreSubmolecula">
+            <option value="">Seleccione Submolécula</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+          <label>🔢 Número</label>
+          <select id="cierreNumeroE2">
+            <option value="">Seleccione Número</option>
+            ${Array.from({ length: 10 }, (_, i) => 
+              `<option value="${i + 1}">${i + 1}</option>`
+            ).join("")}
+          </select>
+        `;
+        
+        const selectSubmolecula = document.getElementById("cierreSubmolecula");
+        const selectNumero = document.getElementById("cierreNumeroE2");
+        selectSubmolecula?.addEventListener("change", generarCodigo);
+        selectNumero?.addEventListener("change", generarCodigo);
+      }
+    }
+
+    // Cambio de tipo
+    selectTipo?.addEventListener("change", () => {
+      const tipo = selectTipo.value;
+      
+      // Resetear campos
+      selectCentral.value = "";
+      selectMolecula.innerHTML = `<option value="">Seleccione Molécula</option>`;
+      selectMolecula.disabled = true;
+      inputCodigo.value = "";
+      
+      // Habilitar central si hay tipo seleccionado
+      if (tipo) {
+        selectCentral.disabled = false;
+      } else {
+        selectCentral.disabled = true;
+        camposDinamicos.innerHTML = "";
+      }
+      
+      actualizarCamposDinamicos();
+    });
+
+    // Cambio de central
     selectCentral?.addEventListener("change", () => {
       const central = selectCentral.value;
       selectMolecula.innerHTML = `<option value="">Seleccione Molécula</option>`;
+      inputCodigo.value = "";
 
       const prefijo = CENTRAL_PREFIX[central];
       if (!prefijo) {
@@ -93,6 +202,9 @@
 
       selectMolecula.disabled = false;
     });
+
+    // Cambio de molécula
+    selectMolecula?.addEventListener("change", generarCodigo);
 
     /* ===============================
        Map Layer - Estilo Google Maps
@@ -531,19 +643,75 @@
       modal.dataset.editId = "";
       selectedLngLat = null;
       blockNextClick = true;
+      
+      // Limpiar todos los campos
+      if (selectTipo) selectTipo.value = "";
+      if (selectCentral) {
+        selectCentral.value = "";
+        selectCentral.disabled = true;
+      }
+      if (selectMolecula) {
+        selectMolecula.innerHTML = `<option value="">Seleccione Molécula</option>`;
+        selectMolecula.disabled = true;
+      }
+      if (inputCodigo) inputCodigo.value = "";
+      if (camposDinamicos) camposDinamicos.innerHTML = "";
+      const notas = document.getElementById("cierreNotas");
+      if (notas) notas.value = "";
     }
 
     btnCancel?.addEventListener("click", closeModal);
     btnClose?.addEventListener("click", closeModal);
 
     function abrirEdicionCierre(cierre) {
-      document.getElementById("cierreCodigo").value  = cierre.codigo || "";
-      document.getElementById("cierreTipo").value    = cierre.tipo || "";
-      document.getElementById("cierreCentral").value = cierre.central || "";
-      document.getElementById("cierreNotas").value   = cierre.notas || "";
-
-      selectCentral.dispatchEvent(new Event("change"));
-      document.getElementById("cierreMolecula").value = cierre.molecula || "";
+      // Establecer tipo primero
+      if (selectTipo) selectTipo.value = cierre.tipo || "";
+      selectTipo?.dispatchEvent(new Event("change"));
+      
+      // Establecer central y disparar evento para cargar moléculas
+      if (selectCentral) {
+        selectCentral.value = cierre.central || "";
+        selectCentral.disabled = false;
+        selectCentral.dispatchEvent(new Event("change"));
+      }
+      
+      // Esperar un momento para que se carguen las moléculas
+      setTimeout(() => {
+        if (selectMolecula) {
+          selectMolecula.value = cierre.molecula || "";
+          selectMolecula.dispatchEvent(new Event("change"));
+        }
+        
+        // Parsear código para rellenar campos dinámicos si es necesario
+        const codigo = cierre.codigo || "";
+        if (codigo && cierre.tipo === "E1") {
+          // E1SI01-1 -> extraer sufijo "1"
+          const match = codigo.match(/-(\d+)$/);
+          if (match) {
+            const sufijo = match[1];
+            const selectSufijo = document.getElementById("cierreSufijoE1");
+            if (selectSufijo) selectSufijo.value = sufijo;
+          }
+        } else if (codigo && cierre.tipo === "E2") {
+          // E2SI03-A1 -> extraer submolecula "A" y número "1"
+          const match = codigo.match(/-([A-C])(\d+)$/);
+          if (match) {
+            const submolecula = match[1];
+            const numero = match[2];
+            const selectSubmolecula = document.getElementById("cierreSubmolecula");
+            const selectNumero = document.getElementById("cierreNumeroE2");
+            if (selectSubmolecula) selectSubmolecula.value = submolecula;
+            if (selectNumero) selectNumero.value = numero;
+          }
+        }
+        
+        // Generar código actualizado
+        generarCodigo();
+      }, 100);
+      
+      // Establecer notas
+      const notas = document.getElementById("cierreNotas");
+      if (notas) notas.value = cierre.notas || "";
 
       modal.dataset.editId = cierre.id || "";
       openModal();

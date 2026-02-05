@@ -750,26 +750,24 @@
     }
 
     function handleMapClick(e) {
-      console.log("🔍 handleMapClick llamado, active:", active);
-      if (!active) {
-        console.log("⚠️ Tool no está activo, ignorando click");
-        return;
-      }
-
-      // ✅ Prevenir que el click en la capa interfiera
-      const target = e.originalEvent?.target;
-      if (target && target.closest('.mapboxgl-popup')) {
-        console.log("⚠️ Click en popup, ignorando");
-        return;
-      }
+      if (!active) return;
 
       if (blockNextClick) {
         blockNextClick = false;
-        console.log("⚠️ blockNextClick activo, ignorando");
         return;
       }
 
-      console.log("✅ Abriendo modal de creación de cierre");
+      // ✅ Si el click fue en un cierre existente, no crear nuevo (el popup se maneja en el listener de la capa)
+      const BLOCK_LAYERS = [LAYER_ID].filter(id => App.map.getLayer(id));
+      if (BLOCK_LAYERS.length) {
+        const hits = App.map.queryRenderedFeatures(e.point, { layers: BLOCK_LAYERS });
+        if (hits.length && !active) {
+          // Si no está activo, el popup se abrirá desde el listener de la capa
+          return;
+        }
+        // Si está activo, permitir crear cierre incluso si hay uno cerca
+      }
+
       selectedLngLat = e.lngLat;
       modal.dataset.editId = ""; // creación nueva
       openModal();

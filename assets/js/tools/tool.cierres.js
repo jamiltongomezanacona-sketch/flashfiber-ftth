@@ -312,22 +312,13 @@
     const loadedIcons = new Set();
     const loadingIcons = new Map(); // Iconos en proceso de carga
     
-    // ✅ Cargar iconos de forma síncrona (igual que eventos)
+    // ✅ Cargar iconos de forma síncrona (EXACTAMENTE igual que eventos)
     function loadCierreIconSync(tipo, label = "") {
       const color = getColorByTipo(tipo);
       const iconId = `cierre-${tipo}-${label || 'default'}`;
       
-      if (!App || !App.map) {
-        console.warn("⚠️ App o App.map no disponible para cargar icono");
-        return iconId;
-      }
-      
+      if (!App || !App.map) return iconId;
       if (App.map.hasImage(iconId)) {
-        return iconId;
-      }
-
-      if (!App.map.isStyleLoaded()) {
-        console.warn("⚠️ Mapa no está listo para cargar iconos");
         return iconId;
       }
 
@@ -337,24 +328,15 @@
       const url = URL.createObjectURL(svgBlob);
 
       img.onload = () => {
-        try {
-          if (App.map && !App.map.hasImage(iconId)) {
-            App.map.addImage(iconId, img);
-            console.log(`✅ Icono de cierre cargado: ${iconId}`);
-            // Refrescar capa después de cargar el icono
-            refreshLayer();
-          }
-        } catch (err) {
-          console.error(`❌ Error agregando icono al mapa: ${iconId}`, err);
+        if (!App.map.hasImage(iconId)) {
+          App.map.addImage(iconId, img);
         }
         URL.revokeObjectURL(url);
       };
-      
-      img.onerror = (err) => {
-        console.warn(`⚠️ Error cargando icono de cierre: ${iconId}`, err);
+      img.onerror = () => {
+        console.warn(`⚠️ Error cargando icono de cierre: ${iconId}`);
         URL.revokeObjectURL(url);
       };
-      
       img.src = url;
       
       return iconId;
@@ -362,23 +344,14 @@
     
     function loadIconForTipo(tipo, label = "") {
       const iconId = `cierre-${tipo}-${label || 'default'}`;
-      
-      // Si ya está cargado, retornar inmediatamente
       if (!App || !App.map) return iconId;
-      if (App.map.hasImage(iconId)) {
-        return iconId;
-      }
-      
+      if (App.map.hasImage(iconId)) return iconId;
       if (!App.map.isStyleLoaded()) return iconId;
-      
-      // Cargar icono de forma síncrona
       loadCierreIconSync(tipo, label);
-      
       return iconId;
     }
 
     function initLayer() {
-      if (!App || !App.map || !App.map.isStyleLoaded()) return;
       if (App.map.getSource(SOURCE_ID)) return;
 
       App.map.addSource(SOURCE_ID, {
@@ -386,10 +359,10 @@
         data: { type: "FeatureCollection", features: [] }
       });
       
-      // ✅ Pre-cargar icono por defecto en gris (estilo eventos)
-      loadCierreIconSync("E1", ""); // Cargar icono por defecto
+      // ✅ Pre-cargar icono por defecto en gris (igual que eventos)
+      loadCierreIconSync("E1", "");
 
-      // ✅ Capa de símbolos estilo Google Maps (en lugar de círculos)
+      // ✅ Capa de símbolos (EXACTAMENTE igual que eventos)
       App.map.addLayer({
         id: LAYER_ID,
         type: "symbol",
@@ -400,8 +373,6 @@
             ["get", "iconId"],
             "cierre-E1-default"
           ],
-          "icon-allow-overlap": true,
-          "icon-ignore-placement": true,
           "icon-size": [
             "interpolate",
             ["linear"],
@@ -413,8 +384,7 @@
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
           "icon-anchor": "bottom",
-          "icon-pitch-alignment": "viewport",
-          "visibility": "visible" // ✅ Asegurar que esté visible
+          "icon-pitch-alignment": "viewport"
         }
       });
 
@@ -462,41 +432,33 @@
     function addCierreToMap(cierre) {
       if (!cierre?.lng || !cierre?.lat) return;
 
-      const index = App.data.cierres.findIndex(c => c.id === cierre.id);
+      // Normalizar (por si viene string)
+      const lng = Number(cierre.lng);
+      const lat = Number(cierre.lat);
+      if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
 
-      // ✅ Generar etiqueta para el marcador (código o molécula)
+      // ✅ Asegurar que el icono esté cargado (EXACTAMENTE igual que eventos)
       const label = cierre.codigo || cierre.molecula || "";
       const tipo = cierre.tipo || "E1";
       const labelShort = label.substring(0, 2).toUpperCase() || "";
-      
-      // ✅ Cargar icono personalizado (siempre gris, estilo eventos)
-      const iconId = loadIconForTipo(tipo, labelShort);
-      
-      // ✅ Asegurar que el icono se cargue y esperar a que esté listo
       loadCierreIconSync(tipo, labelShort);
-      
-      // Agregar feature inmediatamente (el icono se cargará en background)
+
+      const index = App.data.cierres.findIndex(c => c.id === cierre.id);
+
       const feature = {
         id: cierre.id,
         type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [cierre.lng, cierre.lat]
-        },
+        geometry: { type: "Point", coordinates: [lng, lat] },
         properties: {
           ...cierre,
-          iconId: iconId, // ✅ Agregar ID del icono a las propiedades
-          label: labelShort // Etiqueta corta para el icono
+          iconId: `cierre-${tipo}-${labelShort || 'default'}` // ✅ Agregar iconId a propiedades
         }
       };
 
       if (index >= 0) App.data.cierres[index] = feature;
       else App.data.cierres.push(feature);
 
-      // ✅ Refrescar capa después de un breve delay para que el icono se cargue
-      setTimeout(() => {
-        refreshLayer();
-      }, 200);
+      refreshLayer();
     }
 
     function removeCierreFromMap(id) {

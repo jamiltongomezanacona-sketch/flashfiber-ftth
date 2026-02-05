@@ -266,23 +266,86 @@
         const lngLat = e.lngLat;
 
         const fecha = p.createdAt ? new Date(p.createdAt).toLocaleString() : "Sin fecha";
+        const fechaActualizado = p.updatedAt ? new Date(p.updatedAt).toLocaleString() : null;
+        
+        // Formatear estado con color
+        let estadoColor = "#9e9e9e";
+        let estadoBadge = "";
+        if (p.estado === "CRITICO") {
+          estadoColor = "#e53935";
+          estadoBadge = '<span style="background:#e53935;padding:2px 6px;border-radius:4px;font-size:11px">CRÍTICO</span>';
+        } else if (p.estado === "PROVISIONAL") {
+          estadoColor = "#fbc02d";
+          estadoBadge = '<span style="background:#fbc02d;padding:2px 6px;border-radius:4px;font-size:11px;color:#000">PROVISIONAL</span>';
+        } else if (p.estado === "RESUELTO") {
+          estadoColor = "#43a047";
+          estadoBadge = '<span style="background:#43a047;padding:2px 6px;border-radius:4px;font-size:11px">RESUELTO</span>';
+        }
+        
+        // Mostrar fotos si existen
+        let fotosHTML = "";
+        if (p.fotos && Array.isArray(p.fotos) && p.fotos.length > 0) {
+          fotosHTML = `
+    <b>📷 Fotos (${p.fotos.length}):</b>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 6px 0">
+      ${p.fotos.map((url, idx) => `
+        <a href="${url}" target="_blank" style="display:block;width:60px;height:60px;border-radius:6px;overflow:hidden;border:1px solid #2c3e50;">
+          <img src="${url}" style="width:100%;height:100%;object-fit:cover;" alt="Foto ${idx + 1}" />
+        </a>
+      `).join("")}
+    </div>
+  `;
+        } else if (p.fotos && typeof p.fotos === "object" && (p.fotos.antes || p.fotos.despues)) {
+          // Compatibilidad con formato antiguo (antes/despues)
+          const todasFotos = [...(p.fotos.antes || []), ...(p.fotos.despues || [])];
+          if (todasFotos.length > 0) {
+            fotosHTML = `
+    <b>📷 Fotos (${todasFotos.length}):</b>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 6px 0">
+      ${todasFotos.map((url, idx) => `
+        <a href="${url}" target="_blank" style="display:block;width:60px;height:60px;border-radius:6px;overflow:hidden;border:1px solid #2c3e50;">
+          <img src="${url}" style="width:100%;height:100%;object-fit:cover;" alt="Foto ${idx + 1}" />
+        </a>
+      `).join("")}
+    </div>
+  `;
+          }
+        }
 
         const html = `
-  <div class="popup" style="min-width:240px;font-size:13px">
-    <b>🚨 Evento:</b> ${p.tipo || "N/A"}<br>
-    <b>🔧 Acción:</b> ${p.accion || "N/A"}<br>
-    <b>⏱ Estado:</b> ${p.estado || "N/A"}<br>
+  <div class="popup" style="min-width:280px;max-width:400px;font-size:13px;line-height:1.6">
+    <div style="border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px">
+      <div style="font-size:16px;font-weight:bold;margin-bottom:4px">🚨 ${p.tipo || "Evento"}</div>
+      <div style="font-size:12px;opacity:0.8">ID: ${p.id || "N/A"}</div>
+    </div>
+    
+    <div style="margin-bottom:8px">
+      <b>🔧 Acción:</b> ${p.accion || "N/A"}<br>
+      <b>⏱ Estado:</b> ${estadoBadge || p.estado || "N/A"}<br>
+    </div>
 
-    <b>🏢 Central:</b> ${p.central || "N/A"}<br>
-    <b>🧬 Molécula:</b> ${p.molecula || "N/A"}<br>
+    <div style="margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.05);border-radius:6px">
+      <b>🏢 Central:</b> ${p.central || "N/A"}<br>
+      <b>🧬 Molécula:</b> ${p.molecula || "N/A"}<br>
+      <b>👤 Técnico:</b> ${p.tecnico || "N/A"}<br>
+    </div>
 
-    <b>👤 Técnico:</b> ${p.tecnico || "N/A"}<br>
-    <b>📅 Creado:</b> ${fecha}<br>
+    ${fotosHTML}
 
-    <b>📝 Notas:</b>
-    <div style="margin:4px 0 6px 0">${p.notas || "Sin notas"}</div>
+    <div style="margin-bottom:8px">
+      <b>📝 Notas:</b>
+      <div style="margin:4px 0;padding:6px;background:rgba(255,255,255,0.05);border-radius:4px;font-size:12px;max-height:100px;overflow-y:auto">
+        ${p.notas || "Sin notas"}
+      </div>
+    </div>
 
-    <hr>
+    <div style="font-size:11px;opacity:0.7;border-top:1px solid rgba(255,255,255,0.1);padding-top:6px;margin-top:8px">
+      <div>📅 Creado: ${fecha}</div>
+      ${fechaActualizado ? `<div>✏️ Actualizado: ${fechaActualizado}</div>` : ""}
+      ${p.lat && p.lng ? `<div>📍 Coord: ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}</div>` : ""}
+    </div>
+
+    <hr style="margin:10px 0;border-color:rgba(255,255,255,0.1)">
     <button id="btnEditEventoPopup" class="popup-btn">
       ✏️ Editar evento
     </button>

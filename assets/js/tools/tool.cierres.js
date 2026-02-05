@@ -871,5 +871,10 @@
   }
 
   // ✅ Auto-inicializar
-  init();
+  // ✅ Inicializar cuando el DOM esté listo (igual que eventos)
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 })();

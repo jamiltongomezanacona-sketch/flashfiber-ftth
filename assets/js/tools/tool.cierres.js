@@ -617,6 +617,22 @@
     =============================== */
     function openModal() {
       modal?.classList.remove("hidden");
+      // Resetear campos para nueva creación (igual que eventos)
+      if (!modal.dataset.editId) {
+        if (selectTipo) selectTipo.value = "";
+        if (selectCentral) {
+          selectCentral.value = "";
+          selectCentral.disabled = true;
+        }
+        if (selectMolecula) {
+          selectMolecula.innerHTML = `<option value="">Seleccione Molécula</option>`;
+          selectMolecula.disabled = true;
+        }
+        if (inputCodigo) inputCodigo.value = "";
+        if (camposDinamicos) camposDinamicos.innerHTML = "";
+        const notas = document.getElementById("cierreNotas");
+        if (notas) notas.value = "";
+      }
     }
 
     function closeModal() {

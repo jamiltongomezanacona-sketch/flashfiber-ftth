@@ -737,6 +737,10 @@
 
       console.log("📦 Montar Cierre ACTIVADO");
       console.log("✅ Listener de click registrado, active:", active);
+      
+      // ✅ Test: verificar que el listener está registrado
+      const listeners = App.map._listeners?.click || [];
+      console.log("🔍 Listeners de click registrados:", listeners.length);
     }
 
     function stop() {

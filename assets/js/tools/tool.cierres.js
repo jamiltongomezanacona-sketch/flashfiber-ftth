@@ -392,10 +392,9 @@
       if (!App || !App.map) return;
       App.map.on("click", LAYER_ID, (e) => {
         // ✅ Si el tool está activo, NO hacer nada aquí (dejar que handleMapClick maneje)
-        // Pero necesitamos prevenir que el evento se propague
+        // El listener de la capa tiene prioridad, pero si active=true, no hacemos nada
         if (active) {
-          e.preventDefault?.();
-          e.stopPropagation?.();
+          // No hacer nada, dejar que el click pase al listener general del mapa
           return;
         }
 

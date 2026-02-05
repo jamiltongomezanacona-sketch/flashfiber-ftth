@@ -391,10 +391,13 @@
       // Click sobre cierre → popup resumen + botón editar
       if (!App || !App.map) return;
       App.map.on("click", LAYER_ID, (e) => {
-        // ✅ Si el tool está activo, NO hacer nada aquí (dejar que handleMapClick maneje)
-        // El listener de la capa tiene prioridad, pero si active=true, no hacemos nada
+        // ✅ Si el tool está activo, NO hacer nada aquí
+        // IMPORTANTE: En Mapbox, el listener de capa se ejecuta primero
+        // Si hacemos return aquí, el evento NO se propaga al listener general
+        // Por eso cuando active=true, simplemente no hacemos nada y el evento continúa
         if (active) {
-          // No hacer nada, dejar que el click pase al listener general del mapa
+          // No procesar el click en la capa cuando el tool está activo
+          // El handleMapClick general se encargará de abrir el modal
           return;
         }
 

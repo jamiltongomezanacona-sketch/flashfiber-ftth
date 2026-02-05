@@ -401,27 +401,23 @@
         }
       });
 
-      // Click sobre cierre → popup resumen + botón editar
+      // Escapar HTML para evitar rupturas y XSS en el popup
+      function escapeHtml(str) {
+        if (str == null) return "";
+        const s = String(str);
+        return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+
+      // Click sobre cierre → popup resumen + botón editar (siempre visible, incluso con tool activo)
       if (!App || !App.map) return;
       App.map.on("click", LAYER_ID, (e) => {
-        // ✅ Si el tool está activo, NO hacer nada aquí
-        // IMPORTANTE: En Mapbox, el listener de capa se ejecuta primero
-        // Si hacemos return aquí, el evento NO se propaga al listener general
-        // Por eso cuando active=true, simplemente no hacemos nada y el evento continúa
-        if (active) {
-          // No procesar el click en la capa cuando el tool está activo
-          // El handleMapClick general se encargará de abrir el modal
-          return;
-        }
-
         const f = e.features?.[0];
         if (!f) return;
 
         const p = f.properties || {};
         const lngLat = e.lngLat;
-        
-        // Debug: mostrar todas las propiedades en consola
-        console.log("🔍 Propiedades del cierre:", p);
+        // Si el tool está activo, mostrar popup y bloquear el siguiente click del mapa para no abrir modal de nuevo cierre
+        if (active) blockNextClick = true;
 
         const fecha = p.createdAt ? new Date(p.createdAt).toLocaleString() : "Sin fecha";
         const fechaActualizado = p.updatedAt ? new Date(p.updatedAt).toLocaleString() : null;
@@ -435,46 +431,50 @@
         } else if (p.tipo === "NAP") {
           tipoBadge = '<span style="background:#4CAF50;padding:2px 6px;border-radius:4px;font-size:11px">NAP</span>';
         } else {
-          tipoBadge = p.tipo || "N/A";
+          tipoBadge = escapeHtml(p.tipo || "N/A");
         }
+
+        const todasPropsHtml = Object.keys(p)
+          .filter(k => k !== "iconId" && k !== "label")
+          .map(key => {
+            let value = p[key];
+            if (value === null || value === undefined) value = "N/A";
+            if (typeof value === "object") value = JSON.stringify(value);
+            if (key === "lng" || key === "lat") value = Number(value).toFixed(6);
+            return `<div style="margin:2px 0"><b>${escapeHtml(key.charAt(0).toUpperCase() + key.slice(1))}:</b> ${escapeHtml(String(value))}</div>`;
+          }).join("") || "<div style='opacity:0.6'>No hay propiedades adicionales</div>";
 
         const html = `
   <div class="popup" style="min-width:240px;max-width:350px;font-size:13px;line-height:1.6">
     <div style="border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px">
-      <div style="font-size:16px;font-weight:bold;margin-bottom:4px">🔒 ${p.codigo || "Cierre"}</div>
-      <div style="font-size:12px;opacity:0.8">ID: ${p.id || "N/A"}</div>
+      <div style="font-size:16px;font-weight:bold;margin-bottom:4px">🔒 ${escapeHtml(p.codigo || "Cierre")}</div>
+      <div style="font-size:12px;opacity:0.8">ID: ${escapeHtml(p.id || "N/A")}</div>
     </div>
     
     <div style="margin-bottom:8px">
       <b>📦 Tipo:</b> ${tipoBadge}<br>
-      <b>🏢 Central:</b> ${p.central || "N/A"}<br>
-      <b>🧬 Molécula:</b> ${p.molecula || "N/A"}<br>
+      <b>🏢 Central:</b> ${escapeHtml(p.central || "N/A")}<br>
+      <b>🧬 Molécula:</b> ${escapeHtml(p.molecula || "N/A")}<br>
     </div>
 
     ${p.notas ? `
     <div style="margin-bottom:8px">
       <b>📝 Notas:</b>
       <div style="margin:4px 0;padding:6px;background:rgba(255,255,255,0.05);border-radius:4px;font-size:12px;max-height:80px;overflow-y:auto">
-        ${p.notas}
+        ${escapeHtml(p.notas)}
       </div>
     </div>
     ` : ''}
 
     <div style="margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.05);border-radius:6px;max-height:200px;overflow-y:auto">
       <b>📋 Todas las propiedades:</b>
-      ${Object.keys(p).filter(k => k !== "iconId" && k !== "label").map(key => {
-        let value = p[key];
-        if (value === null || value === undefined) value = "N/A";
-        if (typeof value === "object") value = JSON.stringify(value);
-        if (key === "lng" || key === "lat") value = Number(value).toFixed(6);
-        return `<div style="margin:2px 0"><b>${key.charAt(0).toUpperCase() + key.slice(1)}:</b> ${value}</div>`;
-      }).join("") || "<div style='opacity:0.6'>No hay propiedades adicionales</div>"}
+      ${todasPropsHtml}
     </div>
 
     <div style="font-size:11px;opacity:0.7;border-top:1px solid rgba(255,255,255,0.1);padding-top:6px;margin-top:8px">
-      <div>📅 Creado: ${fecha}</div>
-      ${fechaActualizado ? `<div>✏️ Actualizado: ${fechaActualizado}</div>` : ""}
-      ${p.lat && p.lng ? `<div>📍 Coord: ${Number(p.lat).toFixed(6)}, ${Number(p.lng).toFixed(6)}</div>` : ""}
+      <div>📅 Creado: ${escapeHtml(fecha)}</div>
+      ${fechaActualizado ? `<div>✏️ Actualizado: ${escapeHtml(fechaActualizado)}</div>` : ""}
+      ${p.lat != null && p.lng != null ? `<div>📍 Coord: ${Number(p.lat).toFixed(6)}, ${Number(p.lng).toFixed(6)}</div>` : ""}
     </div>
 
     <hr style="margin:10px 0;border-color:rgba(255,255,255,0.1)">

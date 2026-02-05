@@ -85,21 +85,22 @@
    Mobile First: Full width en móvil
 =============================== */
 
-/* MOBILE FIRST - Base (móvil) */
+/* MOBILE FIRST - Centrado en pantalla */
 .panel-capas {
   position: fixed;
-  top: 70px;
-  right: 0;
-  left: 0;
-  width: 100vw;
-  max-width: 100%;
-  max-height: calc(100vh - 80px);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90vw;
+  max-width: 340px;
+  max-height: 80vh;
   z-index: 3000;
-  border-radius: 0;
+  border-radius: var(--radius-md);
   margin: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 .panel-capas.hidden {
@@ -109,13 +110,9 @@
 /* Tablet */
 @media (min-width: 768px) {
   .panel-capas {
-    top: 80px;
-    right: 20px;
-    left: auto;
     width: 320px;
     max-width: calc(100vw - 40px);
-    max-height: 60vh;
-    border-radius: var(--radius-md);
+    max-height: 70vh;
   }
 }
 

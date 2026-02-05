@@ -257,6 +257,13 @@
         }
       });
 
+      // Escapar HTML para evitar rupturas y XSS en el popup
+      function escapeHtml(str) {
+        if (str == null) return "";
+        const s = String(str);
+        return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+
       // Click evento = popup info + botón editar
       App.map.on("click", LAYER_ID, (e) => {
         const f = e.features?.[0];
@@ -269,65 +276,76 @@
         const fechaActualizado = p.updatedAt ? new Date(p.updatedAt).toLocaleString() : null;
         
         // Formatear estado con color
-        let estadoColor = "#9e9e9e";
         let estadoBadge = "";
         if (p.estado === "CRITICO") {
-          estadoColor = "#e53935";
           estadoBadge = '<span style="background:#e53935;padding:2px 6px;border-radius:4px;font-size:11px">CRÍTICO</span>';
         } else if (p.estado === "PROVISIONAL") {
-          estadoColor = "#fbc02d";
           estadoBadge = '<span style="background:#fbc02d;padding:2px 6px;border-radius:4px;font-size:11px;color:#000">PROVISIONAL</span>';
         } else if (p.estado === "RESUELTO") {
-          estadoColor = "#43a047";
           estadoBadge = '<span style="background:#43a047;padding:2px 6px;border-radius:4px;font-size:11px">RESUELTO</span>';
+        } else {
+          estadoBadge = escapeHtml(p.estado || "N/A");
         }
         
-        // Mostrar fotos si existen
+        // Mostrar fotos si existen (escapar URL para evitar javascript:)
         let fotosHTML = "";
+        const safeUrl = (u) => (typeof u === "string" && (u.startsWith("http://") || u.startsWith("https://") || u.startsWith("data:"))) ? u : "#";
         if (p.fotos && Array.isArray(p.fotos) && p.fotos.length > 0) {
           fotosHTML = `
     <b>📷 Fotos (${p.fotos.length}):</b>
     <div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 6px 0">
-      ${p.fotos.map((url, idx) => `
-        <a href="${url}" target="_blank" style="display:block;width:60px;height:60px;border-radius:6px;overflow:hidden;border:1px solid #2c3e50;">
-          <img src="${url}" style="width:100%;height:100%;object-fit:cover;" alt="Foto ${idx + 1}" />
-        </a>
-      `).join("")}
+      ${p.fotos.map((url, idx) => {
+        const safe = safeUrl(url);
+        return `<a href="${escapeHtml(safe)}" target="_blank" rel="noopener" style="display:block;width:60px;height:60px;border-radius:6px;overflow:hidden;border:1px solid #2c3e50;">
+          <img src="${escapeHtml(safe)}" style="width:100%;height:100%;object-fit:cover;" alt="Foto ${idx + 1}" />
+        </a>`;
+      }).join("")}
     </div>
   `;
         } else if (p.fotos && typeof p.fotos === "object" && (p.fotos.antes || p.fotos.despues)) {
-          // Compatibilidad con formato antiguo (antes/despues)
           const todasFotos = [...(p.fotos.antes || []), ...(p.fotos.despues || [])];
           if (todasFotos.length > 0) {
             fotosHTML = `
     <b>📷 Fotos (${todasFotos.length}):</b>
     <div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 6px 0">
-      ${todasFotos.map((url, idx) => `
-        <a href="${url}" target="_blank" style="display:block;width:60px;height:60px;border-radius:6px;overflow:hidden;border:1px solid #2c3e50;">
-          <img src="${url}" style="width:100%;height:100%;object-fit:cover;" alt="Foto ${idx + 1}" />
-        </a>
-      `).join("")}
+      ${todasFotos.map((url, idx) => {
+        const safe = safeUrl(url);
+        return `<a href="${escapeHtml(safe)}" target="_blank" rel="noopener" style="display:block;width:60px;height:60px;border-radius:6px;overflow:hidden;border:1px solid #2c3e50;">
+          <img src="${escapeHtml(safe)}" style="width:100%;height:100%;object-fit:cover;" alt="Foto ${idx + 1}" />
+        </a>`;
+      }).join("")}
     </div>
   `;
           }
         }
 
+        // Todas las propiedades (visible, escapadas)
+        const todasPropsHtml = Object.keys(p)
+          .filter(k => k !== "iconId" && k !== "label")
+          .map(key => {
+            let value = p[key];
+            if (value === null || value === undefined) value = "N/A";
+            if (typeof value === "object") value = JSON.stringify(value);
+            if (key === "lng" || key === "lat") value = Number(value).toFixed(6);
+            return `<div style="margin:2px 0"><b>${escapeHtml(key.charAt(0).toUpperCase() + key.slice(1))}:</b> ${escapeHtml(String(value))}</div>`;
+          }).join("") || "<div style='opacity:0.6'>No hay propiedades adicionales</div>";
+
         const html = `
   <div class="popup" style="min-width:280px;max-width:400px;font-size:13px;line-height:1.6">
     <div style="border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px">
-      <div style="font-size:16px;font-weight:bold;margin-bottom:4px">🚨 ${p.tipo || "Evento"}</div>
-      <div style="font-size:12px;opacity:0.8">ID: ${p.id || "N/A"}</div>
+      <div style="font-size:16px;font-weight:bold;margin-bottom:4px">🚨 ${escapeHtml(p.tipo || "Evento")}</div>
+      <div style="font-size:12px;opacity:0.8">ID: ${escapeHtml(p.id || "N/A")}</div>
     </div>
     
     <div style="margin-bottom:8px">
-      <b>🔧 Acción:</b> ${p.accion || "N/A"}<br>
-      <b>⏱ Estado:</b> ${estadoBadge || p.estado || "N/A"}<br>
+      <b>🔧 Acción:</b> ${escapeHtml(p.accion || "N/A")}<br>
+      <b>⏱ Estado:</b> ${estadoBadge}<br>
     </div>
 
     <div style="margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.05);border-radius:6px">
-      <b>🏢 Central:</b> ${p.central || "N/A"}<br>
-      <b>🧬 Molécula:</b> ${p.molecula || "N/A"}<br>
-      <b>👤 Técnico:</b> ${p.tecnico || "N/A"}<br>
+      <b>🏢 Central:</b> ${escapeHtml(p.central || "N/A")}<br>
+      <b>🧬 Molécula:</b> ${escapeHtml(p.molecula || "N/A")}<br>
+      <b>👤 Técnico:</b> ${escapeHtml(p.tecnico || "N/A")}<br>
     </div>
 
     ${fotosHTML}
@@ -335,14 +353,19 @@
     <div style="margin-bottom:8px">
       <b>📝 Notas:</b>
       <div style="margin:4px 0;padding:6px;background:rgba(255,255,255,0.05);border-radius:4px;font-size:12px;max-height:100px;overflow-y:auto">
-        ${p.notas || "Sin notas"}
+        ${escapeHtml(p.notas || "Sin notas")}
       </div>
     </div>
 
+    <div style="margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.05);border-radius:6px;max-height:200px;overflow-y:auto">
+      <b>📋 Todas las propiedades:</b>
+      ${todasPropsHtml}
+    </div>
+
     <div style="font-size:11px;opacity:0.7;border-top:1px solid rgba(255,255,255,0.1);padding-top:6px;margin-top:8px">
-      <div>📅 Creado: ${fecha}</div>
-      ${fechaActualizado ? `<div>✏️ Actualizado: ${fechaActualizado}</div>` : ""}
-      ${p.lat && p.lng ? `<div>📍 Coord: ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}</div>` : ""}
+      <div>📅 Creado: ${escapeHtml(fecha)}</div>
+      ${fechaActualizado ? `<div>✏️ Actualizado: ${escapeHtml(fechaActualizado)}</div>` : ""}
+      ${p.lat != null && p.lng != null ? `<div>📍 Coord: ${Number(p.lat).toFixed(6)}, ${Number(p.lng).toFixed(6)}</div>` : ""}
     </div>
 
     <hr style="margin:10px 0;border-color:rgba(255,255,255,0.1)">

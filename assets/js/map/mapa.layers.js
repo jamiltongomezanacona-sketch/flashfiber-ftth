@@ -740,6 +740,8 @@
       }
       
       console.log(`✅ GeoJSON consolidado cargado en mapa base: ${consolidated.features.length} features totales`);
+      // Forzar que solo centrales queden visibles (robusto)
+      setTimeout(enforceOnlyCentralesVisible, 150);
     } catch (err) {
       console.error("❌ Error cargando GeoJSON consolidado en mapa base:", err);
     }
@@ -764,6 +766,8 @@
       await walkNode(root, "../geojson/");
 
       console.log("🌳 Árbol FTTH procesado");
+      // Forzar que solo centrales queden visibles tras cargar capas
+      setTimeout(enforceOnlyCentralesVisible, 150);
     } catch (err) {
       console.error("❌ Error cargando árbol FTTH", err);
     } finally {
@@ -1235,6 +1239,45 @@
   }
 
   /* ===============================
+     Forzar solo centrales visibles (evitar que capas se activen sin selección)
+  =============================== */
+  function enforceOnlyCentralesVisible() {
+    const map = App?.map;
+    if (!map || !map.isStyleLoaded()) return;
+    const ids = App.__ftthLayerIds || [];
+    let enforced = 0;
+    ids.forEach(id => {
+      if (!id || !map.getLayer(id)) return;
+      const isCentral = id.includes("CENTRALES") || id.includes("CORPORATIVO");
+      const current = map.getLayoutProperty(id, "visibility");
+      if (isCentral) {
+        if (current !== "visible") {
+          try { map.setLayoutProperty(id, "visibility", "visible"); enforced++; } catch (e) {}
+        }
+      } else {
+        if (current !== "none") {
+          try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) {}
+        }
+      }
+    });
+    // También revisar capas del estilo que no estén en __ftthLayerIds
+    const styleLayers = map.getStyle().layers || [];
+    styleLayers.forEach(layer => {
+      const id = layer.id;
+      if (ids.includes(id)) return;
+      const isFtth = id.startsWith("geojson-") || id.startsWith("ftth-") || id.startsWith("FTTH_");
+      if (!isFtth) return;
+      const isCentral = id.includes("CENTRALES") || id.includes("CORPORATIVO");
+      if (isCentral) return;
+      const current = map.getLayoutProperty(id, "visibility");
+      if (current !== "none") {
+        try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) {}
+      }
+    });
+    if (enforced > 0) console.log(`🔒 enforceOnlyCentralesVisible: ${enforced} capas forzadas a oculto`);
+  }
+
+  /* ===============================
      Restaurar al cambiar estilo
   =============================== */
   function restoreLayers() {
@@ -1417,7 +1460,6 @@
     initGlobalImageMissingHandler();
     
     // ✅ CARGAR CENTRALES DE FORMA FIJA E INDEPENDIENTE (PRIMERO)
-    // Esperar un poco para asegurar que el estilo esté completamente cargado
     setTimeout(() => {
       loadCentralesFijas();
     }, 300);
@@ -1427,21 +1469,20 @@
     
     // También cargar el árbol individual (para compatibilidad)
     loadFTTHTree();
+    
+    // 🔒 Forzar solo centrales visibles tras todo (incl. mapa.ftth.js que corre ~300ms)
+    setTimeout(enforceOnlyCentralesVisible, 2800);
   });
   App.map?.on("style.load", () => {
     restoreLayers();
-    // Reinicializar handler después de que el estilo se cargue
     setTimeout(() => {
       initGlobalImageMissingHandler();
-      
-      // ✅ RECARGAR CENTRALES DE FORMA FIJA (siempre visibles)
       loadCentralesFijas();
-      
-      // ✅ Recargar GeoJSON consolidado cuando cambia el estilo
-      // Esperar un poco más para asegurar que el mapa esté completamente listo
       setTimeout(() => {
         loadConsolidatedGeoJSONToBaseMap();
       }, 300);
+      // 🔒 Forzar solo centrales visibles después de recargar
+      setTimeout(enforceOnlyCentralesVisible, 1500);
     }, 500);
   });
   
@@ -1457,6 +1498,7 @@
   App.loadFTTHTree = loadFTTHTree;
   App.consolidateAllGeoJSON = consolidateAllGeoJSON;
   App.loadConsolidatedGeoJSONToBaseMap = loadConsolidatedGeoJSONToBaseMap;
-  App.loadCentralesFijas = loadCentralesFijas; // ✅ Exportar función de centrales fijas
+  App.loadCentralesFijas = loadCentralesFijas;
+  App.enforceOnlyCentralesVisible = enforceOnlyCentralesVisible; // 🔒 Solo centrales visibles por defecto
 
 })();

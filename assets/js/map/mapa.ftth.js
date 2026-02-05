@@ -53,7 +53,7 @@
     });
 
     /* ======================
-       CAPA PUNTOS
+       CAPA PUNTOS (oculta por defecto; solo desde árbol o buscador)
     ====================== */
     map.addLayer({
       id: "ftth-puntos",
@@ -61,7 +61,7 @@
       source: "ftth-src",
       filter: ["==", ["geometry-type"], "Point"],
       layout: {
-        visibility: "visible" // ✅ Asegurar que sea visible por defecto
+        visibility: "none" // ✅ Solo visible si el usuario activa desde árbol de capas o buscador
       },
       paint: {
         "circle-radius": 5,

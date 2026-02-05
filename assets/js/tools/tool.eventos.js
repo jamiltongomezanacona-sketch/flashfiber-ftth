@@ -135,12 +135,92 @@
     =============================== */
     const SOURCE_ID = "eventos-src";
     const LAYER_ID  = "eventos-layer";
+    const ICON_SIZE = 40;
 
     function colorByEstado(estado) {
       if (estado === "CRITICO") return "#e53935";
       if (estado === "PROVISIONAL") return "#fbc02d";
       if (estado === "RESUELTO") return "#43a047";
       return "#9e9e9e";
+    }
+
+    // ✅ Crear icono pin estilo Google Maps para eventos
+    function createEventoPinIconSVG(color, estado = "") {
+      const size = ICON_SIZE;
+      const pinWidth = size * 0.6;
+      const pinHeight = size * 0.8;
+      const label = estado.substring(0, 2).toUpperCase() || "EV";
+      
+      // Emoji según estado
+      let emoji = "🚨";
+      if (estado === "CRITICO") emoji = "🔴";
+      else if (estado === "PROVISIONAL") emoji = "🟡";
+      else if (estado === "RESUELTO") emoji = "🟢";
+
+      const svg = `
+        <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="shadow-${color.replace('#', '')}">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+            </filter>
+          </defs>
+          <!-- Pin body -->
+          <path d="M ${size/2} ${size*0.15} 
+                   Q ${size*0.2} ${size*0.15} ${size*0.2} ${size*0.4}
+                   L ${size*0.2} ${size*0.7}
+                   Q ${size*0.2} ${size*0.85} ${size*0.35} ${size*0.85}
+                   L ${size*0.5} ${size}
+                   L ${size*0.65} ${size*0.85}
+                   Q ${size*0.8} ${size*0.85} ${size*0.8} ${size*0.7}
+                   L ${size*0.8} ${size*0.4}
+                   Q ${size*0.8} ${size*0.15} ${size*0.5} ${size*0.15}
+                   Z" 
+                fill="${color}" 
+                stroke="#000" 
+                stroke-width="1.5"
+                filter="url(#shadow-${color.replace('#', '')})"/>
+          <!-- Label circle -->
+          <circle cx="${size/2}" cy="${size*0.4}" r="${size*0.25}" 
+                  fill="#fff" stroke="${color}" stroke-width="2"/>
+          <!-- Emoji/Text -->
+          <text x="${size/2}" y="${size*0.48}" 
+                font-size="${size*0.25}" 
+                text-anchor="middle" 
+                dominant-baseline="middle"
+                font-family="Arial, sans-serif"
+                font-weight="bold">${emoji}</text>
+        </svg>
+      `;
+      return svg;
+    }
+
+    // ✅ Cargar iconos de forma síncrona
+    function loadEventoIconSync(estado) {
+      const color = colorByEstado(estado);
+      const iconId = `evento-${estado.toLowerCase() || "default"}`;
+      
+      if (App.map.hasImage(iconId)) {
+        return iconId;
+      }
+
+      const svg = createEventoPinIconSVG(color, estado);
+      const img = new Image();
+      const svgBlob = new Blob([svg], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(svgBlob);
+
+      img.onload = () => {
+        if (!App.map.hasImage(iconId)) {
+          App.map.addImage(iconId, img);
+        }
+        URL.revokeObjectURL(url);
+      };
+      img.onerror = () => {
+        console.warn(`⚠️ Error cargando icono de evento: ${iconId}`);
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+      
+      return iconId;
     }
 
     function initLayer() {
@@ -151,22 +231,38 @@
         data: { type: "FeatureCollection", features: [] }
       });
 
+      // ✅ Pre-cargar iconos para cada estado
+      loadEventoIconSync("CRITICO");
+      loadEventoIconSync("PROVISIONAL");
+      loadEventoIconSync("RESUELTO");
+      loadEventoIconSync("");
+
+      // ✅ Capa de símbolos estilo pin (en lugar de círculos)
       App.map.addLayer({
         id: LAYER_ID,
-        type: "circle",
+        type: "symbol",
         source: SOURCE_ID,
-        paint: {
-          "circle-radius": 9,
-          "circle-color": [
+        layout: {
+          "icon-image": [
             "match",
             ["get", "estado"],
-            "CRITICO", "#e53935",
-            "PROVISIONAL", "#fbc02d",
-            "RESUELTO", "#43a047",
-            "#9e9e9e"
+            "CRITICO", "evento-critico",
+            "PROVISIONAL", "evento-provisional",
+            "RESUELTO", "evento-resuelto",
+            "evento-default"
           ],
-          "circle-stroke-width": 2,
-          "circle-stroke-color": "#000"
+          "icon-size": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            10, 0.6,  // Zoom 10: 60% del tamaño
+            15, 1.0,  // Zoom 15: 100% del tamaño
+            20, 1.4   // Zoom 20: 140% del tamaño
+          ],
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+          "icon-anchor": "bottom",
+          "icon-pitch-alignment": "viewport"
         }
       });
 
@@ -248,6 +344,10 @@
       const lng = Number(evt.lng);
       const lat = Number(evt.lat);
       if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
+
+      // ✅ Asegurar que el icono esté cargado
+      const estado = evt.estado || "";
+      loadEventoIconSync(estado);
 
       const index = App.data.eventos.findIndex(f => f.id === evt.id);
 

@@ -391,6 +391,11 @@
       // Click sobre cierre → popup resumen + botón editar
       if (!App || !App.map) return;
       App.map.on("click", LAYER_ID, (e) => {
+        // ✅ Si el tool está activo, no abrir popup (dejar que handleMapClick maneje)
+        if (active) {
+          return;
+        }
+
         const f = e.features?.[0];
         if (!f) return;
 
@@ -725,10 +730,20 @@
     function handleMapClick(e) {
       if (!active) return;
 
+      // ✅ Prevenir que se abra el modal si se está haciendo click en un popup
+      const target = e.originalEvent?.target;
+      if (target && (target.closest('.mapboxgl-popup') || target.closest('.popup'))) {
+        return;
+      }
+
       const BLOCK_LAYERS = [LAYER_ID].filter(id => App.map.getLayer(id));
       if (BLOCK_LAYERS.length) {
         const hits = App.map.queryRenderedFeatures(e.point, { layers: BLOCK_LAYERS });
-        if (hits.length) return;
+        if (hits.length) {
+          // Si hay hits, el popup se abrirá desde el click handler de la capa
+          // No abrir el modal de creación
+          return;
+        }
       }
 
       if (blockNextClick) {

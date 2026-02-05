@@ -516,10 +516,12 @@
       const source = App.map.getSource(SOURCE_ID);
       if (!source) {
         // Si el source no existe, inicializar la capa
+        console.log("⚠️ Source no existe, inicializando capa...");
         initLayer();
         return;
       }
 
+      console.log("🔄 Refrescando capa cierres con", App.data.cierres.length, "cierres");
       source.setData({
         type: "FeatureCollection",
         features: App.data.cierres
@@ -528,21 +530,34 @@
       // ✅ Asegurar que la capa esté visible
       if (App.map.getLayer(LAYER_ID)) {
         App.map.setLayoutProperty(LAYER_ID, "visibility", "visible");
+        console.log("✅ Capa cierres visible con", App.data.cierres.length, "features");
+      } else {
+        console.warn("⚠️ Capa cierres no existe, inicializando...");
+        initLayer();
       }
     }
 
     function addCierreToMap(cierre) {
-      if (!cierre?.lng || !cierre?.lat) return;
+      if (!cierre?.lng || !cierre?.lat) {
+        console.warn("⚠️ Cierre sin coordenadas:", cierre.codigo || cierre.id);
+        return;
+      }
 
       // Normalizar (por si viene string)
       const lng = Number(cierre.lng);
       const lat = Number(cierre.lat);
-      if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
+      if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
+        console.warn("⚠️ Coordenadas inválidas:", cierre.codigo || cierre.id, lng, lat);
+        return;
+      }
 
       // ✅ Asegurar que el icono esté cargado (EXACTAMENTE igual que eventos)
       const label = cierre.codigo || cierre.molecula || "";
       const tipo = cierre.tipo || "E1";
       const labelShort = label.substring(0, 2).toUpperCase() || "";
+      const iconId = `cierre-${tipo}-${labelShort || 'default'}`;
+      
+      console.log("🎨 Cargando icono para cierre:", cierre.codigo, "iconId:", iconId);
       loadCierreIconSync(tipo, labelShort);
 
       const index = App.data.cierres.findIndex(c => c.id === cierre.id);
@@ -553,12 +568,17 @@
         geometry: { type: "Point", coordinates: [lng, lat] },
         properties: {
           ...cierre,
-          iconId: `cierre-${tipo}-${labelShort || 'default'}` // ✅ Agregar iconId a propiedades
+          iconId: iconId // ✅ Agregar iconId a propiedades
         }
       };
 
-      if (index >= 0) App.data.cierres[index] = feature;
-      else App.data.cierres.push(feature);
+      if (index >= 0) {
+        App.data.cierres[index] = feature;
+        console.log("🔄 Cierre actualizado en mapa:", cierre.codigo);
+      } else {
+        App.data.cierres.push(feature);
+        console.log("✅ Cierre agregado al mapa:", cierre.codigo, "Total cierres:", App.data.cierres.length);
+      }
 
       refreshLayer();
     }
@@ -595,11 +615,13 @@
 
       console.log("✅ Firebase cierres conectado");
       unsubscribeCierres = FB.escucharCierres((cierre) => {
+        console.log("🔔 Cierre recibido de Firebase:", cierre.codigo || cierre.id, cierre);
         if (cierre._deleted) {
           // Si el cierre fue eliminado, removerlo del mapa
           removeCierreFromMap(cierre.id);
         } else {
           // Agregar o actualizar cierre en el mapa
+          console.log("📍 Agregando cierre al mapa:", cierre.codigo, "Coords:", cierre.lng, cierre.lat);
           addCierreToMap(cierre);
         }
       });

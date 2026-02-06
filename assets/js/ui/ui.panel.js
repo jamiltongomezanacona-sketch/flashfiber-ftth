@@ -203,11 +203,24 @@ if (toolButtons.eventos) {
 
   // 🧹 Limpiar mapa: ocultar cables y pines, dejar solo centrales (según filtros)
   btnLimpiarMapa?.addEventListener("click", () => {
+    const App = window.__FTTH_APP__;
+    if (!App) return;
     if (typeof App.setSelectedMoleculaForPins === "function") {
       App.setSelectedMoleculaForPins(null);
     }
-    if (typeof App.enforceOnlyCentralesVisible === "function") {
-      App.enforceOnlyCentralesVisible();
+    const runEnforce = () => {
+      if (typeof App.enforceOnlyCentralesVisible === "function") {
+        App.enforceOnlyCentralesVisible();
+      }
+    };
+    if (App.map) {
+      if (App.map.isStyleLoaded()) {
+        runEnforce();
+      } else {
+        App.map.once("styledata", runEnforce);
+      }
+    } else {
+      runEnforce();
     }
     const filterMolecula = document.getElementById("filterMolecula");
     if (filterMolecula) filterMolecula.value = "";

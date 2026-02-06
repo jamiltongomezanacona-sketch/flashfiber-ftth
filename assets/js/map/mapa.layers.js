@@ -1248,6 +1248,15 @@
     let enforced = 0;
     const filterCentrales = typeof document !== "undefined" ? document.getElementById("filterCentrales") : null;
     const centralesVisible = !filterCentrales || filterCentrales.checked;
+    // Ocultar siempre pines de cierres y eventos al "limpiar"
+    ["cierres-layer", "eventos-layer"].forEach(layerId => {
+      if (map.getLayer(layerId)) {
+        try {
+          map.setLayoutProperty(layerId, "visibility", "none");
+          enforced++;
+        } catch (e) {}
+      }
+    });
     ids.forEach(id => {
       if (!id || !map.getLayer(id)) return;
       const isCentral = id.includes("CENTRALES") || id.includes("CORPORATIVO");

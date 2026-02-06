@@ -35,6 +35,7 @@
     eventos: []
   };
 
+  const LAYER_CENTRALES = "CORPORATIVO_CENTRALES_ETB";
   const LAYER_CIERRES = "cierres-layer";
   const LAYER_EVENTOS = "eventos-layer";
 
@@ -95,17 +96,28 @@
   let selectedMoleculaForPins = null;
 
   /* =========================
-     Filtros: mostrar/ocultar pines Cierres y Eventos
+     Filtros: mostrar/ocultar pines Centrales, Cierres y Eventos
      Por defecto mapa limpio (pines ocultos hasta que se seleccione molécula en Capas)
   ========================= */
   function setupFilterToggles() {
+    const filterCentrales = document.getElementById("filterCentrales");
     const filterCierres = document.getElementById("filterCierres");
     const filterEventos = document.getElementById("filterEventos");
     if (!filterCierres || !filterEventos) return;
 
-    // Por defecto mostrar cierres y eventos cuando haya molécula seleccionada
+    // Por defecto mostrar centrales, cierres y eventos cuando haya molécula seleccionada
+    if (filterCentrales) filterCentrales.checked = true;
     filterCierres.checked = true;
     filterEventos.checked = true;
+
+    function setCentralesVisibility() {
+      if (!App?.map || !filterCentrales) return;
+      if (App.map.getLayer(LAYER_CENTRALES)) {
+        try {
+          App.map.setLayoutProperty(LAYER_CENTRALES, "visibility", filterCentrales.checked ? "visible" : "none");
+        } catch (e) {}
+      }
+    }
 
     function applyPinsVisibility() {
       if (!App?.map) return;
@@ -120,10 +132,13 @@
           App.map.setFilter(layerId, showPins ? filter : null);
         } catch (e) {}
       });
+      setCentralesVisibility();
     }
 
+    if (filterCentrales) filterCentrales.addEventListener("change", setCentralesVisibility);
     filterCierres.addEventListener("change", applyPinsVisibility);
     filterEventos.addEventListener("change", applyPinsVisibility);
+    setCentralesVisibility();
   }
 
   /* =========================

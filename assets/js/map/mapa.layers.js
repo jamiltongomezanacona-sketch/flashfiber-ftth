@@ -1246,13 +1246,16 @@
     if (!map || !map.isStyleLoaded()) return;
     const ids = App.__ftthLayerIds || [];
     let enforced = 0;
+    const filterCentrales = typeof document !== "undefined" ? document.getElementById("filterCentrales") : null;
+    const centralesVisible = !filterCentrales || filterCentrales.checked;
     ids.forEach(id => {
       if (!id || !map.getLayer(id)) return;
       const isCentral = id.includes("CENTRALES") || id.includes("CORPORATIVO");
       const current = map.getLayoutProperty(id, "visibility");
       if (isCentral) {
-        if (current !== "visible") {
-          try { map.setLayoutProperty(id, "visibility", "visible"); enforced++; } catch (e) {}
+        const want = centralesVisible ? "visible" : "none";
+        if (current !== want) {
+          try { map.setLayoutProperty(id, "visibility", want); enforced++; } catch (e) {}
         }
       } else {
         if (current !== "none") {

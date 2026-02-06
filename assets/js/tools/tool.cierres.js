@@ -438,66 +438,17 @@
         }
 
         const fecha = p.createdAt ? new Date(p.createdAt).toLocaleString() : "Sin fecha";
-        const fechaActualizado = p.updatedAt ? new Date(p.updatedAt).toLocaleString() : null;
         const creadoPor = escapeHtml(String(p.createdBy || p.creadoPor || "—"));
         const nombrePin = escapeHtml(p.codigo || "Cierre");
 
-        let tipoBadge = "";
-        if (p.tipo === "E1") {
-          tipoBadge = '<span style="background:#2196F3;padding:2px 6px;border-radius:4px;font-size:11px">E1 - Derivación</span>';
-        } else if (p.tipo === "E2") {
-          tipoBadge = '<span style="background:#FF9800;padding:2px 6px;border-radius:4px;font-size:11px">E2 - Splitter</span>';
-        } else if (p.tipo === "NAP") {
-          tipoBadge = '<span style="background:#4CAF50;padding:2px 6px;border-radius:4px;font-size:11px">NAP</span>';
-        } else {
-          tipoBadge = escapeHtml(p.tipo || "N/A");
-        }
-
-        const todasPropsHtml = Object.keys(p)
-          .filter(k => !["iconId", "label", "geometry", "type"].includes(k))
-          .map(key => {
-            let value = p[key];
-            if (value === null || value === undefined) value = "N/A";
-            if (typeof value === "object") value = JSON.stringify(value);
-            if (key === "lng" || key === "lat") value = Number(value).toFixed(6);
-            return `<div style="margin:2px 0"><b>${escapeHtml(key.charAt(0).toUpperCase() + key.slice(1))}:</b> ${escapeHtml(String(value))}</div>`;
-          }).join("") || "<div style='opacity:0.6'>No hay propiedades adicionales</div>";
-
         const html = `
-  <div class="popup pin-popup" style="min-width:280px;max-width:380px;font-size:14px;line-height:1.5;color:#fff">
-    <div style="background:linear-gradient(135deg,rgba(0,229,255,0.25),rgba(0,180,216,0.15));border-radius:10px;padding:14px;margin-bottom:12px;border:2px solid #00e5ff;box-shadow:0 2px 8px rgba(0,229,255,0.2)">
-      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#00e5ff;margin-bottom:8px;font-weight:700">Propiedades del pin</div>
-      <div style="font-size:18px;font-weight:bold;margin-bottom:10px;color:#fff">🔒 ${nombrePin}</div>
-      <div style="font-size:14px;margin:6px 0;color:#e0e0e0"><span style="color:#00e5ff;font-weight:600">📅 Fecha de creación:</span> ${escapeHtml(fecha)}</div>
-      <div style="font-size:14px;margin:6px 0;color:#e0e0e0"><span style="color:#00e5ff;font-weight:600">👤 Creado por:</span> ${creadoPor}</div>
-      <div style="font-size:14px;margin:6px 0">
-        <span style="color:#00e5ff;font-weight:600">📝 Notas:</span>
-        <div style="margin:6px 0 0;padding:8px;background:rgba(0,0,0,0.3);border-radius:6px;font-size:13px;max-height:90px;overflow-y:auto;color:#fff;border:1px solid rgba(255,255,255,0.1)">
-          ${p.notas ? escapeHtml(p.notas) : "<span style='color:rgba(255,255,255,0.6)'>Sin notas</span>"}
-        </div>
-      </div>
+  <div class="popup pin-popup popup-resumen" style="min-width:220px;max-width:320px;font-size:14px;line-height:1.5;color:#fff">
+    <div style="padding:10px 12px">
+      <div style="font-size:15px;font-weight:bold;margin-bottom:10px;color:#00e5ff">🔒 ${nombrePin}</div>
+      <div style="font-size:13px;margin:5px 0;color:#e0e0e0"><span style="color:#00e5ff">Fecha de creación:</span> ${escapeHtml(fecha)}</div>
+      <div style="font-size:13px;margin:5px 0;color:#e0e0e0"><span style="color:#00e5ff">Creado por:</span> ${creadoPor}</div>
     </div>
-
-    <div style="margin-bottom:10px;font-size:14px">
-      <b style="color:#00e5ff">📦 Tipo:</b> ${tipoBadge}<br>
-      <b style="color:#00e5ff">🏢 Central:</b> ${escapeHtml(p.central || "N/A")}<br>
-      <b style="color:#00e5ff">🧬 Molécula:</b> ${escapeHtml(p.molecula || "N/A")}<br>
-    </div>
-
-    <div style="font-size:12px;color:rgba(255,255,255,0.8);border-top:1px solid rgba(255,255,255,0.15);padding-top:8px;margin-top:8px">
-      ${fechaActualizado ? `<div>✏️ Actualizado: ${escapeHtml(fechaActualizado)}</div>` : ""}
-      ${p.lat != null && p.lng != null ? `<div>📍 Coord: ${Number(p.lat).toFixed(6)}, ${Number(p.lng).toFixed(6)}</div>` : ""}
-    </div>
-
-    <div style="margin-top:10px;padding:10px;background:rgba(255,255,255,0.06);border-radius:6px;max-height:140px;overflow-y:auto;border:1px solid rgba(255,255,255,0.1)">
-      <b style="font-size:12px;color:#00e5ff">📋 Todas las propiedades:</b>
-      <div style="font-size:13px;margin-top:6px">${todasPropsHtml}</div>
-    </div>
-
-    <hr style="margin:10px 0;border-color:rgba(255,255,255,0.1)">
-    <button id="btnEditCierrePopup" class="popup-btn" style="width:100%;background:linear-gradient(135deg, #2196f3, #1565c0)">
-      ✏️ Editar
-    </button>
+    <button id="btnEditCierrePopup" class="popup-btn" style="width:100%;padding:6px;font-size:12px;background:linear-gradient(135deg, #2196f3, #1565c0)">✏️ Editar</button>
   </div>
 `;
 

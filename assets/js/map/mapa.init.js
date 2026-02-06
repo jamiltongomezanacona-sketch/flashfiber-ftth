@@ -60,6 +60,10 @@
   map.on("load", () => {
     console.log("🗺️ MAPA CARGADO CORRECTAMENTE");
 
+    // ✅ Capas de pines (cierres/eventos) se crean cuando el estilo está listo
+    if (App.reloadCierres) App.reloadCierres();
+    if (App.reloadEventos) App.reloadEventos();
+
     // ✅ CARGAR CENTRALES DE FORMA FIJA (PRIMERO - SIEMPRE VISIBLES)
     // Esperar un poco para asegurar que el estilo esté completamente cargado
     if (App.loadCentralesFijas) {

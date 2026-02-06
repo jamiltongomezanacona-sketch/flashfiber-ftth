@@ -347,43 +347,61 @@
       return iconId;
     }
 
-    function initLayer() {
-      if (App.map.getSource(SOURCE_ID)) return;
+    let popupShownThisClick = false;
 
-      App.map.addSource(SOURCE_ID, {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] }
-      });
+    function initLayer() {
+      if (!App || !App.map) return;
+      try {
+        if (App.map.getSource(SOURCE_ID)) return;
+      } catch (_) {
+        return;
+      }
+
+      try {
+        App.map.addSource(SOURCE_ID, {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] }
+        });
+      } catch (err) {
+        console.warn("⚠️ tool.cierres: addSource falló (¿estilo no cargado?), reintentando en load:", err.message);
+        App.map.once("load", () => initLayer());
+        return;
+      }
       
       // ✅ Pre-cargar icono por defecto en gris (igual que eventos)
       loadCierreIconSync("E1", "");
 
-      // ✅ Capa de símbolos (EXACTAMENTE igual que eventos)
-      App.map.addLayer({
-        id: LAYER_ID,
-        type: "symbol",
-        source: SOURCE_ID,
-        layout: {
-          visibility: "none",
-          "icon-image": [
-            "coalesce",
-            ["get", "iconId"],
-            "cierre-E1-default"
-          ],
-          "icon-size": [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            10, 0.6,  // Zoom 10: 60% del tamaño
-            15, 1.0,  // Zoom 15: 100% del tamaño
-            20, 1.4   // Zoom 20: 140% del tamaño
-          ],
-          "icon-allow-overlap": true,
-          "icon-ignore-placement": true,
-          "icon-anchor": "bottom",
-          "icon-pitch-alignment": "viewport"
-        }
-      });
+      try {
+        App.map.addLayer({
+          id: LAYER_ID,
+          type: "symbol",
+          source: SOURCE_ID,
+          layout: {
+            visibility: "none",
+            "icon-image": [
+              "coalesce",
+              ["get", "iconId"],
+              "cierre-E1-default"
+            ],
+            "icon-size": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              10, 0.6,
+              15, 1.0,
+              20, 1.4
+            ],
+            "icon-allow-overlap": true,
+            "icon-ignore-placement": true,
+            "icon-anchor": "bottom",
+            "icon-pitch-alignment": "viewport"
+          }
+        });
+      } catch (err) {
+        console.warn("⚠️ tool.cierres: addLayer falló, reintentando en load:", err.message);
+        App.map.once("load", () => initLayer());
+        return;
+      }
 
       // Escapar HTML para evitar rupturas y XSS en el popup
       function escapeHtml(str) {
@@ -504,14 +522,19 @@
         if (!f) return;
         if (active) blockNextClick = true;
         showCierrePopup(f, e.lngLat);
+        popupShownThisClick = true;
       });
 
       // Fallback: click en cualquier parte del mapa (por si otra capa está encima)
       App.map.on("click", (e) => {
+        popupShownThisClick = false;
         if (active) return;
         if (!App.map.getLayer(LAYER_ID)) return;
-        const hits = App.map.queryRenderedFeatures(e.point, { layers: [LAYER_ID] });
-        if (hits.length) showCierrePopup(hits[0], e.lngLat);
+        setTimeout(() => {
+          if (popupShownThisClick) return;
+          const hits = App.map.queryRenderedFeatures(e.point, { layers: [LAYER_ID] });
+          if (hits.length) showCierrePopup(hits[0], e.lngLat);
+        }, 0);
       });
 
       // Cursor pointer al pasar sobre cierre
@@ -655,8 +678,13 @@
     // Inicializar listener (con retry automático)
     initFirebaseSync();
 
-    // ✅ Crear capa al inicio para que el buscador pueda mostrar cierres de inmediato
-    initLayer();
+    // ✅ Crear capa cuando el estilo del mapa esté cargado (evita fallo si se ejecuta antes de "load")
+    function runInitLayerWhenReady() {
+      if (!App || !App.map) return;
+      if (App.map.isStyleLoaded()) initLayer();
+      else App.map.once("load", () => initLayer());
+    }
+    runInitLayerWhenReady();
 
     // ✅ Refrescar capa cuando el buscador selecciona un cierre (asegura que se vea a la primera)
     window.addEventListener("ftth-refresh-cierres", () => {
@@ -906,16 +934,12 @@
     if (!App.reloadCierres) {
       App.reloadCierres = function () {
         console.log("🔄 Recargando capa CIERRES");
-
-        // Volver a crear source + layer si fueron destruidos
         initLayer();
-
-        // Volver a pintar datos en el mapa
         refreshLayer();
       };
     }
 
-    initLayer();
+    runInitLayerWhenReady();
 
     /* ===============================
        Register tool

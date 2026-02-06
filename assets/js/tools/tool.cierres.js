@@ -405,6 +405,8 @@
 
         const fecha = p.createdAt ? new Date(p.createdAt).toLocaleString() : "Sin fecha";
         const fechaActualizado = p.updatedAt ? new Date(p.updatedAt).toLocaleString() : null;
+        const creadoPor = escapeHtml(String(p.createdBy || p.creadoPor || "—"));
+        const nombrePin = escapeHtml(p.codigo || "Cierre");
 
         // Formatear tipo
         let tipoBadge = "";
@@ -429,36 +431,33 @@
           }).join("") || "<div style='opacity:0.6'>No hay propiedades adicionales</div>";
 
         const html = `
-  <div class="popup" style="min-width:240px;max-width:350px;font-size:13px;line-height:1.6">
-    <div style="border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px">
-      <div style="font-size:16px;font-weight:bold;margin-bottom:4px">🔒 ${escapeHtml(p.codigo || "Cierre")}</div>
-      <div style="font-size:12px;opacity:0.8">ID: ${escapeHtml(p.id || "N/A")}</div>
+  <div class="popup" style="min-width:260px;max-width:360px;font-size:13px;line-height:1.6">
+    <div style="background:rgba(0,229,255,0.08);border-radius:8px;padding:10px;margin-bottom:10px;border-left:3px solid var(--accent-cyan)">
+      <div style="font-size:15px;font-weight:bold;margin-bottom:6px">🔒 ${nombrePin}</div>
+      <div style="font-size:12px;margin:4px 0"><b>📅 Fecha de creación:</b> ${escapeHtml(fecha)}</div>
+      <div style="font-size:12px;margin:4px 0"><b>👤 Creado por:</b> ${creadoPor}</div>
+      <div style="font-size:12px;margin:4px 0">
+        <b>📝 Notas:</b>
+        <div style="margin:4px 0;padding:6px;background:rgba(255,255,255,0.05);border-radius:4px;font-size:12px;max-height:80px;overflow-y:auto">
+          ${p.notas ? escapeHtml(p.notas) : "<span style='opacity:0.7'>Sin notas</span>"}
+        </div>
+      </div>
     </div>
-    
+
     <div style="margin-bottom:8px">
       <b>📦 Tipo:</b> ${tipoBadge}<br>
       <b>🏢 Central:</b> ${escapeHtml(p.central || "N/A")}<br>
       <b>🧬 Molécula:</b> ${escapeHtml(p.molecula || "N/A")}<br>
     </div>
 
-    ${p.notas ? `
-    <div style="margin-bottom:8px">
-      <b>📝 Notas:</b>
-      <div style="margin:4px 0;padding:6px;background:rgba(255,255,255,0.05);border-radius:4px;font-size:12px;max-height:80px;overflow-y:auto">
-        ${escapeHtml(p.notas)}
-      </div>
-    </div>
-    ` : ''}
-
-    <div style="margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.05);border-radius:6px;max-height:200px;overflow-y:auto">
-      <b>📋 Todas las propiedades:</b>
-      ${todasPropsHtml}
-    </div>
-
     <div style="font-size:11px;opacity:0.7;border-top:1px solid rgba(255,255,255,0.1);padding-top:6px;margin-top:8px">
-      <div>📅 Creado: ${escapeHtml(fecha)}</div>
       ${fechaActualizado ? `<div>✏️ Actualizado: ${escapeHtml(fechaActualizado)}</div>` : ""}
       ${p.lat != null && p.lng != null ? `<div>📍 Coord: ${Number(p.lat).toFixed(6)}, ${Number(p.lng).toFixed(6)}</div>` : ""}
+    </div>
+
+    <div style="margin-top:8px;padding:6px;background:rgba(255,255,255,0.03);border-radius:6px;max-height:120px;overflow-y:auto">
+      <b style="font-size:11px">📋 Todas las propiedades:</b>
+      ${todasPropsHtml}
     </div>
 
     <hr style="margin:10px 0;border-color:rgba(255,255,255,0.1)">

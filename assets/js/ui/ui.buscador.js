@@ -62,6 +62,7 @@
     waitForFirebaseAndLoadEventos();
     setupFilterToggles();
     setupMoleculaFilter();
+    if (App) App.setSelectedMoleculaForPins = setSelectedMoleculaForPins;
   }
 
   async function waitForFirebaseAndLoadCierres(maxAttempts = 100) {
@@ -90,26 +91,67 @@
     return false;
   }
 
+  // Molécula seleccionada desde el árbol de capas (solo entonces se muestran pines)
+  let selectedMoleculaForPins = null;
+
   /* =========================
      Filtros: mostrar/ocultar pines Cierres y Eventos
+     Por defecto mapa limpio (pines ocultos hasta que se seleccione molécula en Capas)
   ========================= */
   function setupFilterToggles() {
     const filterCierres = document.getElementById("filterCierres");
     const filterEventos = document.getElementById("filterEventos");
     if (!filterCierres || !filterEventos) return;
 
-    function setLayerVisibility(layerId, visible) {
-      if (!App?.map) return;
-      if (App.map.getLayer(layerId)) {
-        App.map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
-      }
-    }
-
+    // Por defecto mostrar cierres y eventos cuando haya molécula seleccionada
     filterCierres.checked = true;
     filterEventos.checked = true;
-    filterCierres.addEventListener("change", () => setLayerVisibility(LAYER_CIERRES, filterCierres.checked));
-    filterEventos.addEventListener("change", () => setLayerVisibility(LAYER_EVENTOS, filterEventos.checked));
+
+    function applyPinsVisibility() {
+      if (!App?.map) return;
+      const showPins = selectedMoleculaForPins != null;
+      const filter = selectedMoleculaForPins ? ["==", ["get", "molecula"], selectedMoleculaForPins] : null;
+      [LAYER_CIERRES, LAYER_EVENTOS].forEach((layerId, i) => {
+        if (!App.map.getLayer(layerId)) return;
+        const toggleChecked = i === 0 ? filterCierres.checked : filterEventos.checked;
+        const visible = showPins && toggleChecked;
+        try {
+          App.map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
+          App.map.setFilter(layerId, showPins ? filter : null);
+        } catch (e) {}
+      });
+    }
+
+    filterCierres.addEventListener("change", applyPinsVisibility);
+    filterEventos.addEventListener("change", applyPinsVisibility);
   }
+
+  /* =========================
+     Mostrar/ocultar pines según molécula seleccionada en árbol Capas
+     Llamado desde ui.layers.tree.js al marcar/desmarcar molécula
+  ========================= */
+  function setSelectedMoleculaForPins(moleculaOrNull) {
+    selectedMoleculaForPins = moleculaOrNull || null;
+    const filterCierres = document.getElementById("filterCierres");
+    const filterEventos = document.getElementById("filterEventos");
+    const filterMolecula = document.getElementById("filterMolecula");
+    if (filterMolecula) {
+      filterMolecula.value = moleculaOrNull || "";
+    }
+    if (!App?.map) return;
+    const showPins = selectedMoleculaForPins != null;
+    const filter = selectedMoleculaForPins ? ["==", ["get", "molecula"], selectedMoleculaForPins] : null;
+    [LAYER_CIERRES, LAYER_EVENTOS].forEach((layerId, i) => {
+      if (!App.map.getLayer(layerId)) return;
+      const toggleChecked = (i === 0 ? filterCierres?.checked : filterEventos?.checked) !== false;
+      const visible = showPins && toggleChecked;
+      try {
+        App.map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
+        App.map.setFilter(layerId, showPins ? filter : null);
+      } catch (e) {}
+    });
+  }
+
 
   /* =========================
      Filtro por molécula (pines Cierres y Eventos)
@@ -136,18 +178,8 @@
     }
 
     select.addEventListener("change", () => {
-      if (!App?.map) return;
       const value = select.value || "";
-      const filter = value ? ["==", ["get", "molecula"], value] : null;
-      [LAYER_CIERRES, LAYER_EVENTOS].forEach(layerId => {
-        if (App.map.getLayer(layerId)) {
-          try {
-            App.map.setFilter(layerId, filter);
-          } catch (err) {
-            console.warn("⚠️ setFilter no soportado en capa:", layerId, err);
-          }
-        }
-      });
+      setSelectedMoleculaForPins(value || null);
     });
   }
 

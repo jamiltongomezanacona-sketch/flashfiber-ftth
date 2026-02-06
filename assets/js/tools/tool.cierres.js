@@ -381,6 +381,7 @@
         type: "symbol",
         source: SOURCE_ID,
         layout: {
+          visibility: "none",
           "icon-image": [
             "coalesce",
             ["get", "iconId"],
@@ -527,11 +528,7 @@
         features: App.data.cierres
       });
       
-      // ✅ Asegurar que la capa esté visible
-      if (App.map.getLayer(LAYER_ID)) {
-        App.map.setLayoutProperty(LAYER_ID, "visibility", "visible");
-        console.log("✅ Capa cierres visible con", App.data.cierres.length, "features");
-      } else {
+      if (!App.map.getLayer(LAYER_ID)) {
         console.warn("⚠️ Capa cierres no existe, inicializando...");
         initLayer();
       }

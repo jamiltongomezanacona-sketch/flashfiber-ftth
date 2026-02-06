@@ -173,15 +173,23 @@
       const isMolecula = /^SI\d+$/.test(nodeLabel);
       
       if (isMolecula) {
+        const App = window.__FTTH_APP__;
         if (checkbox.checked) {
           const deactivated = deactivateOtherMoleculas(nodeLabel);
           if (deactivated > 0) {
             console.log(`🔵 Molécula ${nodeLabel} activada; ${deactivated} hermana(s) desactivada(s)`);
           }
+          // Mostrar pines (cierres/eventos) de esta molécula en el mapa
+          if (typeof App?.setSelectedMoleculaForPins === "function") {
+            App.setSelectedMoleculaForPins(nodeLabel);
+          }
         } else {
-          const App = window.__FTTH_APP__;
           if (App?.map) {
             deactivateMoleculaLayers(nodeLabel, App.map);
+          }
+          // Ocultar pines si se desmarca la molécula
+          if (typeof App?.setSelectedMoleculaForPins === "function") {
+            App.setSelectedMoleculaForPins(null);
           }
         }
       }

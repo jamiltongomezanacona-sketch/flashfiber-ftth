@@ -234,6 +234,7 @@
         type: "symbol",
         source: SOURCE_ID,
         layout: {
+          visibility: "none",
           "icon-image": [
             "match",
             ["get", "estado"],
@@ -443,11 +444,6 @@
         type: "FeatureCollection",
         features: App.data.eventos
       });
-      
-      // ✅ Asegurar que la capa esté visible
-      if (App.map.getLayer(LAYER_ID)) {
-        App.map.setLayoutProperty(LAYER_ID, "visibility", "visible");
-      }
     }
 
     function addEventoToMap(evt) {

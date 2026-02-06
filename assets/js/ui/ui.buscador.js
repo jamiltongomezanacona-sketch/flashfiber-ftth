@@ -480,7 +480,8 @@
               icon: "🚨",
               subtitle: `${evento.accion || ""}${evento.estado ? " · " + evento.estado : ""}${evento.central ? " · " + evento.central : ""}`,
               layerId: LAYER_EVENTOS,
-              molecula: evento.molecula || null
+              molecula: evento.molecula || null,
+              estado: evento.estado || "PROVISIONAL"
             };
             const index = searchIndex.eventos.findIndex(e => e.id === evento.id);
             if (index >= 0) searchIndex.eventos[index] = eventoData;
@@ -556,21 +557,28 @@
   /* =========================
      Realizar búsqueda
   ========================= */
-  function performSearch(query) {
+  function performSearch(query, retryCount) {
     if (!query || query.trim().length === 0) {
       hideResults();
       return;
     }
-    
+
     currentSearch = query;
-    
-    // ✅ Verificar si hay datos cargados
+    if (typeof retryCount !== "number") retryCount = 0;
+
+    // ✅ Si el índice está vacío, mostrar "Cargando..." y reintentar cuando haya datos
     const totalItems = searchIndex.centrales.length + searchIndex.cables.length + searchIndex.cierres.length + searchIndex.eventos.length;
     if (totalItems === 0) {
-      console.warn("⚠️ Índice de búsqueda vacío, intentando recargar...");
-      // Intentar recargar en segundo plano
-      loadCentrales();
-      loadCables();
+      if (retryCount < 3) {
+        searchResults.innerHTML = `<div class="search-no-results"><i class="fas fa-spinner fa-spin"></i><div>Cargando índice de búsqueda...</div></div>`;
+        searchResults.classList.remove("hidden");
+        loadCentrales();
+        loadCables();
+        setTimeout(() => performSearch(query, retryCount + 1), 600);
+      } else {
+        searchResults.innerHTML = `<div class="search-no-results"><i class="fas fa-search"></i><div>No se encontraron resultados</div></div>`;
+        searchResults.classList.remove("hidden");
+      }
       return;
     }
     const lowerQuery = query.toLowerCase();
@@ -664,18 +672,68 @@
       console.warn("⚠️ No se puede hacer zoom: mapa o coordenadas no disponibles");
       return;
     }
-    
+
+    // Asegurar que la capa y los datos existan antes de zoom (para que se vea a la primera)
+    if (result.type === "cierre") {
+      if (!App.data) App.data = {};
+      if (!App.data.cierres) App.data.cierres = [];
+      const exists = App.data.cierres.some(f => f.id === result.id);
+      if (!exists) {
+        const label = (result.name || "").substring(0, 2).toUpperCase() || "";
+        const iconId = `cierre-${result.tipo || "E1"}-${label || "default"}`;
+        App.data.cierres.push({
+          id: result.id,
+          type: "Feature",
+          geometry: { type: "Point", coordinates: result.coordinates },
+          properties: {
+            id: result.id,
+            codigo: result.name,
+            tipo: result.tipo || "E1",
+            central: result.central,
+            molecula: result.molecula,
+            lng: result.coordinates[0],
+            lat: result.coordinates[1],
+            iconId: iconId
+          }
+        });
+      }
+      window.dispatchEvent(new CustomEvent("ftth-refresh-cierres"));
+    }
+    if (result.type === "evento") {
+      if (!App.data) App.data = {};
+      if (!App.data.eventos) App.data.eventos = [];
+      const exists = App.data.eventos.some(f => f.id === result.id);
+      if (!exists) {
+        App.data.eventos.push({
+          id: result.id,
+          type: "Feature",
+          geometry: { type: "Point", coordinates: result.coordinates },
+          properties: {
+            id: result.id,
+            tipo: result.name,
+            estado: result.estado || "PROVISIONAL",
+            lng: result.coordinates[0],
+            lat: result.coordinates[1]
+          }
+        });
+      }
+      window.dispatchEvent(new CustomEvent("ftth-refresh-eventos"));
+    }
+
     // Hacer zoom al resultado
     App.map.flyTo({
       center: result.coordinates,
       zoom: result.type === "central" ? 15 : 17,
       duration: 1500
     });
-    
-    // Asegurar que la capa del resultado esté visible (cable, cierre o evento)
+
+    // Mostrar capa del resultado de inmediato
     if (result.type === "cable" && result.layerId) {
       if (App.map.getLayer(result.layerId)) {
         App.map.setLayoutProperty(result.layerId, "visibility", "visible");
+      } else if (App.map.getLayer("geojson-lines")) {
+        // Capa específica aún no existe (árbol cargando): mostrar todas las líneas consolidadas
+        App.map.setLayoutProperty("geojson-lines", "visibility", "visible");
       }
     }
     if (result.type === "cierre") {
@@ -698,11 +756,11 @@
       const fe = document.getElementById("filterEventos");
       if (fe) fe.checked = true;
     }
-    
+
     // Cerrar resultados
     hideResults();
     searchInput.blur();
-    
+
     console.log(`🎯 Zoom a ${result.type}: ${result.name}`);
   }
 

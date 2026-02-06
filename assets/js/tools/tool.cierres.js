@@ -639,7 +639,15 @@
 
     // Inicializar listener (con retry automático)
     initFirebaseSync();
-    
+
+    // ✅ Crear capa al inicio para que el buscador pueda mostrar cierres de inmediato
+    initLayer();
+
+    // ✅ Refrescar capa cuando el buscador selecciona un cierre (asegura que se vea a la primera)
+    window.addEventListener("ftth-refresh-cierres", () => {
+      if (typeof refreshLayer === "function") refreshLayer();
+    });
+
     // ✅ Retry si falla la primera vez (los módulos pueden cargarse después)
     setTimeout(() => {
       const FB = window.FTTH_FIREBASE;

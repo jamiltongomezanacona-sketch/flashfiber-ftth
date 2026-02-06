@@ -496,6 +496,11 @@
     // Crear capa inicial
     App.reloadEventos();
 
+    // ✅ Refrescar capa cuando el buscador selecciona un evento (asegura que se vea a la primera)
+    window.addEventListener("ftth-refresh-eventos", () => {
+      if (typeof refreshLayer === "function") refreshLayer();
+    });
+
     // ✅ Escuchar cambios desde Firebase (guardar referencia para cleanup)
     let unsubscribeEventos = null;
     

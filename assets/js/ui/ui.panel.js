@@ -194,7 +194,6 @@ if (toolButtons.eventos) {
 
   const btnGPSMap = document.getElementById("btnGPS");
   const btnMedirMap = document.getElementById("btnMedir");
-  const btnCapasMap = document.getElementById("btnCapas");
   const btnBaseMap = document.getElementById("btnBaseMap");
   const btnLimpiarMapa = document.getElementById("btnLimpiarMapa");
 
@@ -295,18 +294,17 @@ btnBaseMap?.addEventListener("click", () => {
     };
   }
 
-  // Abrir desde botón HUD
-  btnCapasMap?.addEventListener("click", () => {
-    console.log("🔘 Botón Capas (HUD) clickeado");
-    App.tools.capas?.open();
-  });
-
-  // Abrir desde sidebar
+  // Capas solo desde sidebar, con contraseña
+  const CAPAS_PASSWORD = "7431";
   const btnOpenLayers = document.getElementById("btnOpenLayers");
   if (btnOpenLayers) {
     btnOpenLayers.addEventListener("click", () => {
-      console.log("🔘 Botón Capas (Sidebar) clickeado");
-      App.tools.capas?.open();
+      const input = window.prompt("Contraseña para acceder a Capas:");
+      if (input === CAPAS_PASSWORD) {
+        App.tools.capas?.open();
+      } else if (input !== null) {
+        window.alert("Contraseña incorrecta.");
+      }
     });
   } else {
     console.warn("⚠️ Botón btnOpenLayers no encontrado en DOM");

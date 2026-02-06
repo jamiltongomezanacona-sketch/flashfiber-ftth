@@ -539,6 +539,18 @@
         hideResults();
       }
     });
+
+    // Un solo clic en cualquier resultado: ubicar en el mapa de inmediato (delegado, una vez)
+    searchResults.addEventListener("click", (e) => {
+      const row = e.target.closest(".search-result-item");
+      if (!row) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const type = row.dataset.type;
+      const id = row.dataset.id;
+      const result = allResults.find(r => r.type === type && r.id === id);
+      if (result) selectResult(result);
+    });
   }
 
   /* =========================
@@ -642,19 +654,6 @@
     
     searchResults.innerHTML = html;
     searchResults.classList.remove("hidden");
-    
-    // Checkbox inicia desactivado; al marcar se visualiza en el mapa
-    searchResults.addEventListener("change", (e) => {
-      const cb = e.target.closest(".search-result-btn-seleccionar");
-      if (!cb || cb.type !== "checkbox") return;
-      if (!cb.checked) return;
-      const row = cb.closest(".search-result-item");
-      if (!row) return;
-      const type = row.dataset.type;
-      const id = row.dataset.id;
-      const result = allResults.find(r => r.type === type && r.id === id);
-      if (result) selectResult(result);
-    });
   }
 
   /* =========================

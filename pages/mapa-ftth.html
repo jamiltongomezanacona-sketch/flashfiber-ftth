@@ -45,22 +45,6 @@
           <i class="fas fa-times"></i>
         </button>
       </div>
-      <div class="search-filters">
-        <label class="search-filter-item">
-          <input type="checkbox" id="filterCierres" checked />
-          <span>🔒 Cierres</span>
-        </label>
-        <label class="search-filter-item">
-          <input type="checkbox" id="filterEventos" checked />
-          <span>📝 Eventos</span>
-        </label>
-        <label class="search-filter-item search-filter-molecula">
-          <span>🧬 Molécula:</span>
-          <select id="filterMolecula" class="search-filter-select">
-            <option value="">Todas</option>
-          </select>
-        </label>
-      </div>
       <div id="searchResults" class="search-results hidden"></div>
     </div>
   </header>
@@ -102,6 +86,24 @@
         <button class="menu-item">🏢 Centrales</button>
         <button class="menu-item">🧵 Molécula</button>
         <button class="menu-item">🔒 Cierres</button>
+      </section>
+
+      <section class="menu-section sidebar-filters">
+        <div class="menu-title">FILTROS PINES</div>
+        <label class="sidebar-filter-item">
+          <input type="checkbox" id="filterCierres" checked />
+          <span>🔒 Cierres</span>
+        </label>
+        <label class="sidebar-filter-item">
+          <input type="checkbox" id="filterEventos" checked />
+          <span>📝 Eventos</span>
+        </label>
+        <label class="sidebar-filter-item sidebar-filter-molecula">
+          <span>🧬 Molécula:</span>
+          <select id="filterMolecula" class="sidebar-filter-select">
+            <option value="">Todas</option>
+          </select>
+        </label>
       </section>
 
     </nav>

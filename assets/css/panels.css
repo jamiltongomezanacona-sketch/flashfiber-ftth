@@ -327,6 +327,62 @@
   outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
 }
+
+/* Filtros pines en sidebar (Cierres, Eventos, Molécula) */
+.sidebar-filters {
+  margin-top: 8px;
+}
+
+.sidebar-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-primary);
+  user-select: none;
+}
+
+.sidebar-filter-item:hover {
+  background: rgba(0,229,255,0.1);
+}
+
+.sidebar-filter-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-cyan);
+  cursor: pointer;
+}
+
+.sidebar-filter-molecula {
+  flex-wrap: wrap;
+}
+
+.sidebar-filter-molecula span {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.sidebar-filter-select {
+  flex: 1;
+  min-width: 0;
+  background: rgba(15, 18, 30, 0.9);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.sidebar-filter-select:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+}
 /* ===========================
    MODAL RUTA PROFESIONAL
    Mobile First: Bottom sheet en móvil, centrado en tablet+

@@ -41,8 +41,8 @@
           placeholder="Buscar centrales, cables, cierres, eventos..."
           autocomplete="off"
         />
-        <button id="searchClear" class="search-clear hidden">
-          <i class="fas fa-times"></i>
+        <button id="searchClear" type="button" class="search-clear hidden" aria-label="Limpiar búsqueda">
+          <i class="fas fa-times" aria-hidden="true"></i>
         </button>
       </div>
       <div id="searchResults" class="search-results hidden"></div>
@@ -50,9 +50,9 @@
   </header>
 
   <!-- 🔘 BOTÓN FLOTANTE SIDEBAR -->
-  <div id="btnSidebar">
-    <i class="fas fa-bars"></i>
-  </div>
+  <button type="button" id="btnSidebar" aria-label="Abrir menú">
+    <i class="fas fa-bars" aria-hidden="true"></i>
+  </button>
 
   <!-- 📂 SIDEBAR OVERLAY -->
   <div class="sidebar-overlay"></div>
@@ -114,23 +114,13 @@
 <main class="map-wrapper">
   <div id="map"></div>
 
-  <div class="map-controls" style="display: flex !important; visibility: visible !important; opacity: 1 !important; z-index: 99999 !important; position: fixed !important;">
-    <button id="btnGPS" style="display: flex !important; visibility: visible !important; opacity: 1 !important;"><i class="fas fa-location-crosshairs"></i></button>
-    <button id="btnMedir" style="display: flex !important; visibility: visible !important; opacity: 1 !important;"><i class="fas fa-ruler"></i></button>
-    <button id="btnCapas" style="display: flex !important; visibility: visible !important; opacity: 1 !important;"><i class="fas fa-layer-group"></i></button>
+  <div class="map-controls">
+    <button id="btnGPS" type="button" aria-label="Centrar en mi ubicación"><i class="fas fa-location-crosshairs" aria-hidden="true"></i></button>
+    <button id="btnMedir" type="button" aria-label="Medir distancia"><i class="fas fa-ruler" aria-hidden="true"></i></button>
+    <button id="btnCapas" type="button" aria-label="Abrir capas"><i class="fas fa-layer-group" aria-hidden="true"></i></button>
 
-    <!-- ❌ Si ya no usas cambio de base, puedes eliminar btnBaseMap -->
-    <!-- <button id="btnBaseMap"><i class="fas fa-globe"></i></button> -->
-
-    <!-- 🧭 ROTACIÓN ON / OFF -->
-    <button id="btnRotate" title="Rotar mapa" style="display: flex !important; visibility: visible !important; opacity: 1 !important;">
-      <i class="fas fa-sync-alt"></i>
-    </button>
-
-    <!-- 🧹 Limpiar mapa -->
-    <button id="btnLimpiarMapa" title="Limpiar mapa" style="display: flex !important; visibility: visible !important; opacity: 1 !important;">
-      <i class="fas fa-broom"></i>
-    </button>
+    <button id="btnRotate" type="button" title="Rotar mapa" aria-label="Rotar mapa"><i class="fas fa-sync-alt" aria-hidden="true"></i></button>
+    <button id="btnLimpiarMapa" type="button" title="Limpiar mapa" aria-label="Limpiar mapa"><i class="fas fa-broom" aria-hidden="true"></i></button>
   </div>
 </main>
 
@@ -388,6 +378,7 @@
 <script src="../assets/js/app.js"></script>
 <script src="../assets/js/storage.js"></script>
 <script src="../assets/js/storage.cierres.js"></script>
+<script src="../assets/js/utils/centrales.js"></script>
 <script src="../assets/js/ui/ui.menu.js"></script>
 
 

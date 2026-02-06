@@ -7,6 +7,7 @@
   "use strict";
 
   const App = window.__FTTH_APP__;
+  const CONFIG = window.__FTTH_CONFIG__ || {};
   if (!App) {
     console.error("❌ App no disponible en ui.buscador.js");
     return;
@@ -35,9 +36,15 @@
     eventos: []
   };
 
-  const LAYER_CENTRALES = "CORPORATIVO_CENTRALES_ETB";
-  const LAYER_CIERRES = "cierres-layer";
-  const LAYER_EVENTOS = "eventos-layer";
+  // IDs de capas desde config (fallback a valores por defecto)
+  const LAYER_CENTRALES = CONFIG.LAYERS?.CENTRALES || "CORPORATIVO_CENTRALES_ETB";
+  const LAYER_CIERRES = CONFIG.LAYERS?.CIERRES || "cierres-layer";
+  const LAYER_EVENTOS = CONFIG.LAYERS?.EVENTOS || "eventos-layer";
+  const SEARCH_DEBOUNCE_MS = CONFIG.SEARCH?.DEBOUNCE_MS ?? 300;
+  const SEARCH_RETRY_DELAY_MS = CONFIG.SEARCH?.RETRY_DELAY_MS ?? 600;
+  const SEARCH_MAX_RETRIES = CONFIG.SEARCH?.MAX_RETRIES ?? 3;
+  const SEARCH_MAX_RESULTS = CONFIG.SEARCH?.MAX_RESULTS ?? 20;
+  const MAP_FLYTO_DURATION_MS = CONFIG.MAP_FLYTO_DURATION_MS ?? 1500;
 
   /* =========================
      Inicialización
@@ -516,7 +523,7 @@
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => {
         performSearch(query);
-      }, 300);
+      }, SEARCH_DEBOUNCE_MS);
     });
 
     // Enter en búsqueda
@@ -569,12 +576,12 @@
     // ✅ Si el índice está vacío, mostrar "Cargando..." y reintentar cuando haya datos
     const totalItems = searchIndex.centrales.length + searchIndex.cables.length + searchIndex.cierres.length + searchIndex.eventos.length;
     if (totalItems === 0) {
-      if (retryCount < 3) {
+      if (retryCount < SEARCH_MAX_RETRIES) {
         searchResults.innerHTML = `<div class="search-no-results"><i class="fas fa-spinner fa-spin"></i><div>Cargando índice de búsqueda...</div></div>`;
         searchResults.classList.remove("hidden");
         loadCentrales();
         loadCables();
-        setTimeout(() => performSearch(query, retryCount + 1), 600);
+        setTimeout(() => performSearch(query, retryCount + 1), SEARCH_RETRY_DELAY_MS);
       } else {
         searchResults.innerHTML = `<div class="search-no-results"><i class="fas fa-search"></i><div>No se encontraron resultados</div></div>`;
         searchResults.classList.remove("hidden");
@@ -616,8 +623,7 @@
       }
     });
     
-    // Limitar a 20 resultados
-    allResults = allResults.slice(0, 20);
+    allResults = allResults.slice(0, SEARCH_MAX_RESULTS);
     
     renderResults();
   }
@@ -724,7 +730,7 @@
     App.map.flyTo({
       center: result.coordinates,
       zoom: result.type === "central" ? 15 : 17,
-      duration: 1500
+      duration: MAP_FLYTO_DURATION_MS
     });
 
     // Mostrar capa del resultado de inmediato

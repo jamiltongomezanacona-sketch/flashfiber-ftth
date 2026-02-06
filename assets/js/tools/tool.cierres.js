@@ -69,67 +69,48 @@
     const camposDinamicos = document.getElementById("cierreCamposDinamicos");
 
     /* ===============================
-       Prefijos por central
+       Prefijos por central (compartido: utils/centrales.js)
     =============================== */
-    const CENTRAL_PREFIX = {
-      BACHUE: "BA",
-      CHICO: "CH",
-      CUNI: "CU",
-      FONTIBON: "FO",
-      GUAYMARAL: "GU",
-      HOLANDA: "HO",
-      MUZU: "MU",
-      SANTA_INES: "SI",
-      SUBA: "SU",
-      TOBERIN: "TO"
-    };
-
-    function generarMoleculas(prefijo) {
-      return Array.from({ length: 30 }, (_, i) =>
-        `${prefijo}${String(i + 1).padStart(2, "0")}`
-      );
-    }
+    const CENTRAL_PREFIX = (window.__FTTH_CENTRALES__ && window.__FTTH_CENTRALES__.CENTRAL_PREFIX) || {};
+    const generarMoleculas = (window.__FTTH_CENTRALES__ && window.__FTTH_CENTRALES__.generarMoleculas) || (function () { return []; });
 
     /* ===============================
        Generar código automáticamente
     =============================== */
     function generarCodigo() {
+      if (!inputCodigo) return;
       const tipo = selectTipo?.value || "";
       const central = selectCentral?.value || "";
       const molecula = selectMolecula?.value || "";
-      
+
       if (!tipo || !central || !molecula) {
         inputCodigo.value = "";
         return;
       }
 
       if (tipo === "E1") {
-        // E1: E1SI01-1, E1SI01-2, ... E1SI01-10
         const sufijo = document.getElementById("cierreSufijoE1")?.value || "";
-        if (sufijo) {
-          inputCodigo.value = `${tipo}${molecula}-${sufijo}`;
-        } else {
-          inputCodigo.value = "";
-        }
-      } else if (tipo === "E2") {
-        // E2: E2SI03-A1, E2SI03-B2, etc.
+        inputCodigo.value = sufijo ? `${tipo}${molecula}-${sufijo}` : "";
+        return;
+      }
+      if (tipo === "E2") {
         const submolecula = document.getElementById("cierreSubmolecula")?.value || "";
         const numero = document.getElementById("cierreNumeroE2")?.value || "";
-        if (submolecula && numero) {
-          inputCodigo.value = `${tipo}${molecula}-${submolecula}${numero}`;
-        } else {
-          inputCodigo.value = "";
-        }
-      } else if (tipo === "NAP") {
-        // NAP: mantener formato manual por ahora
-        inputCodigo.value = "";
+        inputCodigo.value = submolecula && numero ? `${tipo}${molecula}-${submolecula}${numero}` : "";
+        return;
       }
+      if (tipo === "NAP") {
+        inputCodigo.value = "";
+        return;
+      }
+      inputCodigo.value = "";
     }
 
     /* ===============================
        Actualizar campos dinámicos según tipo
     =============================== */
     function actualizarCamposDinamicos() {
+      if (!camposDinamicos) return;
       const tipo = selectTipo?.value || "";
       camposDinamicos.innerHTML = "";
 
@@ -196,9 +177,10 @@
 
     // Cambio de central
     selectCentral?.addEventListener("change", () => {
+      if (!selectMolecula) return;
       const central = selectCentral.value;
       selectMolecula.innerHTML = `<option value="">Seleccione Molécula</option>`;
-      inputCodigo.value = "";
+      if (inputCodigo) inputCodigo.value = "";
 
       const prefijo = CENTRAL_PREFIX[central];
       if (!prefijo) {
@@ -206,7 +188,8 @@
         return;
       }
 
-      generarMoleculas(prefijo).forEach(mol => {
+      const moleculas = generarMoleculas(prefijo);
+      moleculas.forEach(mol => {
         const opt = document.createElement("option");
         opt.value = mol;
         opt.textContent = mol;

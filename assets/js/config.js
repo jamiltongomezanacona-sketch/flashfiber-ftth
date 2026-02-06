@@ -28,8 +28,25 @@ window.__FTTH_CONFIG__ = {
     ZOOM: 12,
     PITCH: 45,
     BEARING: -10
-  }
+  },
 
+  // IDs de capas del mapa (buscador, tools, layers)
+  LAYERS: {
+    CENTRALES: "CORPORATIVO_CENTRALES_ETB",
+    CIERRES: "cierres-layer",
+    EVENTOS: "eventos-layer"
+  },
+
+  // Buscador: debounce, reintentos, resultados máximos
+  SEARCH: {
+    DEBOUNCE_MS: 300,
+    RETRY_DELAY_MS: 600,
+    MAX_RETRIES: 3,
+    MAX_RESULTS: 20
+  },
+
+  // Duración del flyTo al seleccionar resultado (ms)
+  MAP_FLYTO_DURATION_MS: 1500
 };
 
 // ✅ Validar que el token esté presente (silenciado - siempre hay valor por defecto)

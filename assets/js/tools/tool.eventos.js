@@ -599,32 +599,13 @@
     }
 
     /* ===============================
-       Central → Moléculas (Eventos)
+       Central → Moléculas (compartido: utils/centrales.js)
     =============================== */
-
-    const CENTRAL_PREFIX = {
-      BACHUE: "BA",
-      CHICO: "CH",
-      CUNI: "CU",
-      FONTIBON: "FO",
-      GUAYMARAL: "GU",
-      HOLANDA: "HO",
-      MUZU: "MU",
-      SANTA_INES: "SI",
-      SUBA: "SU",
-      TOBERIN: "TO"
-    };
-
-    function generarMoleculas(prefijo) {
-      const lista = [];
-      for (let i = 1; i <= 30; i++) {
-        const num = String(i).padStart(2, "0");
-        lista.push(`${prefijo}${num}`);
-      }
-      return lista;
-    }
+    const CENTRAL_PREFIX = (window.__FTTH_CENTRALES__ && window.__FTTH_CENTRALES__.CENTRAL_PREFIX) || {};
+    const generarMoleculas = (window.__FTTH_CENTRALES__ && window.__FTTH_CENTRALES__.generarMoleculas) || (function () { return []; });
 
     elCentralEvento?.addEventListener("change", () => {
+      if (!elMoleculaEvento) return;
       const central = elCentralEvento.value;
       elMoleculaEvento.innerHTML = `<option value="">Seleccione Molécula</option>`;
 

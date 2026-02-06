@@ -176,28 +176,38 @@
 
 
   /* =========================
-     Filtro por molécula (pines Cierres y Eventos)
+     Filtro por molécula: todas las centrales y sus moléculas (sidebar)
   ========================= */
-  async function setupMoleculaFilter() {
+  function formatCentralLabel(key) {
+    return key.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  function setupMoleculaFilter() {
     const select = document.getElementById("filterMolecula");
     if (!select) return;
 
-    try {
-      const res = await fetch("../geojson/FTTH/SANTA_INES/index.json", { cache: "no-store" });
-      const json = await res.json();
-      const moleculas = (json.children || [])
-        .filter(c => c.label && /^SI\d+$/.test(c.label))
-        .map(c => c.label)
-        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    const centrales = window.__FTTH_CENTRALES__;
+    const CENTRAL_PREFIX = centrales?.CENTRAL_PREFIX || {};
+    const generarMoleculas = centrales?.generarMoleculas || (() => []);
+
+    // Mantener solo "Todas"
+    select.innerHTML = '<option value="">Todas</option>';
+
+    Object.keys(CENTRAL_PREFIX).sort().forEach(centralKey => {
+      const prefijo = CENTRAL_PREFIX[centralKey];
+      const moleculas = generarMoleculas(prefijo);
+      if (moleculas.length === 0) return;
+
+      const group = document.createElement("optgroup");
+      group.label = `${formatCentralLabel(centralKey)} (${prefijo})`;
       moleculas.forEach(mol => {
         const opt = document.createElement("option");
         opt.value = mol;
         opt.textContent = mol;
-        select.appendChild(opt);
+        group.appendChild(opt);
       });
-    } catch (e) {
-      console.warn("⚠️ No se pudo cargar lista de moléculas:", e);
-    }
+      select.appendChild(group);
+    });
 
     select.addEventListener("change", () => {
       const value = select.value || "";

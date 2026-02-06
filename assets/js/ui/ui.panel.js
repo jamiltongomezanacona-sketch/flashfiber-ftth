@@ -196,14 +196,21 @@ if (toolButtons.eventos) {
   const btnMedirMap = document.getElementById("btnMedir");
   const btnCapasMap = document.getElementById("btnCapas");
   const btnBaseMap = document.getElementById("btnBaseMap");
-  const btnFinishRuta = document.getElementById("btnFinishRuta");
+  const btnLimpiarMapa = document.getElementById("btnLimpiarMapa");
 
   btnGPSMap?.addEventListener("click", () => toggleTool("gps"));
   btnMedirMap?.addEventListener("click", () => toggleTool("medir"));
 
-  // ✔️ Finalizar ruta manualmente (móvil)
-  btnFinishRuta?.addEventListener("click", () => {
-    App.tools.rutas?.finish();
+  // 🧹 Limpiar mapa: ocultar cables y pines, dejar solo centrales (según filtros)
+  btnLimpiarMapa?.addEventListener("click", () => {
+    if (typeof App.setSelectedMoleculaForPins === "function") {
+      App.setSelectedMoleculaForPins(null);
+    }
+    if (typeof App.enforceOnlyCentralesVisible === "function") {
+      App.enforceOnlyCentralesVisible();
+    }
+    const filterMolecula = document.getElementById("filterMolecula");
+    if (filterMolecula) filterMolecula.value = "";
   });
 
 /* ===============================

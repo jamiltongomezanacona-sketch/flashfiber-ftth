@@ -200,6 +200,54 @@
       to { transform: rotate(360deg); }
     }
 
+    .btn-install-app {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      margin-top: 0.75rem;
+      background: rgba(0, 180, 216, 0.15);
+      color: #00e5ff;
+      border: 1px solid rgba(0, 180, 216, 0.4);
+      border-radius: 10px;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-install-app:hover {
+      background: rgba(0, 180, 216, 0.25);
+      border-color: rgba(0, 180, 216, 0.6);
+    }
+
+    .btn-install-app.hidden {
+      display: none !important;
+    }
+
+    .install-ios-hint {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: rgba(0, 180, 216, 0.08);
+      border: 1px solid rgba(0, 180, 216, 0.2);
+      border-radius: 10px;
+      font-size: 0.8125rem;
+      color: #7dd3fc;
+      opacity: 0.9;
+      display: none;
+    }
+
+    .install-ios-hint.show {
+      display: block;
+    }
+
+    .install-ios-hint strong {
+      color: #00e5ff;
+    }
+
     .footer-text {
       text-align: center;
       margin-top: 2rem;
@@ -270,6 +318,15 @@
       <button type="submit" class="btn-login" id="loginButton">
         <span id="loginButtonText">Iniciar Sesión</span>
       </button>
+
+      <button type="button" class="btn-install-app hidden" id="installAppBtn" aria-label="Instalar aplicación en el dispositivo">
+        <i class="fas fa-download"></i>
+        <span>Instalar app</span>
+      </button>
+
+      <p class="install-ios-hint" id="installIosHint" role="note">
+        <i class="fas fa-mobile-alt"></i> <strong>iPhone/iPad:</strong> Toca <strong>Compartir</strong> (abajo) y luego <strong>Añadir a pantalla de inicio</strong> para instalar la app.
+      </p>
     </form>
 
     <p class="footer-text">

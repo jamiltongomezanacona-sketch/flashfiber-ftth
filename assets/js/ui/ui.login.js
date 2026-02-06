@@ -20,9 +20,40 @@
     const loginButton = document.getElementById("loginButton");
     const loginButtonText = document.getElementById("loginButtonText");
     const errorMessage = document.getElementById("errorMessage");
+    const installAppBtn = document.getElementById("installAppBtn");
+    const installIosHint = document.getElementById("installIosHint");
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
     // Verificar si ya está autenticado
     checkAuthState();
+
+    // Botón Instalar app (PWA): solo si el navegador lo permite y no está ya instalada
+    if (installAppBtn) {
+      if (isStandalone) {
+        installAppBtn.classList.add("hidden");
+      } else {
+        window.addEventListener("beforeinstallprompt", (e) => {
+          e.preventDefault();
+          window.__ftthDeferredInstall = e;
+          installAppBtn.classList.remove("hidden");
+          if (installIosHint) installIosHint.classList.remove("show");
+        });
+        installAppBtn.addEventListener("click", async () => {
+          const deferred = window.__ftthDeferredInstall;
+          if (!deferred) return;
+          deferred.prompt();
+          const { outcome } = await deferred.userChoice;
+          if (outcome === "accepted") installAppBtn.classList.add("hidden");
+          window.__ftthDeferredInstall = null;
+        });
+      }
+    }
+
+    // En iPhone/iPad no hay beforeinstallprompt: mostrar indicación para instalar desde Compartir
+    if (installIosHint && isIos && !isStandalone) {
+      installIosHint.classList.add("show");
+    }
 
     // Manejar envío del formulario
     loginForm.addEventListener("submit", async (e) => {

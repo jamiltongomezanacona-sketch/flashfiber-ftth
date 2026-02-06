@@ -71,6 +71,60 @@
   display: none;
 }
 
+/* Filtros: pines Cierres y Eventos (Firebase) */
+.search-filters {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.search-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.search-filter-item:hover {
+  color: var(--accent-cyan);
+}
+
+.search-filter-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-cyan);
+  cursor: pointer;
+}
+
+.search-filter-item span {
+  white-space: nowrap;
+}
+
+.search-filter-molecula {
+  margin-left: 4px;
+}
+
+.search-filter-select {
+  background: rgba(15, 18, 30, 0.8);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 4px 8px;
+  cursor: pointer;
+  min-width: 72px;
+}
+
+.search-filter-select:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+}
+
 /* Resultados de búsqueda */
 .search-results {
   position: absolute;

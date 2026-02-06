@@ -27,12 +27,16 @@
   let allResults = [];
   let currentSearch = "";
 
-  // Índice de búsqueda
+  // Índice de búsqueda (centrales, cables, cierres y eventos desde Firebase)
   const searchIndex = {
     centrales: [],
     cables: [],
-    cierres: []
+    cierres: [],
+    eventos: []
   };
+
+  const LAYER_CIERRES = "cierres-layer";
+  const LAYER_EVENTOS = "eventos-layer";
 
   /* =========================
      Inicialización
@@ -53,14 +57,16 @@
     
     console.log("🔍 Buscador inicializado - cargando datos en segundo plano");
     
-    // ✅ Cargar cierres cuando Firebase esté disponible (en segundo plano)
+    // ✅ Cargar cierres y eventos cuando Firebase esté disponible (en segundo plano)
     waitForFirebaseAndLoadCierres();
+    waitForFirebaseAndLoadEventos();
+    setupFilterToggles();
+    setupMoleculaFilter();
   }
 
   async function waitForFirebaseAndLoadCierres(maxAttempts = 100) {
-    // Esperar solo por Firebase para cargar cierres
     for (let i = 0; i < maxAttempts; i++) {
-      if (window.FTTH_FIREBASE) {
+      if (window.FTTH_FIREBASE?.escucharCierres) {
         await loadCierres();
         console.log(`✅ Cierres cargados: ${searchIndex.cierres.length} cierres`);
         return true;
@@ -69,6 +75,80 @@
     }
     console.warn("⚠️ Firebase no disponible para cargar cierres");
     return false;
+  }
+
+  async function waitForFirebaseAndLoadEventos(maxAttempts = 100) {
+    for (let i = 0; i < maxAttempts; i++) {
+      if (window.FTTH_FIREBASE?.escucharEventos) {
+        await loadEventos();
+        console.log(`✅ Eventos cargados: ${searchIndex.eventos.length} eventos`);
+        return true;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    console.warn("⚠️ Firebase no disponible para cargar eventos");
+    return false;
+  }
+
+  /* =========================
+     Filtros: mostrar/ocultar pines Cierres y Eventos
+  ========================= */
+  function setupFilterToggles() {
+    const filterCierres = document.getElementById("filterCierres");
+    const filterEventos = document.getElementById("filterEventos");
+    if (!filterCierres || !filterEventos) return;
+
+    function setLayerVisibility(layerId, visible) {
+      if (!App?.map) return;
+      if (App.map.getLayer(layerId)) {
+        App.map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
+      }
+    }
+
+    filterCierres.checked = true;
+    filterEventos.checked = true;
+    filterCierres.addEventListener("change", () => setLayerVisibility(LAYER_CIERRES, filterCierres.checked));
+    filterEventos.addEventListener("change", () => setLayerVisibility(LAYER_EVENTOS, filterEventos.checked));
+  }
+
+  /* =========================
+     Filtro por molécula (pines Cierres y Eventos)
+  ========================= */
+  async function setupMoleculaFilter() {
+    const select = document.getElementById("filterMolecula");
+    if (!select) return;
+
+    try {
+      const res = await fetch("../geojson/FTTH/SANTA_INES/index.json", { cache: "no-store" });
+      const json = await res.json();
+      const moleculas = (json.children || [])
+        .filter(c => c.label && /^SI\d+$/.test(c.label))
+        .map(c => c.label)
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      moleculas.forEach(mol => {
+        const opt = document.createElement("option");
+        opt.value = mol;
+        opt.textContent = mol;
+        select.appendChild(opt);
+      });
+    } catch (e) {
+      console.warn("⚠️ No se pudo cargar lista de moléculas:", e);
+    }
+
+    select.addEventListener("change", () => {
+      if (!App?.map) return;
+      const value = select.value || "";
+      const filter = value ? ["==", ["get", "molecula"], value] : null;
+      [LAYER_CIERRES, LAYER_EVENTOS].forEach(layerId => {
+        if (App.map.getLayer(layerId)) {
+          try {
+            App.map.setFilter(layerId, filter);
+          } catch (err) {
+            console.warn("⚠️ setFilter no soportado en capa:", layerId, err);
+          }
+        }
+      });
+    });
   }
 
   /* =========================
@@ -327,6 +407,46 @@
   }
 
   /* =========================
+     Cargar eventos desde Firebase
+  ========================= */
+  async function loadEventos() {
+    try {
+      let attempts = 0;
+      while (!window.FTTH_FIREBASE?.escucharEventos && attempts < 20) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        attempts++;
+      }
+      if (!window.FTTH_FIREBASE?.escucharEventos) {
+        console.warn("⚠️ Firebase eventos no disponible después de esperar");
+        return;
+      }
+      window.FTTH_FIREBASE.escucharEventos((evento) => {
+        if (evento._deleted) {
+          searchIndex.eventos = searchIndex.eventos.filter(e => e.id !== evento.id);
+        } else {
+          if (evento.lng != null && evento.lat != null && Number.isFinite(Number(evento.lng)) && Number.isFinite(Number(evento.lat))) {
+            const eventoData = {
+              id: evento.id,
+              name: evento.tipo || "Evento",
+              type: "evento",
+              coordinates: [Number(evento.lng), Number(evento.lat)],
+              icon: "🚨",
+              subtitle: `${evento.accion || ""}${evento.estado ? " · " + evento.estado : ""}${evento.central ? " · " + evento.central : ""}`,
+              layerId: LAYER_EVENTOS
+            };
+            const index = searchIndex.eventos.findIndex(e => e.id === evento.id);
+            if (index >= 0) searchIndex.eventos[index] = eventoData;
+            else searchIndex.eventos.push(eventoData);
+          }
+        }
+        if (currentSearch) performSearch(currentSearch);
+      });
+    } catch (error) {
+      console.warn("⚠️ No se pudieron cargar eventos:", error);
+    }
+  }
+
+  /* =========================
      Event Listeners
   ========================= */
   function setupEventListeners() {
@@ -385,7 +505,7 @@
     currentSearch = query;
     
     // ✅ Verificar si hay datos cargados
-    const totalItems = searchIndex.centrales.length + searchIndex.cables.length + searchIndex.cierres.length;
+    const totalItems = searchIndex.centrales.length + searchIndex.cables.length + searchIndex.cierres.length + searchIndex.eventos.length;
     if (totalItems === 0) {
       console.warn("⚠️ Índice de búsqueda vacío, intentando recargar...");
       // Intentar recargar en segundo plano
@@ -412,11 +532,19 @@
       }
     });
     
-    // Buscar en cierres
+    // Buscar en cierres (Firebase)
     searchIndex.cierres.forEach(cierre => {
       const searchText = `${cierre.name} ${cierre.codigo || ""} ${cierre.central || ""} ${cierre.molecula || ""} ${cierre.tipo || ""}`.toLowerCase();
       if (searchText.includes(lowerQuery)) {
         allResults.push(cierre);
+      }
+    });
+
+    // Buscar en eventos (Firebase)
+    searchIndex.eventos.forEach(evento => {
+      const searchText = `${evento.name} ${evento.subtitle || ""}`.toLowerCase();
+      if (searchText.includes(lowerQuery)) {
+        allResults.push(evento);
       }
     });
     
@@ -495,12 +623,25 @@
       duration: 1500
     });
     
-    // Si es un cable, asegurar que la capa esté visible
+    // Asegurar que la capa del resultado esté visible (cable, cierre o evento)
     if (result.type === "cable" && result.layerId) {
-      const layer = App.map.getLayer(result.layerId);
-      if (layer) {
+      if (App.map.getLayer(result.layerId)) {
         App.map.setLayoutProperty(result.layerId, "visibility", "visible");
       }
+    }
+    if (result.type === "cierre") {
+      if (App.map.getLayer(LAYER_CIERRES)) {
+        App.map.setLayoutProperty(LAYER_CIERRES, "visibility", "visible");
+      }
+      const fc = document.getElementById("filterCierres");
+      if (fc) fc.checked = true;
+    }
+    if (result.type === "evento") {
+      if (App.map.getLayer(LAYER_EVENTOS)) {
+        App.map.setLayoutProperty(LAYER_EVENTOS, "visibility", "visible");
+      }
+      const fe = document.getElementById("filterEventos");
+      if (fe) fe.checked = true;
     }
     
     // Cerrar resultados

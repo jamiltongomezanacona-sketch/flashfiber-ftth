@@ -392,13 +392,9 @@
         return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
       }
 
-      // Click sobre cierre → popup resumen + botón editar (siempre visible, incluso con tool activo)
-      // Mapbox solo pasa propiedades usadas en el estilo; obtener siempre el registro completo desde App.data
-      if (!App || !App.map) return;
-      App.map.on("click", LAYER_ID, (e) => {
-        const f = e.features?.[0];
-        if (!f) return;
-
+      // Función única para mostrar popup (Nombre, Fecha creación, Creado por, Editar)
+      function showCierrePopup(f, lngLat) {
+        if (!f || !lngLat) return;
         const id = f.id ?? f.properties?.id;
         const idStr = id != null ? String(id) : null;
         let p = {};
@@ -418,19 +414,16 @@
         }
         if (Object.keys(p).length === 0) p = { ...(f.properties || {}) };
 
-        if (p.lng == null && p.lat == null && e.lngLat) {
-          p.lng = e.lngLat.lng;
-          p.lat = e.lngLat.lat;
+        if (p.lng == null && p.lat == null && lngLat) {
+          p.lng = lngLat.lng;
+          p.lat = lngLat.lat;
         }
-        const lngLat = e.lngLat;
-        if (active) blockNextClick = true;
 
         const fecha = p.createdAt ? new Date(p.createdAt).toLocaleString() : "Sin fecha";
         const fechaActualizado = p.updatedAt ? new Date(p.updatedAt).toLocaleString() : null;
         const creadoPor = escapeHtml(String(p.createdBy || p.creadoPor || "—"));
         const nombrePin = escapeHtml(p.codigo || "Cierre");
 
-        // Formatear tipo
         let tipoBadge = "";
         if (p.tipo === "E1") {
           tipoBadge = '<span style="background:#2196F3;padding:2px 6px;border-radius:4px;font-size:11px">E1 - Derivación</span>';
@@ -502,6 +495,23 @@
             abrirEdicionCierre(p);
           });
         }, 80);
+      }
+
+      // Click en la capa de cierres → popup
+      if (!App || !App.map) return;
+      App.map.on("click", LAYER_ID, (e) => {
+        const f = e.features?.[0];
+        if (!f) return;
+        if (active) blockNextClick = true;
+        showCierrePopup(f, e.lngLat);
+      });
+
+      // Fallback: click en cualquier parte del mapa (por si otra capa está encima)
+      App.map.on("click", (e) => {
+        if (active) return;
+        if (!App.map.getLayer(LAYER_ID)) return;
+        const hits = App.map.queryRenderedFeatures(e.point, { layers: [LAYER_ID] });
+        if (hits.length) showCierrePopup(hits[0], e.lngLat);
       });
 
       // Cursor pointer al pasar sobre cierre

@@ -265,12 +265,9 @@
         return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
       }
 
-      // Click evento = popup info + botón editar
-      // Mapbox solo pasa propiedades usadas en el estilo; obtener siempre el registro completo desde App.data
-      App.map.on("click", LAYER_ID, (e) => {
-        const f = e.features?.[0];
-        if (!f) return;
-
+      // Función única para mostrar popup (Nombre, Fecha creación, Creado por, Editar)
+      function showEventoPopup(f, lngLat) {
+        if (!f || !lngLat) return;
         const id = f.id ?? f.properties?.id;
         const idStr = id != null ? String(id) : null;
         let p = {};
@@ -290,18 +287,16 @@
         }
         if (Object.keys(p).length === 0) p = { ...(f.properties || {}) };
 
-        if (p.lng == null && p.lat == null && e.lngLat) {
-          p.lng = e.lngLat.lng;
-          p.lat = e.lngLat.lat;
+        if (p.lng == null && p.lat == null && lngLat) {
+          p.lng = lngLat.lng;
+          p.lat = lngLat.lat;
         }
-        const lngLat = e.lngLat;
 
         const fecha = p.createdAt ? new Date(p.createdAt).toLocaleString() : "Sin fecha";
         const fechaActualizado = p.updatedAt ? new Date(p.updatedAt).toLocaleString() : null;
         const creadoPor = escapeHtml(String(p.createdBy || p.creadoPor || "—"));
         const nombrePin = escapeHtml(p.tipo || p.nombre || "Evento");
 
-        // Formatear estado con color
         let estadoBadge = "";
         if (p.estado === "CRITICO") {
           estadoBadge = '<span style="background:#e53935;padding:2px 6px;border-radius:4px;font-size:11px">CRÍTICO</span>';
@@ -313,7 +308,6 @@
           estadoBadge = escapeHtml(p.estado || "N/A");
         }
 
-        // Mostrar fotos si existen (escapar URL para evitar javascript:)
         let fotosHTML = "";
         const safeUrl = (u) => (typeof u === "string" && (u.startsWith("http://") || u.startsWith("https://") || u.startsWith("data:"))) ? u : "#";
         if (p.fotos && Array.isArray(p.fotos) && p.fotos.length > 0) {
@@ -345,7 +339,6 @@
           }
         }
 
-        // Todas las propiedades (visible, escapadas)
         const todasPropsHtml = Object.keys(p)
           .filter(k => !["iconId", "label", "geometry", "type"].includes(k))
           .map(key => {
@@ -412,20 +405,14 @@
           .addTo(App.map);
 
         setTimeout(() => {
-          // Botón editar
           const btnEdit = document.getElementById("btnEditEventoPopup");
           btnEdit?.addEventListener("click", () => {
             popup.remove();
             abrirEdicionEvento(p);
           });
-          
-          // Botón eliminar
           const btnDelete = document.getElementById("btnDeleteEventoPopup");
           btnDelete?.addEventListener("click", async () => {
-            if (!confirm("¿Estás seguro de eliminar este evento?")) {
-              return;
-            }
-            
+            if (!confirm("¿Estás seguro de eliminar este evento?")) return;
             try {
               const FB = window.FTTH_FIREBASE;
               if (FB?.eliminarEvento && p.id) {
@@ -441,6 +428,22 @@
             }
           });
         }, 80);
+      }
+
+      // Click en la capa de eventos → popup
+      App.map.on("click", LAYER_ID, (e) => {
+        const f = e.features?.[0];
+        if (!f) return;
+        if (active) blockNextClick = true;
+        showEventoPopup(f, e.lngLat);
+      });
+
+      // Fallback: click en cualquier parte del mapa (por si otra capa está encima)
+      App.map.on("click", (e) => {
+        if (active) return;
+        if (!App.map.getLayer(LAYER_ID)) return;
+        const hits = App.map.queryRenderedFeatures(e.point, { layers: [LAYER_ID] });
+        if (hits.length) showEventoPopup(hits[0], e.lngLat);
       });
 
       // Cursor

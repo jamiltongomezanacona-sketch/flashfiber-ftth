@@ -279,8 +279,14 @@ main.map-wrapper {
   to { opacity: 1; transform: scale(1); }
 }
 /* ===============================
-   Popup cierres - Estilo moderno
+   Popup cierres / eventos - Estilo moderno
 ================================ */
+
+/* Asegurar que el popup quede siempre por encima del mapa */
+.mapboxgl-popup {
+  z-index: 10000 !important;
+  pointer-events: auto !important;
+}
 
 .mapboxgl-popup-content {
   background: rgba(15, 18, 30, 0.95) !important;

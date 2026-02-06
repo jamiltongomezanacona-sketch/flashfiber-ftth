@@ -618,6 +618,7 @@
               </div>
               <div class="search-result-subtitle">${result.subtitle || ""}</div>
             </div>
+            <button type="button" class="search-result-btn-seleccionar" title="Seleccionar y ubicar en el mapa">Seleccionar</button>
           </div>
         `).join("")}
       </div>
@@ -626,16 +627,17 @@
     searchResults.innerHTML = html;
     searchResults.classList.remove("hidden");
     
-    // Event listeners para items
-    searchResults.querySelectorAll(".search-result-item").forEach(item => {
-      item.addEventListener("click", () => {
-        const type = item.dataset.type;
-        const id = item.dataset.id;
-        const result = allResults.find(r => r.type === type && r.id === id);
-        if (result) {
-          selectResult(result);
-        }
-      });
+    // Clic en la fila o en el botón "Seleccionar"
+    searchResults.addEventListener("click", (e) => {
+      const btn = e.target.closest(".search-result-btn-seleccionar");
+      const row = e.target.closest(".search-result-item");
+      if (!row) return;
+      const type = row.dataset.type;
+      const id = row.dataset.id;
+      const result = allResults.find(r => r.type === type && r.id === id);
+      if (!result) return;
+      if (btn) e.stopPropagation();
+      selectResult(result);
     });
   }
 

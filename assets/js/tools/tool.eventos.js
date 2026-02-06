@@ -339,40 +339,41 @@
           }).join("") || "<div style='opacity:0.6'>No hay propiedades adicionales</div>";
 
         const html = `
-  <div class="popup" style="min-width:280px;max-width:400px;font-size:13px;line-height:1.6">
-    <div style="background:rgba(0,229,255,0.12);border-radius:8px;padding:10px;margin-bottom:10px;border-left:3px solid #00e5ff">
-      <div style="font-size:15px;font-weight:bold;margin-bottom:6px">🚨 ${nombrePin}</div>
-      <div style="font-size:12px;margin:4px 0"><b>📅 Fecha de creación:</b> ${escapeHtml(fecha)}</div>
-      <div style="font-size:12px;margin:4px 0"><b>👤 Creado por:</b> ${creadoPor}</div>
-      <div style="font-size:12px;margin:4px 0">
-        <b>📝 Notas:</b>
-        <div style="margin:4px 0;padding:6px;background:rgba(255,255,255,0.05);border-radius:4px;font-size:12px;max-height:100px;overflow-y:auto">
-          ${p.notas ? escapeHtml(p.notas) : "<span style='opacity:0.7'>Sin notas</span>"}
+  <div class="popup pin-popup" style="min-width:300px;max-width:400px;font-size:14px;line-height:1.5;color:#fff">
+    <div style="background:linear-gradient(135deg,rgba(0,229,255,0.25),rgba(0,180,216,0.15));border-radius:10px;padding:14px;margin-bottom:12px;border:2px solid #00e5ff;box-shadow:0 2px 8px rgba(0,229,255,0.2)">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#00e5ff;margin-bottom:8px;font-weight:700">Propiedades del pin</div>
+      <div style="font-size:18px;font-weight:bold;margin-bottom:10px;color:#fff">🚨 ${nombrePin}</div>
+      <div style="font-size:14px;margin:6px 0;color:#e0e0e0"><span style="color:#00e5ff;font-weight:600">📅 Fecha de creación:</span> ${escapeHtml(fecha)}</div>
+      <div style="font-size:14px;margin:6px 0;color:#e0e0e0"><span style="color:#00e5ff;font-weight:600">👤 Creado por:</span> ${creadoPor}</div>
+      <div style="font-size:14px;margin:6px 0">
+        <span style="color:#00e5ff;font-weight:600">📝 Notas:</span>
+        <div style="margin:6px 0 0;padding:8px;background:rgba(0,0,0,0.3);border-radius:6px;font-size:13px;max-height:90px;overflow-y:auto;color:#fff;border:1px solid rgba(255,255,255,0.1)">
+          ${p.notas ? escapeHtml(p.notas) : "<span style='color:rgba(255,255,255,0.6)'>Sin notas</span>"}
         </div>
       </div>
     </div>
 
-    <div style="margin-bottom:8px">
-      <b>🔧 Acción:</b> ${escapeHtml(p.accion || "N/A")}<br>
-      <b>⏱ Estado:</b> ${estadoBadge}<br>
+    <div style="margin-bottom:10px;font-size:14px">
+      <b style="color:#00e5ff">🔧 Acción:</b> ${escapeHtml(p.accion || "N/A")}<br>
+      <b style="color:#00e5ff">⏱ Estado:</b> ${estadoBadge}<br>
     </div>
 
-    <div style="margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.05);border-radius:6px">
-      <b>🏢 Central:</b> ${escapeHtml(p.central || "N/A")}<br>
-      <b>🧬 Molécula:</b> ${escapeHtml(p.molecula || "N/A")}<br>
-      <b>👤 Técnico:</b> ${escapeHtml(p.tecnico || "N/A")}<br>
+    <div style="margin-bottom:10px;padding:8px;background:rgba(255,255,255,0.06);border-radius:6px;font-size:14px">
+      <b style="color:#00e5ff">🏢 Central:</b> ${escapeHtml(p.central || "N/A")}<br>
+      <b style="color:#00e5ff">🧬 Molécula:</b> ${escapeHtml(p.molecula || "N/A")}<br>
+      <b style="color:#00e5ff">👤 Técnico:</b> ${escapeHtml(p.tecnico || "N/A")}<br>
     </div>
 
     ${fotosHTML}
 
-    <div style="font-size:11px;opacity:0.7;border-top:1px solid rgba(255,255,255,0.1);padding-top:6px;margin-top:8px">
+    <div style="font-size:12px;color:rgba(255,255,255,0.8);border-top:1px solid rgba(255,255,255,0.15);padding-top:8px;margin-top:8px">
       ${fechaActualizado ? `<div>✏️ Actualizado: ${escapeHtml(fechaActualizado)}</div>` : ""}
       ${p.lat != null && p.lng != null ? `<div>📍 Coord: ${Number(p.lat).toFixed(6)}, ${Number(p.lng).toFixed(6)}</div>` : ""}
     </div>
 
-    <div style="margin-top:8px;padding:6px;background:rgba(255,255,255,0.03);border-radius:6px;max-height:120px;overflow-y:auto">
-      <b style="font-size:11px">📋 Todas las propiedades:</b>
-      ${todasPropsHtml}
+    <div style="margin-top:10px;padding:10px;background:rgba(255,255,255,0.06);border-radius:6px;max-height:140px;overflow-y:auto;border:1px solid rgba(255,255,255,0.1)">
+      <b style="font-size:12px;color:#00e5ff">📋 Todas las propiedades:</b>
+      <div style="font-size:13px;margin-top:6px">${todasPropsHtml}</div>
     </div>
 
     <hr style="margin:10px 0;border-color:rgba(255,255,255,0.1)">

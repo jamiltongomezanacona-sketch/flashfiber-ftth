@@ -137,9 +137,19 @@
     
     checkbox.checked = shouldBeChecked;
 
-    // 🏷️ Label
+    // 🏷️ Label: usar node.label; si falta o es el id completo, mostrar nombre corto (ej. SI22FH144_1)
     const label = document.createElement("span");
-    label.textContent = node.label || "Nodo";
+    let displayLabel = node.label;
+    if (!displayLabel || displayLabel === node.id) {
+      const id = node.id || "";
+      if (id && id.includes("_")) {
+        const parts = id.split("_");
+        displayLabel = parts.length >= 2 ? parts.slice(-2).join("_") : id;
+      } else {
+        displayLabel = id || "Nodo";
+      }
+    }
+    label.textContent = displayLabel || "Nodo";
 
     // 📦 Contenedor hijos
     const childrenBox = document.createElement("div");

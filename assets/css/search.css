@@ -218,29 +218,11 @@
 
 .search-result-btn-seleccionar {
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  font-size: 16px;
-  font-weight: bold;
-  color: #fff;
-  background: rgba(0, 229, 255, 0.25);
-  border: 1px solid var(--accent-cyan);
-  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  margin: 0;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s ease, transform 0.1s ease;
-}
-
-.search-result-btn-seleccionar:hover {
-  background: rgba(0, 229, 255, 0.45);
-  transform: scale(1.05);
-}
-
-.search-result-btn-seleccionar:active {
-  transform: scale(0.95);
+  accent-color: var(--accent-cyan);
 }
 
 .search-result-title {

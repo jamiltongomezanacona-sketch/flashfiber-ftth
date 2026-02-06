@@ -464,7 +464,8 @@
               coordinates: [Number(evento.lng), Number(evento.lat)],
               icon: "🚨",
               subtitle: `${evento.accion || ""}${evento.estado ? " · " + evento.estado : ""}${evento.central ? " · " + evento.central : ""}`,
-              layerId: LAYER_EVENTOS
+              layerId: LAYER_EVENTOS,
+              molecula: evento.molecula || null
             };
             const index = searchIndex.eventos.findIndex(e => e.id === evento.id);
             if (index >= 0) searchIndex.eventos[index] = eventoData;
@@ -618,7 +619,7 @@
               </div>
               <div class="search-result-subtitle">${result.subtitle || ""}</div>
             </div>
-            <button type="button" class="search-result-btn-seleccionar" title="Ubicar en el mapa" aria-label="Seleccionar">✓</button>
+            <input type="checkbox" class="search-result-btn-seleccionar" title="Ubicar en el mapa" aria-label="Seleccionar" unchecked />
           </div>
         `).join("")}
       </div>
@@ -627,11 +628,12 @@
     searchResults.innerHTML = html;
     searchResults.classList.remove("hidden");
     
-    // Solo el botón "Seleccionar" ejecuta la acción
-    searchResults.addEventListener("click", (e) => {
-      const btn = e.target.closest(".search-result-btn-seleccionar");
-      if (!btn) return;
-      const row = btn.closest(".search-result-item");
+    // Checkbox inicia desactivado; al marcar se visualiza en el mapa
+    searchResults.addEventListener("change", (e) => {
+      const cb = e.target.closest(".search-result-btn-seleccionar");
+      if (!cb || cb.type !== "checkbox") return;
+      if (!cb.checked) return;
+      const row = cb.closest(".search-result-item");
       if (!row) return;
       const type = row.dataset.type;
       const id = row.dataset.id;
@@ -663,6 +665,9 @@
       }
     }
     if (result.type === "cierre") {
+      if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
+        App.setSelectedMoleculaForPins(result.molecula);
+      }
       if (App.map.getLayer(LAYER_CIERRES)) {
         App.map.setLayoutProperty(LAYER_CIERRES, "visibility", "visible");
       }
@@ -670,6 +675,9 @@
       if (fc) fc.checked = true;
     }
     if (result.type === "evento") {
+      if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
+        App.setSelectedMoleculaForPins(result.molecula);
+      }
       if (App.map.getLayer(LAYER_EVENTOS)) {
         App.map.setLayoutProperty(LAYER_EVENTOS, "visibility", "visible");
       }

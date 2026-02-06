@@ -313,12 +313,14 @@
         const creadoPor = escapeHtml(String(p.createdBy || p.creadoPor || "—"));
         const nombrePin = escapeHtml(p.tipo || p.nombre || "Evento");
 
+        const notas = p.notas ? escapeHtml(String(p.notas).slice(0, 120)) + (String(p.notas).length > 120 ? "…" : "") : "—";
         const html = `
   <div class="popup pin-popup popup-resumen" style="min-width:220px;max-width:320px;font-size:14px;line-height:1.5;color:#fff">
     <div style="padding:10px 12px">
       <div style="font-size:15px;font-weight:bold;margin-bottom:10px;color:#00e5ff">🚨 ${nombrePin}</div>
       <div style="font-size:13px;margin:5px 0;color:#e0e0e0"><span style="color:#00e5ff">Fecha de creación:</span> ${escapeHtml(fecha)}</div>
       <div style="font-size:13px;margin:5px 0;color:#e0e0e0"><span style="color:#00e5ff">Creado por:</span> ${creadoPor}</div>
+      <div style="font-size:13px;margin:5px 0;color:#e0e0e0"><span style="color:#00e5ff">Notas:</span> ${notas}</div>
     </div>
     <div style="display:flex;gap:6px">
       <button id="btnEditEventoPopup" class="popup-btn" style="flex:1;padding:6px;font-size:12px;background:linear-gradient(135deg, #2196f3, #1565c0)">✏️ Editar</button>

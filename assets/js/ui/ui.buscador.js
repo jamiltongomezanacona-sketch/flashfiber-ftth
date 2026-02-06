@@ -728,13 +728,9 @@
     });
 
     // Mostrar capa del resultado de inmediato
-    if (result.type === "cable" && result.layerId) {
-      if (App.map.getLayer(result.layerId)) {
-        App.map.setLayoutProperty(result.layerId, "visibility", "visible");
-      } else if (App.map.getLayer("geojson-lines")) {
-        // Capa específica aún no existe (árbol cargando): mostrar todas las líneas consolidadas
-        App.map.setLayoutProperty("geojson-lines", "visibility", "visible");
-      }
+    // Solo activar la capa del cable seleccionado (nunca todas las líneas)
+    if (result.type === "cable" && result.layerId && App.map.getLayer(result.layerId)) {
+      App.map.setLayoutProperty(result.layerId, "visibility", "visible");
     }
     if (result.type === "cierre") {
       if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {

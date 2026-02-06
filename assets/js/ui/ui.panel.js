@@ -223,6 +223,8 @@ if (toolButtons.eventos) {
     }
     const filterMolecula = document.getElementById("filterMolecula");
     if (filterMolecula) filterMolecula.value = "";
+    const filterMoleculaSearch = document.getElementById("filterMoleculaSearch");
+    if (filterMoleculaSearch) filterMoleculaSearch.value = "";
   });
 
 /* ===============================

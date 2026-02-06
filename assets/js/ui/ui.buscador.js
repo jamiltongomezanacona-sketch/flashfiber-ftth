@@ -160,6 +160,10 @@
     if (filterMolecula) {
       filterMolecula.value = moleculaOrNull || "";
     }
+    const filterMoleculaSearch = document.getElementById("filterMoleculaSearch");
+    if (filterMoleculaSearch) {
+      filterMoleculaSearch.value = moleculaOrNull || "";
+    }
     if (!App?.map) return;
     const showPins = selectedMoleculaForPins != null;
     const filter = selectedMoleculaForPins ? ["==", ["get", "molecula"], selectedMoleculaForPins] : null;
@@ -176,42 +180,126 @@
 
 
   /* =========================
-     Filtro por molécula: todas las centrales y sus moléculas (sidebar)
+     Filtro por molécula: buscador versátil (sidebar)
   ========================= */
   function formatCentralLabel(key) {
     return key.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
   }
 
-  function setupMoleculaFilter() {
-    const select = document.getElementById("filterMolecula");
-    if (!select) return;
-
+  function buildMoleculaData() {
     const centrales = window.__FTTH_CENTRALES__;
     const CENTRAL_PREFIX = centrales?.CENTRAL_PREFIX || {};
     const generarMoleculas = centrales?.generarMoleculas || (() => []);
-
-    // Mantener solo "Todas"
-    select.innerHTML = '<option value="">Todas</option>';
-
+    const list = [];
     Object.keys(CENTRAL_PREFIX).sort().forEach(centralKey => {
       const prefijo = CENTRAL_PREFIX[centralKey];
-      const moleculas = generarMoleculas(prefijo);
-      if (moleculas.length === 0) return;
-
-      const group = document.createElement("optgroup");
-      group.label = `${formatCentralLabel(centralKey)} (${prefijo})`;
+      const label = formatCentralLabel(centralKey);
+      const moleculas = generarMoleculas(prefijo) || [];
       moleculas.forEach(mol => {
-        const opt = document.createElement("option");
-        opt.value = mol;
-        opt.textContent = mol;
-        group.appendChild(opt);
+        list.push({ mol, centralKey, centralLabel: label, prefijo });
       });
-      select.appendChild(group);
+    });
+    return list;
+  }
+
+  function setupMoleculaFilter() {
+    const select = document.getElementById("filterMolecula");
+    const searchInput = document.getElementById("filterMoleculaSearch");
+    const dropdown = document.getElementById("filterMoleculaDropdown");
+    if (!select || !searchInput || !dropdown) return;
+
+    const allMoleculas = buildMoleculaData();
+
+    function filterByQuery(q) {
+      const qn = (q || "").trim().toUpperCase();
+      if (!qn) return allMoleculas.slice(0, 50);
+      return allMoleculas.filter(item =>
+        item.mol.toUpperCase().includes(qn) ||
+        item.prefijo.toUpperCase().includes(qn) ||
+        item.centralLabel.toUpperCase().includes(qn.replace(/\s/g, " "))
+      ).slice(0, 80);
+    }
+
+    function renderDropdown(items, query) {
+      dropdown.innerHTML = "";
+      const hasQuery = (query || "").trim().length > 0;
+
+      const optTodas = document.createElement("div");
+      optTodas.className = "molecula-dropdown-item";
+      optTodas.setAttribute("role", "option");
+      optTodas.setAttribute("data-value", "");
+      optTodas.textContent = "Todas";
+      optTodas.addEventListener("click", () => selectMolecula(""));
+      dropdown.appendChild(optTodas);
+
+      if (items.length === 0 && hasQuery) {
+        const empty = document.createElement("div");
+        empty.className = "molecula-dropdown-item";
+        empty.style.color = "var(--text-muted)";
+        empty.textContent = "Sin resultados";
+        dropdown.appendChild(empty);
+        return;
+      }
+
+      let lastCentral = null;
+      items.forEach(item => {
+        if (item.centralKey !== lastCentral) {
+          lastCentral = item.centralKey;
+          const header = document.createElement("div");
+          header.className = "molecula-dropdown-header";
+          header.textContent = `${item.centralLabel} (${item.prefijo})`;
+          dropdown.appendChild(header);
+        }
+        const opt = document.createElement("div");
+        opt.className = "molecula-dropdown-item";
+        opt.setAttribute("role", "option");
+        opt.setAttribute("data-value", item.mol);
+        opt.textContent = item.mol;
+        opt.addEventListener("click", () => selectMolecula(item.mol));
+        dropdown.appendChild(opt);
+      });
+    }
+
+    function selectMolecula(value) {
+      select.value = value || "";
+      setSelectedMoleculaForPins(value || null);
+      searchInput.value = value || "";
+      dropdown.classList.add("hidden");
+    }
+
+    function openDropdown() {
+      const q = searchInput.value.trim();
+      renderDropdown(filterByQuery(q), q);
+      dropdown.classList.remove("hidden");
+    }
+
+    function closeDropdown() {
+      dropdown.classList.add("hidden");
+    }
+
+    searchInput.addEventListener("focus", openDropdown);
+    searchInput.addEventListener("input", () => {
+      openDropdown();
+    });
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeDropdown();
+        searchInput.blur();
+      }
     });
 
-    select.addEventListener("change", () => {
-      const value = select.value || "";
-      setSelectedMoleculaForPins(value || null);
+    document.addEventListener("click", (e) => {
+      if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+        closeDropdown();
+      }
+    });
+
+    select.innerHTML = '<option value="">Todas</option>';
+    allMoleculas.forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item.mol;
+      opt.textContent = item.mol;
+      select.appendChild(opt);
     });
   }
 

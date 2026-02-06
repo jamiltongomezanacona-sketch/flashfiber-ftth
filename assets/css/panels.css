@@ -383,6 +383,73 @@
   outline: none;
   border-color: var(--accent-cyan);
 }
+
+/* Buscador de molécula en sidebar */
+.molecula-search-wrap {
+  position: relative;
+  width: 100%;
+  margin-top: 4px;
+}
+.molecula-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(15, 18, 30, 0.9);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  padding: 8px 10px;
+  outline: none;
+}
+.molecula-search-input:focus {
+  border-color: var(--accent-cyan);
+}
+.molecula-search-input::placeholder {
+  color: var(--text-muted);
+}
+.molecula-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: rgba(15, 18, 30, 0.98);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  z-index: 1000;
+}
+.molecula-dropdown.hidden {
+  display: none;
+}
+.molecula-dropdown-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.molecula-dropdown-item:last-child {
+  border-bottom: none;
+}
+.molecula-dropdown-item:hover,
+.molecula-dropdown-item[aria-selected="true"] {
+  background: rgba(0, 229, 255, 0.15);
+  color: var(--accent-cyan);
+}
+.molecula-dropdown-header {
+  padding: 6px 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: rgba(0,0,0,0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
 /* ===========================
    MODAL RUTA PROFESIONAL
    Mobile First: Bottom sheet en móvil, centrado en tablet+

@@ -101,9 +101,13 @@
         </label>
         <label class="sidebar-filter-item sidebar-filter-molecula">
           <span>🧬 Molécula:</span>
-          <select id="filterMolecula" class="sidebar-filter-select">
-            <option value="">Todas</option>
-          </select>
+          <div class="molecula-search-wrap">
+            <input type="text" id="filterMoleculaSearch" class="molecula-search-input" placeholder="Buscar central o molécula (ej: MU, SI02)..." autocomplete="off" />
+            <select id="filterMolecula" class="sidebar-filter-select" aria-hidden="true" style="position:absolute;opacity:0;pointer-events:none;height:0;width:0;">
+              <option value="">Todas</option>
+            </select>
+            <div id="filterMoleculaDropdown" class="molecula-dropdown hidden" role="listbox"></div>
+          </div>
         </label>
       </section>
 

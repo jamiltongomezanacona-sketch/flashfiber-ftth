@@ -174,12 +174,11 @@
       
       if (isMolecula) {
         if (checkbox.checked) {
-          // ✅ Estilo ArcGIS/Google Earth: Desactivar todas las demás moléculas hermanas
-          console.log(`🔵 Activando molécula: ${nodeLabel}`);
-          deactivateOtherMoleculas(nodeLabel);
+          const deactivated = deactivateOtherMoleculas(nodeLabel);
+          if (deactivated > 0) {
+            console.log(`🔵 Molécula ${nodeLabel} activada; ${deactivated} hermana(s) desactivada(s)`);
+          }
         } else {
-          // Si se desactiva, también desactivar todas sus capas
-          console.log(`⚪ Desactivando molécula: ${nodeLabel}`);
           const App = window.__FTTH_APP__;
           if (App?.map) {
             deactivateMoleculaLayers(nodeLabel, App.map);
@@ -269,23 +268,17 @@
   ========================= */
   function deactivateOtherMoleculas(activeMolecula) {
     const App = window.__FTTH_APP__;
-    if (!App?.map) return;
+    if (!App?.map) return 0;
     
     const map = App.map;
     const treeContainer = document.getElementById(TREE_CONTAINER_ID);
-    if (!treeContainer) return;
+    if (!treeContainer) return 0;
     
-    // Buscar el checkbox activo y su contenedor padre (Santa Inés)
-    const allRows = treeContainer.querySelectorAll(".tree-row");
-    let activeRow = null;
     let parentContainer = null;
-    
-    // Encontrar la fila de la molécula activa
+    const allRows = treeContainer.querySelectorAll(".tree-row");
     allRows.forEach(row => {
       const rowLabel = row.querySelector("span:not(.tree-toggle)");
       if (rowLabel && rowLabel.textContent.trim() === activeMolecula) {
-        activeRow = row;
-        // Encontrar el contenedor padre (childrenBox de Santa Inés)
         let parent = row.parentElement;
         while (parent && parent !== treeContainer) {
           if (parent.classList.contains("tree-children")) {
@@ -297,13 +290,10 @@
       }
     });
     
-    if (!parentContainer) {
-      console.warn("⚠️ No se encontró el contenedor padre para molécula:", activeMolecula);
-      return;
-    }
+    if (!parentContainer) return 0;
     
-    // Buscar todas las moléculas hermanas (mismo nivel) en el contenedor padre
     const siblingRows = parentContainer.querySelectorAll(".tree-row");
+    let deactivatedCount = 0;
     
     siblingRows.forEach(row => {
       const rowLabel = row.querySelector("span:not(.tree-toggle)");
@@ -312,17 +302,12 @@
       const labelText = rowLabel.textContent.trim();
       const isMolecula = /^SI\d+$/.test(labelText);
       
-      // Si es una molécula diferente a la activa y está marcada, desactivarla
       if (isMolecula && labelText !== activeMolecula) {
         const cb = row.querySelector("input[type=checkbox]");
         if (cb && cb.checked) {
-          console.log(`🔄 Desactivando molécula hermana: ${labelText}`);
+          deactivatedCount++;
           cb.checked = false;
-          
-          // Desactivar todas las capas de esta molécula
           deactivateMoleculaLayers(labelText, map);
-          
-          // Desactivar todos los hijos (cables, cierres, etc.)
           const childrenBox = row.nextElementSibling;
           if (childrenBox && childrenBox.classList.contains("tree-children")) {
             toggleChildren(childrenBox, false);
@@ -330,6 +315,8 @@
         }
       }
     });
+    
+    return deactivatedCount;
   }
   
   /* =========================
@@ -363,9 +350,7 @@
       }
     });
     
-    if (deactivatedCount > 0) {
-      console.log(`  ❌ ${deactivatedCount} capas desactivadas de ${moleculaLabel}`);
-    }
+    // Sin log por molécula; el resumen se hace en deactivateOtherMoleculas
   }
 
   /* =========================

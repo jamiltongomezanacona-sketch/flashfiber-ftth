@@ -218,25 +218,29 @@
 
 .search-result-btn-seleccionar {
   flex-shrink: 0;
-  padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 600;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 16px;
+  font-weight: bold;
   color: #fff;
-  background: linear-gradient(135deg, var(--accent-cyan), #0288d1);
-  border: none;
-  border-radius: var(--radius-sm);
+  background: rgba(0, 229, 255, 0.25);
+  border: 1px solid var(--accent-cyan);
+  border-radius: 6px;
   cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.1s ease;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.1s ease;
 }
 
 .search-result-btn-seleccionar:hover {
-  opacity: 0.95;
-  transform: scale(1.02);
+  background: rgba(0, 229, 255, 0.45);
+  transform: scale(1.05);
 }
 
 .search-result-btn-seleccionar:active {
-  transform: scale(0.98);
+  transform: scale(0.95);
 }
 
 .search-result-title {

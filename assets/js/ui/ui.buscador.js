@@ -618,7 +618,7 @@
               </div>
               <div class="search-result-subtitle">${result.subtitle || ""}</div>
             </div>
-            <button type="button" class="search-result-btn-seleccionar" title="Seleccionar y ubicar en el mapa">Seleccionar</button>
+            <button type="button" class="search-result-btn-seleccionar" title="Ubicar en el mapa" aria-label="Seleccionar">✓</button>
           </div>
         `).join("")}
       </div>
@@ -627,17 +627,16 @@
     searchResults.innerHTML = html;
     searchResults.classList.remove("hidden");
     
-    // Clic en la fila o en el botón "Seleccionar"
+    // Solo el botón "Seleccionar" ejecuta la acción
     searchResults.addEventListener("click", (e) => {
       const btn = e.target.closest(".search-result-btn-seleccionar");
-      const row = e.target.closest(".search-result-item");
+      if (!btn) return;
+      const row = btn.closest(".search-result-item");
       if (!row) return;
       const type = row.dataset.type;
       const id = row.dataset.id;
       const result = allResults.find(r => r.type === type && r.id === id);
-      if (!result) return;
-      if (btn) e.stopPropagation();
-      selectResult(result);
+      if (result) selectResult(result);
     });
   }
 

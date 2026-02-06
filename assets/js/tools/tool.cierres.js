@@ -398,9 +398,13 @@
         const f = e.features?.[0];
         if (!f) return;
 
-        const p = f.properties || {};
+        let p = f.properties || {};
+        const id = f.id || p.id;
+        if (id && App.data.cierres && Array.isArray(App.data.cierres)) {
+          const full = App.data.cierres.find(fe => fe.id === id || (fe.properties && fe.properties.id === id));
+          if (full && full.properties) p = { ...p, ...full.properties };
+        }
         const lngLat = e.lngLat;
-        // Si el tool está activo, mostrar popup y bloquear el siguiente click del mapa para no abrir modal de nuevo cierre
         if (active) blockNextClick = true;
 
         const fecha = p.createdAt ? new Date(p.createdAt).toLocaleString() : "Sin fecha";
@@ -432,7 +436,7 @@
 
         const html = `
   <div class="popup" style="min-width:260px;max-width:360px;font-size:13px;line-height:1.6">
-    <div style="background:rgba(0,229,255,0.08);border-radius:8px;padding:10px;margin-bottom:10px;border-left:3px solid var(--accent-cyan)">
+    <div style="background:rgba(0,229,255,0.12);border-radius:8px;padding:10px;margin-bottom:10px;border-left:3px solid #00e5ff">
       <div style="font-size:15px;font-weight:bold;margin-bottom:6px">🔒 ${nombrePin}</div>
       <div style="font-size:12px;margin:4px 0"><b>📅 Fecha de creación:</b> ${escapeHtml(fecha)}</div>
       <div style="font-size:12px;margin:4px 0"><b>👤 Creado por:</b> ${creadoPor}</div>

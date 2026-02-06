@@ -124,20 +124,15 @@
     checkbox.type = "checkbox";
     
     // ✅ Si es una capa (type: "layer"), verificar si está cargada y habilitada
-    // OPTIMIZADO: Solo verificar en el mapa, no hacer fetch innecesario
     let shouldBeChecked = false;
     if (node.type === "layer" && node.id) {
+      checkbox.dataset.layerId = node.id; // Para toggleChildren sin disparar "change"
       const App = window.__FTTH_APP__;
       const map = App?.map;
-      
-      // Verificar si la capa ya está cargada en el mapa
       if (map && map.getLayer(node.id)) {
-        // Verificar si está visible
         const visibility = map.getLayoutProperty(node.id, "visibility");
         shouldBeChecked = visibility !== "none";
       }
-      // ❌ REMOVIDO: No hacer fetch para verificar si tiene datos
-      // Esto causa lentitud innecesaria. La capa se verificará cuando se intente activar.
     }
     
     checkbox.checked = shouldBeChecked;
@@ -374,13 +369,23 @@
   }
 
   /* =========================
-     Propagar selección a hijos
+     Propagar selección a hijos (sin disparar "change" en cascada)
   ========================= */
   function toggleChildren(container, state) {
-    const boxes = container.querySelectorAll("input[type=checkbox]");
-    boxes.forEach(cb => {
+    const rows = container.querySelectorAll(".tree-row");
+    rows.forEach(row => {
+      const cb = row.querySelector("input[type=checkbox]");
+      if (!cb) return;
       cb.checked = state;
-      cb.dispatchEvent(new Event("change"));
+      const layerId = cb.dataset.layerId;
+      if (layerId) {
+        toggleLayerById(layerId, state);
+      } else {
+        const childBox = row.nextElementSibling;
+        if (childBox && childBox.classList.contains("tree-children")) {
+          toggleChildren(childBox, state);
+        }
+      }
     });
   }
 
@@ -433,11 +438,11 @@
     }
 
     if (map.getLayer(layerId)) {
-      map.setLayoutProperty(
-        layerId,
-        "visibility",
-        visible ? "visible" : "none"
-      );
+      const current = map.getLayoutProperty(layerId, "visibility");
+      const desired = visible ? "visible" : "none";
+      // Evitar toggles redundantes y bucles (solo aplicar si el estado cambia)
+      if (current === desired) return;
+      map.setLayoutProperty(layerId, "visibility", desired);
       console.log(`${visible ? "✅" : "❌"} Capa ${layerId} ${visible ? "habilitada" : "deshabilitada"}`);
     } else {
       console.warn("⚠️ Capa no encontrada:", layerId);

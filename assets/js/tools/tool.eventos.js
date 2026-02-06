@@ -266,15 +266,33 @@
       }
 
       // Click evento = popup info + botón editar
+      // Mapbox solo pasa propiedades usadas en el estilo; obtener siempre el registro completo desde App.data
       App.map.on("click", LAYER_ID, (e) => {
         const f = e.features?.[0];
         if (!f) return;
 
-        let p = f.properties || {};
-        const id = f.id || p.id;
-        if (id && App.data.eventos && Array.isArray(App.data.eventos)) {
-          const full = App.data.eventos.find(fe => fe.id === id || (fe.properties && fe.properties.id === id));
-          if (full && full.properties) p = { ...p, ...full.properties };
+        const id = f.id ?? f.properties?.id;
+        const idStr = id != null ? String(id) : null;
+        let p = {};
+
+        if (idStr && App.data.eventos && Array.isArray(App.data.eventos)) {
+          const full = App.data.eventos.find(fe =>
+            String(fe.id) === idStr || (fe.properties && String(fe.properties.id) === idStr)
+          );
+          if (full) {
+            if (full.properties && typeof full.properties === "object") {
+              p = { ...full.properties };
+            } else {
+              const { type, geometry, ...rest } = full;
+              p = { ...rest };
+            }
+          }
+        }
+        if (Object.keys(p).length === 0) p = { ...(f.properties || {}) };
+
+        if (p.lng == null && p.lat == null && e.lngLat) {
+          p.lng = e.lngLat.lng;
+          p.lat = e.lngLat.lat;
         }
         const lngLat = e.lngLat;
 
@@ -329,7 +347,7 @@
 
         // Todas las propiedades (visible, escapadas)
         const todasPropsHtml = Object.keys(p)
-          .filter(k => k !== "iconId" && k !== "label")
+          .filter(k => !["iconId", "label", "geometry", "type"].includes(k))
           .map(key => {
             let value = p[key];
             if (value === null || value === undefined) value = "N/A";

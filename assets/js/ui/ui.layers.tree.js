@@ -156,6 +156,11 @@
       const m = displayLabel.match(/^(HO\d+)_(HO\d+FH\d+.*)$/i);
       if (m) displayLabel = m[2];
     }
+    // Bachue: BA02_BA02FH144 → BA02FH144
+    if (displayLabel && /^BA\d+_BA\d+FH/i.test(displayLabel)) {
+      const m = displayLabel.match(/^(BA\d+)_(BA\d+FH\d+.*)$/i);
+      if (m) displayLabel = m[2];
+    }
     // Sufijo con guión para UI (ej. SI22FH144_1 → SI22FH144-1)
     if (displayLabel && /SI\d+FH\d+_\d+$/i.test(displayLabel)) {
       displayLabel = displayLabel.replace(/_(\d+)$/, "-$1");

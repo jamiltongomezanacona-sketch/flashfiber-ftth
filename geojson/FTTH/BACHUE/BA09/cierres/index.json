@@ -1,0 +1,12 @@
+{
+  "label": "Cierres",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_BACHUE_BA09_cierres",
+      "label": "Cierres BA09",
+      "path": "cierres.geojson",
+      "typeLayer": "symbol"
+    }
+  ]
+}

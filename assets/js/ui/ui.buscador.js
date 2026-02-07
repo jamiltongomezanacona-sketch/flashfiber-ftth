@@ -471,6 +471,9 @@
     // Holanda: HO01FH144
     const matchHo = normalized.match(/(HO\d+FH\d+(?:_\d+)?)/i);
     if (matchHo) return matchHo[1];
+    // Bachue: BA02FH144
+    const matchBa = normalized.match(/(BA\d+FH\d+(?:_\d+)?)/i);
+    if (matchBa) return matchBa[1];
     if (from.startsWith("FTTH_") && from.includes("_")) {
       const parts = from.split("_");
       if (parts.length >= 2) return normalizeCuniCableName(parts.slice(-2).join("_"));

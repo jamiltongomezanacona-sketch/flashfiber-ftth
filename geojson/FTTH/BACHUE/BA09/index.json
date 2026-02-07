@@ -1,31 +1,15 @@
 {
   "label": "BA09",
-  "type": "folder",
   "children": [
     {
       "type": "folder",
-      "label": "CABLES",
+      "label": "Cables",
       "index": "cables/index.json"
     },
     {
       "type": "folder",
-      "label": "CIERRES",
+      "label": "Cierres",
       "index": "cierres/index.json"
-    },
-    {
-      "type": "folder",
-      "label": "RUTAS",
-      "index": "rutas/index.json"
-    },
-    {
-      "type": "folder",
-      "label": "EVENTOS",
-      "index": "eventos/index.json"
-    },
-    {
-      "type": "folder",
-      "label": "MANTENIMIENTOS",
-      "index": "mantenimientos/index.json"
     }
   ]
 }

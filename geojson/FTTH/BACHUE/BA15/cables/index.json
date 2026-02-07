@@ -1,0 +1,16 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_BACHUE_BA15_BA15FH144",
+      "label": "BA15FH144",
+      "path": "BA15FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#067373",
+        "line-width": 4
+      }
+    }
+  ]
+}

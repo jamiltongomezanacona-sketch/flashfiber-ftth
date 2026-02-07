@@ -99,7 +99,7 @@
 </main>
 
 
-  <!-- 🗂️ PANEL CAPAS FTTH -->
+  <!-- 🗂️ PANEL CAPAS -->
   <div id="layersPanel" class="panel panel-capas hidden">
 
     <div class="panel-header">
@@ -107,8 +107,14 @@
       <button id="btnCloseLayers">✖</button>
     </div>
 
-    <div id="layersTree" class="panel-content">
-      <!-- Árbol dinámico -->
+    <div class="panel-content">
+      <div class="capas-corporativo-options">
+        <label class="capas-option-ver-todos">
+          <input type="checkbox" id="verTodosCablesCheckbox" />
+          <span>Ver todos los cables</span>
+        </label>
+      </div>
+      <div id="layersTree" class="panel-content-tree"></div>
     </div>
 
   </div>

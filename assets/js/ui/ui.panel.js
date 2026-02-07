@@ -318,4 +318,19 @@ btnBaseMap?.addEventListener("click", () => {
       App.tools.capas.close();
     });
 
+  // GIS Corporativo: opción "Ver todos los cables" en panel Capas
+  const verTodosCablesCheckbox = document.getElementById("verTodosCablesCheckbox");
+  if (verTodosCablesCheckbox) {
+    verTodosCablesCheckbox.addEventListener("change", () => {
+      const map = App?.map;
+      if (!map || !map.getLayer("CABLES_KML")) return;
+      if (verTodosCablesCheckbox.checked) {
+        map.setFilter("CABLES_KML", null);
+        map.setLayoutProperty("CABLES_KML", "visibility", "visible");
+      } else {
+        map.setFilter("CABLES_KML", ["==", ["get", "name"], "__none__"]);
+      }
+    });
+  }
+
 });

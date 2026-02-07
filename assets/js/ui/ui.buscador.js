@@ -959,6 +959,11 @@
           App.map.setFilter("CABLES_KML", ["==", ["get", "name"], result.name]);
           App.map.setLayoutProperty("CABLES_KML", "visibility", "visible");
         }
+        // Mostrar solo los pines de eventos ligados a este cable
+        if (App.map.getLayer(LAYER_EVENTOS)) {
+          App.map.setLayoutProperty(LAYER_EVENTOS, "visibility", "visible");
+          App.map.setFilter(LAYER_EVENTOS, ["==", ["get", "cable"], result.name]);
+        }
       } else {
         const mol = getMoleculaFromCable(result);
         const cablesSameMol = mol

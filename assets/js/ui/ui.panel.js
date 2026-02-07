@@ -324,11 +324,14 @@ btnBaseMap?.addEventListener("click", () => {
     verTodosCablesCheckbox.addEventListener("change", () => {
       const map = App?.map;
       if (!map || !map.getLayer("CABLES_KML")) return;
+      const LAYER_EVENTOS = (window.__FTTH_CONFIG__ && window.__FTTH_CONFIG__.LAYERS && window.__FTTH_CONFIG__.LAYERS.EVENTOS) || "eventos-layer";
       if (verTodosCablesCheckbox.checked) {
         map.setFilter("CABLES_KML", null);
         map.setLayoutProperty("CABLES_KML", "visibility", "visible");
+        if (map.getLayer(LAYER_EVENTOS)) map.setFilter(LAYER_EVENTOS, null);
       } else {
         map.setFilter("CABLES_KML", ["==", ["get", "name"], "__none__"]);
+        if (map.getLayer(LAYER_EVENTOS)) map.setFilter(LAYER_EVENTOS, null);
       }
     });
   }

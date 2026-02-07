@@ -1194,6 +1194,8 @@
                             basePath?.toLowerCase().includes("cables");
         const isCentral = id?.toLowerCase().includes("central") || 
                          id?.toLowerCase().includes("corporativo");
+        const isCorporativoCables = (typeof window !== "undefined" && window.__GEOJSON_INDEX__) && id === "CABLES_KML";
+        // GIS Corporativo: un solo cable a la vez; por defecto ninguno visible (filter imposible)
         const initialVisibility = isCentral ? "visible" : "none";
         
         const layerConfig = {
@@ -1201,13 +1203,16 @@
           type: layerType,
           source: id,
           layout: {
-            visibility: initialVisibility // ✅ Cables ocultos, centrales y otros visibles
+            visibility: isCorporativoCables ? "visible" : initialVisibility
           },
           paint: layer.paint || {
             "line-color": "#000099",
             "line-width": 4
           }
         };
+        if (isCorporativoCables) {
+          layerConfig.filter = ["==", ["get", "name"], "__none__"];
+        }
 
         // ✅ Verificar nuevamente antes de agregar layer (evitar duplicados)
         if (!map.getLayer(id)) {

@@ -951,19 +951,27 @@
       duration: MAP_FLYTO_DURATION_MS
     });
 
-    // Mostrar capas del cable seleccionado y de la misma molécula (ej. SI17FH144 + SI17FH48)
+    // Mostrar capas del cable seleccionado
     if (result.type === "cable") {
-      const mol = getMoleculaFromCable(result);
-      const cablesSameMol = mol
-        ? searchIndex.cables.filter(function (c) { return getMoleculaFromCable(c) === mol; })
-        : [result];
-      cablesSameMol.forEach(function (c) {
-        if (c.layerId && App.map.getLayer(c.layerId)) {
-          App.map.setLayoutProperty(c.layerId, "visibility", "visible");
+      if (isCorporativo) {
+        // GIS Corporativo: solo un cable a la vez (filter por nombre)
+        if (App.map.getLayer("CABLES_KML")) {
+          App.map.setFilter("CABLES_KML", ["==", ["get", "name"], result.name]);
+          App.map.setLayoutProperty("CABLES_KML", "visibility", "visible");
         }
-      });
-      if (typeof App.showPinsWhenCableActivated === "function") {
-        App.showPinsWhenCableActivated(result.layerId, result.molecula || mol);
+      } else {
+        const mol = getMoleculaFromCable(result);
+        const cablesSameMol = mol
+          ? searchIndex.cables.filter(function (c) { return getMoleculaFromCable(c) === mol; })
+          : [result];
+        cablesSameMol.forEach(function (c) {
+          if (c.layerId && App.map.getLayer(c.layerId)) {
+            App.map.setLayoutProperty(c.layerId, "visibility", "visible");
+          }
+        });
+        if (typeof App.showPinsWhenCableActivated === "function") {
+          App.showPinsWhenCableActivated(result.layerId, result.molecula || mol);
+        }
       }
     }
     if (result.type === "cierre") {

@@ -486,6 +486,9 @@
     // Toberín: TO01FH144 (central TOBERIN, moléculas TOxx)
     const matchTo = normalized.match(/(TO\d+FH\d+(?:_\d+)?)/i);
     if (matchTo) return matchTo[1];
+    // Guaymaral: GU01FH144 (central GUAYMARAL, moléculas GUxx)
+    const matchGu = normalized.match(/(GU\d+FH\d+(?:_\d+)?)/i);
+    if (matchGu) return matchGu[1];
     if (from.startsWith("FTTH_") && from.includes("_")) {
       const parts = from.split("_");
       if (parts.length >= 2) return normalizeCuniCableName(parts.slice(-2).join("_"));

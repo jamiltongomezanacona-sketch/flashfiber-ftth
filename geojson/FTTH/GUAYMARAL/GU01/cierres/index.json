@@ -1,0 +1,12 @@
+{
+  "label": "Cierres",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_GUAYMARAL_GU01_cierres",
+      "label": "Cierres GU01",
+      "path": "cierres.geojson",
+      "typeLayer": "symbol"
+    }
+  ]
+}

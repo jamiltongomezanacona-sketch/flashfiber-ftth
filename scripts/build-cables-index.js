@@ -31,6 +31,8 @@ function shortCableDisplayName(layerId, fallbackName) {
   if (matchSu) return matchSu[1];
   const matchTo = normalized.match(/(TO\d+FH\d+)/i);
   if (matchTo) return matchTo[1];
+  const matchGu = normalized.match(/(GU\d+FH\d+)/i);
+  if (matchGu) return matchGu[1];
   if (from.startsWith("FTTH_") && from.includes("_")) {
     const parts = from.split("_");
     if (parts.length >= 2) return parts.slice(-2).join("_");

@@ -1421,7 +1421,7 @@
             source: CENTRALES_SOURCE,
             layout: {
               "text-field": ["get", "name"], // ✅ Solo mostrar el nombre
-              "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
+              "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
               "text-size": 14,
               "text-anchor": "center",
               "text-offset": [0, 1.5], // Posicionar texto debajo del punto

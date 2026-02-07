@@ -83,10 +83,12 @@
     // 🏢 Central / 🧬 Molécula (FTTH) — en Corporativo no existen
     const elCentralEvento  = document.getElementById("eventoCentral");
     const elMoleculaEvento = document.getElementById("eventoMolecula");
-    // 🧵 CABLES (solo GIS Corporativo)
+    // 🧵 CABLES (solo GIS Corporativo) — buscador funcional como el general
     const elEventoCable = document.getElementById("eventoCable");
-    const elEventoCableList = document.getElementById("eventoCableList");
+    const elEventoCableResults = document.getElementById("eventoCableResults");
     const isCorporativoEvento = !!elEventoCable;
+    let cableNamesList = [];
+    let eventoCableSearchTimeout = null;
 
     // 📸 Input de fotos
     const fotoInput     = document.getElementById("fotoInput");
@@ -548,23 +550,57 @@
     /* ===============================
        Modal helpers
     =============================== */
-    async function fillCablesDatalist() {
-      if (!isCorporativoEvento || !elEventoCableList || elEventoCableList.options.length > 0) return;
+    async function loadCableNames() {
+      if (cableNamesList.length > 0) return;
       try {
         const res = await fetch("../geojson/CABLES/cables.geojson", { cache: "default" });
         const geojson = await res.json();
         if (geojson.features && geojson.features.length) {
-          geojson.features.forEach(f => {
-            const name = f.properties?.name;
-            if (name) {
-              const opt = document.createElement("option");
-              opt.value = name;
-              elEventoCableList.appendChild(opt);
-            }
-          });
+          cableNamesList = geojson.features
+            .map(f => f.properties?.name)
+            .filter(Boolean);
         }
       } catch (e) {
         console.warn("⚠️ No se pudieron cargar cables para evento:", e);
+      }
+    }
+
+    function showCableResults(query) {
+      if (!elEventoCableResults) return;
+      const q = (query || "").trim().toLowerCase();
+      const list = q
+        ? cableNamesList.filter(n => n.toLowerCase().includes(q))
+        : cableNamesList.slice(0, 25);
+      const max = 25;
+      const toShow = list.slice(0, max);
+      elEventoCableResults.innerHTML = "";
+      elEventoCableResults.classList.remove("hidden");
+      if (toShow.length === 0) {
+        elEventoCableResults.innerHTML = '<div class="evento-cable-no-results">Sin coincidencias</div>';
+        return;
+      }
+      toShow.forEach(name => {
+        const item = document.createElement("div");
+        item.className = "evento-cable-item";
+        item.setAttribute("role", "option");
+        item.textContent = name;
+        item.dataset.cableName = name;
+        item.addEventListener("click", () => {
+          if (elEventoCable) {
+            elEventoCable.value = name;
+            elEventoCable.dataset.cableSelected = "1";
+          }
+          elEventoCableResults.classList.add("hidden");
+          elEventoCableResults.innerHTML = "";
+        });
+        elEventoCableResults.appendChild(item);
+      });
+    }
+
+    function hideCableResults() {
+      if (elEventoCableResults) {
+        elEventoCableResults.classList.add("hidden");
+        elEventoCableResults.innerHTML = "";
       }
     }
 
@@ -572,7 +608,10 @@
       modal?.classList.remove("hidden");
       const editId = modal.dataset.editId;
       if (btnDelete) btnDelete.style.display = editId ? "inline-block" : "none";
-      if (isCorporativoEvento) fillCablesDatalist();
+      if (isCorporativoEvento) {
+        loadCableNames();
+        hideCableResults();
+      }
     }
 
     function closeModal() {
@@ -593,7 +632,11 @@
         elMoleculaEvento.innerHTML = `<option value="">Seleccione Molécula</option>`;
         elMoleculaEvento.disabled = true;
       }
-      if (elEventoCable) elEventoCable.value = "";
+      if (elEventoCable) {
+        elEventoCable.value = "";
+        delete elEventoCable.dataset.cableSelected;
+      }
+      hideCableResults();
 
       // ✅ limpiar fotos temporales
       fotos = [];
@@ -631,6 +674,24 @@
     =============================== */
     const CENTRAL_PREFIX = (window.__FTTH_CENTRALES__ && window.__FTTH_CENTRALES__.CENTRAL_PREFIX) || {};
     const generarMoleculas = (window.__FTTH_CENTRALES__ && window.__FTTH_CENTRALES__.generarMoleculas) || (function () { return []; });
+
+    if (isCorporativoEvento && elEventoCable) {
+      elEventoCable.addEventListener("input", () => {
+        clearTimeout(eventoCableSearchTimeout);
+        eventoCableSearchTimeout = setTimeout(() => {
+          showCableResults(elEventoCable.value);
+        }, 200);
+      });
+      elEventoCable.addEventListener("focus", () => {
+        if (cableNamesList.length === 0) loadCableNames().then(() => showCableResults(elEventoCable.value));
+        else showCableResults(elEventoCable.value);
+      });
+      document.addEventListener("click", function closeCableResultsOnClick(e) {
+        if (!elEventoCableResults || elEventoCableResults.classList.contains("hidden")) return;
+        if (elEventoCable.contains(e.target) || elEventoCableResults.contains(e.target)) return;
+        hideCableResults();
+      });
+    }
 
     if (elCentralEvento && !isCorporativoEvento) {
       elCentralEvento.addEventListener("change", () => {
@@ -704,7 +765,11 @@
         elMoleculaEvento.innerHTML = `<option value="">Seleccione Molécula</option>`;
         elMoleculaEvento.disabled = true;
       }
-      if (elEventoCable) elEventoCable.value = "";
+      if (elEventoCable) {
+        elEventoCable.value = "";
+        delete elEventoCable.dataset.cableSelected;
+      }
+      hideCableResults();
 
       openModal();
     }

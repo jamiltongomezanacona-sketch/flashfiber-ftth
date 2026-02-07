@@ -174,8 +174,10 @@
         </select>
 
         <label>CABLES</label>
-        <input type="text" id="eventoCable" list="eventoCableList" placeholder="Buscar cable..." autocomplete="off" />
-        <datalist id="eventoCableList"></datalist>
+        <div class="evento-cable-wrap">
+          <input type="text" id="eventoCable" placeholder="Buscar cable... (escribe y selecciona)" autocomplete="off" />
+          <div id="eventoCableResults" class="evento-cable-results hidden" role="listbox"></div>
+        </div>
 
         <label>Técnico</label>
         <input id="eventoTecnico" placeholder="Nombre técnico">

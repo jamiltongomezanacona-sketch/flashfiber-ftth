@@ -313,3 +313,55 @@
   border-radius: 2px;
   font-weight: 700;
 }
+
+/* Buscador CABLES en modal Registrar Evento (GIS Corporativo) */
+.evento-cable-wrap {
+  position: relative;
+}
+
+.evento-cable-wrap input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.evento-cable-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--card-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  z-index: 5000;
+}
+
+.evento-cable-results.hidden {
+  display: none;
+}
+
+.evento-cable-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-primary);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: background 0.15s ease;
+}
+
+.evento-cable-item:last-child {
+  border-bottom: none;
+}
+
+.evento-cable-item:hover {
+  background: rgba(0, 229, 255, 0.12);
+}
+
+.evento-cable-no-results {
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}

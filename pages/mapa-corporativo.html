@@ -172,25 +172,10 @@
           <option>PROVISIONAL</option>
           <option>RESUELTO</option>
         </select>
-        <label>🏢 Central</label>
-        <select id="eventoCentral">
-          <option value="">Seleccione Central</option>
-          <option value="BACHUE">Bachué</option>
-          <option value="CHICO">Chicó</option>
-          <option value="CUNI">Cuni</option>
-          <option value="FONTIBON">Fontibón</option>
-          <option value="GUAYMARAL">Guaymaral</option>
-          <option value="HOLANDA">Holanda</option>
-          <option value="MUZU">Muzú</option>
-          <option value="SANTA_INES">Santa Inés</option>
-          <option value="SUBA">Suba</option>
-          <option value="TOBERIN">Toberín</option>
-        </select>
 
-        <label>🧬 Molécula</label>
-        <select id="eventoMolecula" disabled>
-          <option value="">Seleccione Molécula</option>
-        </select>
+        <label>CABLES</label>
+        <input type="text" id="eventoCable" list="eventoCableList" placeholder="Buscar cable..." autocomplete="off" />
+        <datalist id="eventoCableList"></datalist>
 
         <label>Técnico</label>
         <input id="eventoTecnico" placeholder="Nombre técnico">

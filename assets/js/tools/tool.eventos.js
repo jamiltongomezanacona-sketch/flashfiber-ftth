@@ -80,9 +80,13 @@
     const elTecnico = document.getElementById("eventoTecnico");
     const elNotas   = document.getElementById("eventoNotas");
 
-    // 🏢 Central / 🧬 Molécula
+    // 🏢 Central / 🧬 Molécula (FTTH) — en Corporativo no existen
     const elCentralEvento  = document.getElementById("eventoCentral");
     const elMoleculaEvento = document.getElementById("eventoMolecula");
+    // 🧵 CABLES (solo GIS Corporativo)
+    const elEventoCable = document.getElementById("eventoCable");
+    const elEventoCableList = document.getElementById("eventoCableList");
+    const isCorporativoEvento = !!elEventoCable;
 
     // 📸 Input de fotos
     const fotoInput     = document.getElementById("fotoInput");
@@ -544,11 +548,31 @@
     /* ===============================
        Modal helpers
     =============================== */
+    async function fillCablesDatalist() {
+      if (!isCorporativoEvento || !elEventoCableList || elEventoCableList.options.length > 0) return;
+      try {
+        const res = await fetch("../geojson/CABLES/cables.geojson", { cache: "default" });
+        const geojson = await res.json();
+        if (geojson.features && geojson.features.length) {
+          geojson.features.forEach(f => {
+            const name = f.properties?.name;
+            if (name) {
+              const opt = document.createElement("option");
+              opt.value = name;
+              elEventoCableList.appendChild(opt);
+            }
+          });
+        }
+      } catch (e) {
+        console.warn("⚠️ No se pudieron cargar cables para evento:", e);
+      }
+    }
+
     function openModal() {
       modal?.classList.remove("hidden");
-      // si es creación, ocultar delete
       const editId = modal.dataset.editId;
       if (btnDelete) btnDelete.style.display = editId ? "inline-block" : "none";
+      if (isCorporativoEvento) fillCablesDatalist();
     }
 
     function closeModal() {
@@ -564,12 +588,12 @@
       if (elTecnico) elTecnico.value = "";
       if (elNotas) elNotas.value = "";
 
-      // ✅ limpiar central/molécula
       if (elCentralEvento) elCentralEvento.value = "";
       if (elMoleculaEvento) {
         elMoleculaEvento.innerHTML = `<option value="">Seleccione Molécula</option>`;
         elMoleculaEvento.disabled = true;
       }
+      if (elEventoCable) elEventoCable.value = "";
 
       // ✅ limpiar fotos temporales
       fotos = [];
@@ -587,10 +611,12 @@
       elTecnico.value = evt.tecnico || "";
       elNotas.value = evt.notas || "";
 
-      // ✅ central/molécula al editar
-      if (elCentralEvento) elCentralEvento.value = evt.central || "";
-      if (elCentralEvento) elCentralEvento.dispatchEvent(new Event("change"));
+      if (elCentralEvento) {
+        elCentralEvento.value = evt.central || "";
+        elCentralEvento.dispatchEvent(new Event("change"));
+      }
       if (elMoleculaEvento) elMoleculaEvento.value = evt.molecula || "";
+      if (elEventoCable) elEventoCable.value = evt.cable || "";
 
       // set edit id
       modal.dataset.editId = evt.id || "";
@@ -606,28 +632,30 @@
     const CENTRAL_PREFIX = (window.__FTTH_CENTRALES__ && window.__FTTH_CENTRALES__.CENTRAL_PREFIX) || {};
     const generarMoleculas = (window.__FTTH_CENTRALES__ && window.__FTTH_CENTRALES__.generarMoleculas) || (function () { return []; });
 
-    elCentralEvento?.addEventListener("change", () => {
-      if (!elMoleculaEvento) return;
-      const central = elCentralEvento.value;
-      elMoleculaEvento.innerHTML = `<option value="">Seleccione Molécula</option>`;
+    if (elCentralEvento && !isCorporativoEvento) {
+      elCentralEvento.addEventListener("change", () => {
+        if (!elMoleculaEvento) return;
+        const central = elCentralEvento.value;
+        elMoleculaEvento.innerHTML = `<option value="">Seleccione Molécula</option>`;
 
-      const prefijo = CENTRAL_PREFIX[central];
-      if (!prefijo) {
-        elMoleculaEvento.disabled = true;
-        return;
-      }
+        const prefijo = CENTRAL_PREFIX[central];
+        if (!prefijo) {
+          elMoleculaEvento.disabled = true;
+          return;
+        }
 
-      const moleculas = generarMoleculas(prefijo);
+        const moleculas = generarMoleculas(prefijo);
 
-      moleculas.forEach(mol => {
-        const opt = document.createElement("option");
-        opt.value = mol;
-        opt.textContent = mol;
-        elMoleculaEvento.appendChild(opt);
+        moleculas.forEach(mol => {
+          const opt = document.createElement("option");
+          opt.value = mol;
+          opt.textContent = mol;
+          elMoleculaEvento.appendChild(opt);
+        });
+
+        elMoleculaEvento.disabled = false;
       });
-
-      elMoleculaEvento.disabled = false;
-    });
+    }
 
     /* ===============================
        Tool control
@@ -671,12 +699,12 @@
       // defaults rápidos (operación)
       if (elEstado) elEstado.value = "PROVISIONAL";
 
-      // ✅ reset central/molécula en creación
       if (elCentralEvento) elCentralEvento.value = "";
       if (elMoleculaEvento) {
         elMoleculaEvento.innerHTML = `<option value="">Seleccione Molécula</option>`;
         elMoleculaEvento.disabled = true;
       }
+      if (elEventoCable) elEventoCable.value = "";
 
       openModal();
     }
@@ -690,6 +718,8 @@
       if (!evt.estado) return "⚠️ Selecciona el Estado";
       if (!evt.tecnico) return "⚠️ Escribe el nombre del técnico";
       if (!selectedLngLat?.lng || !selectedLngLat?.lat) return "⚠️ Selecciona un punto en el mapa";
+      if (isCorporativoEvento && !(elEventoCable?.value || "").trim()) return "⚠️ Indica el CABLES (busca y selecciona un cable)";
+      if (!isCorporativoEvento && !(evt.central || "").trim()) return "⚠️ Selecciona Central";
       return "";
     }
 
@@ -715,6 +745,9 @@ btnSave?.addEventListener("click", async (e) => {
     createdAt: new Date().toISOString(),
     createdBy
   };
+  if (isCorporativoEvento && elEventoCable) {
+    evento.cable = (elEventoCable.value || "").trim();
+  }
 
   const msg = validar(evento);
   if (msg) return alert(msg);

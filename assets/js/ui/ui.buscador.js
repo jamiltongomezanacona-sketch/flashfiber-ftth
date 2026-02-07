@@ -889,12 +889,19 @@
       duration: MAP_FLYTO_DURATION_MS
     });
 
-    // Mostrar capa del resultado de inmediato
-    // Solo activar la capa del cable seleccionado (nunca todas las líneas)
-    if (result.type === "cable" && result.layerId && App.map.getLayer(result.layerId)) {
-      App.map.setLayoutProperty(result.layerId, "visibility", "visible");
+    // Mostrar capas del cable seleccionado y de la misma molécula (ej. SI17FH144 + SI17FH48)
+    if (result.type === "cable") {
+      const mol = getMoleculaFromCable(result);
+      const cablesSameMol = mol
+        ? searchIndex.cables.filter(function (c) { return getMoleculaFromCable(c) === mol; })
+        : [result];
+      cablesSameMol.forEach(function (c) {
+        if (c.layerId && App.map.getLayer(c.layerId)) {
+          App.map.setLayoutProperty(c.layerId, "visibility", "visible");
+        }
+      });
       if (typeof App.showPinsWhenCableActivated === "function") {
-        App.showPinsWhenCableActivated(result.layerId, result.molecula || null);
+        App.showPinsWhenCableActivated(result.layerId, result.molecula || mol);
       }
     }
     if (result.type === "cierre") {

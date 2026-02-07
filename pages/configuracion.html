@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Flash Fiber FTTH | Configuración</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="/assets/css/theme.css">
+  <link rel="stylesheet" href="/assets/css/layout.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0a1929 0%, #132f4c 50%, #1e4976 100%);
+      min-height: 100vh;
+      color: #e6f7ff;
+    }
+    .header {
+      background: rgba(10, 25, 41, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0, 180, 216, 0.2);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand { display: flex; align-items: center; gap: 1rem; }
+    .brand .title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #00b4d8, #00e5ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .brand .subtitle { font-size: 0.875rem; color: #a3d5ff; }
+    .user-box { display: flex; align-items: center; gap: 1rem; }
+    .user-name { color: #e6f7ff; font-weight: 500; font-size: 0.9375rem; }
+    .btn-logout { display: none; }
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(0, 180, 216, 0.2);
+      border: 1px solid rgba(0, 180, 216, 0.4);
+      border-radius: 10px;
+      color: #00e5ff;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .btn-back:hover {
+      background: rgba(0, 180, 216, 0.3);
+      border-color: #00e5ff;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+    .page-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #e6f7ff;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .page-title i { color: #00e5ff; }
+    .config-section {
+      background: rgba(19, 47, 76, 0.6);
+      border: 1px solid rgba(0, 180, 216, 0.2);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .config-section h2 {
+      font-size: 1.1rem;
+      color: #00e5ff;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .config-section p {
+      font-size: 0.9375rem;
+      color: #a3d5ff;
+      line-height: 1.5;
+    }
+    .config-section ul {
+      margin-top: 0.75rem;
+      padding-left: 1.25rem;
+      color: #a3d5ff;
+      font-size: 0.9375rem;
+      line-height: 1.7;
+    }
+    .footer {
+      text-align: center;
+      padding: 2rem 0;
+      color: #7dd3fc;
+      font-size: 0.875rem;
+      margin-top: 2rem;
+    }
+    @media (max-width: 767px) {
+      .header { padding: 0.75rem 1rem; }
+      .container { padding: 1rem; }
+      .user-name { display: none; }
+    }
+  </style>
+</head>
+
+<body class="app-dashboard">
+
+  <header class="header">
+    <div class="brand">
+      <a href="home.html" class="btn-back" aria-label="Volver al inicio">
+        <i class="fas fa-arrow-left"></i>
+        <span>Inicio</span>
+      </a>
+      <div>
+        <div class="title">Flash Fiber FTTH</div>
+        <div class="subtitle">Configuración</div>
+      </div>
+    </div>
+    <div class="user-box">
+      <div class="user-name" id="usernameDisplay">Usuario</div>
+      <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 class="page-title">
+      <i class="fas fa-cog"></i>
+      Admin · Configuración
+    </h1>
+
+    <section class="config-section">
+      <h2><i class="fas fa-users"></i> Usuarios y permisos</h2>
+      <p>Gestión de usuarios, roles y acceso al sistema.</p>
+      <ul>
+        <li>Listar y editar usuarios</li>
+        <li>Asignar roles: Admin, Operador FTTH, Operador Corporativo, Solo lectura</li>
+        <li>Restablecer contraseña / invitaciones</li>
+      </ul>
+    </section>
+
+    <section class="config-section">
+      <h2><i class="fas fa-sliders-h"></i> Parámetros del sistema</h2>
+      <p>Configuración global de la plataforma.</p>
+      <ul>
+        <li>Contraseña de acceso a Capas</li>
+        <li>Código para eliminar pines (cierres/eventos)</li>
+        <li>Centrales y moléculas (prefijos)</li>
+      </ul>
+    </section>
+
+    <section class="config-section">
+      <h2><i class="fas fa-map"></i> GIS FTTH y Corporativo</h2>
+      <p>Opciones por módulo de mapa.</p>
+      <ul>
+        <li>Activar o desactivar módulos (Cierres, Eventos, Rutas)</li>
+        <li>Configuración de capas y consolidado GeoJSON</li>
+      </ul>
+    </section>
+
+    <section class="config-section">
+      <h2><i class="fas fa-key"></i> Integraciones</h2>
+      <p>Credenciales y servicios externos.</p>
+      <ul>
+        <li>Mapbox (token)</li>
+        <li>Firebase (proyecto y reglas)</li>
+      </ul>
+    </section>
+
+    <footer class="footer">
+      © 2026 Flash Fiber · Plataforma FTTH
+    </footer>
+  </main>
+
+  <script type="module" src="/assets/js/services/firebase.js"></script>
+  <script type="module" src="/assets/js/services/firebase.db.js"></script>
+  <script type="module" src="/assets/js/core/auth.guard.js"></script>
+
+  <script>
+    const waitForUser = setInterval(() => {
+      if (window.__USER__) {
+        clearInterval(waitForUser);
+        const el = document.getElementById("usernameDisplay");
+        if (el) el.textContent = window.__USER__.nombre || window.__USER__.email || "Usuario";
+      }
+    }, 100);
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) logoutBtn.style.display = "none";
+  </script>
+
+</body>
+
+</html>

@@ -20,19 +20,20 @@ const STATIC_ASSETS = [
   "/assets/js/utils/validators.js"
 ];
 
-// 🔹 INSTALACIÓN
+// 🔹 INSTALACIÓN (cachear uno a uno para no fallar si algún asset da 404)
 self.addEventListener("install", event => {
-  self.skipWaiting(); // Activar inmediatamente
-  
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log("📦 Service Worker: Cacheando assets estáticos");
-        return cache.addAll(STATIC_ASSETS).catch(err => {
-          console.warn("⚠️ Service Worker: Algunos assets no se pudieron cachear:", err);
-          // Continuar aunque algunos assets fallen
-        });
-      })
+    caches.open(CACHE_NAME).then(cache => {
+      console.log("📦 Service Worker: Cacheando assets estáticos");
+      return Promise.allSettled(
+        STATIC_ASSETS.map(url =>
+          cache.add(url).catch(err => {
+            console.warn("⚠️ SW: no se pudo cachear", url, err.message);
+          })
+        )
+      );
+    })
   );
 });
 
@@ -78,11 +79,10 @@ self.addEventListener("fetch", event => {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          // Cachear respuesta exitosa
-          if (response.status === 200) {
+          if (response.status === 200 && response.type === "basic") {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, responseClone);
+              cache.put(event.request, responseClone).catch(() => {});
             });
           }
           return response;
@@ -99,11 +99,11 @@ self.addEventListener("fetch", event => {
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        // ✅ Cachear respuesta exitosa
-        if (response.status === 200) {
+        // Cachear solo respuestas same-origin y exitosas (evita NotFoundError)
+        if (response.status === 200 && response.type === "basic") {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseClone);
+            cache.put(event.request, responseClone).catch(() => {});
           });
         }
         return response;

@@ -341,54 +341,95 @@
   outline-offset: 2px;
 }
 
-/* Filtros pines: compactos */
+/* ========== Filtros Pines: versátil y moderno ========== */
 .sidebar-filters {
-  margin-top: 6px;
+  margin-top: 8px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.sidebar-filter-item {
+.filters-pines-header {
+  margin-bottom: 8px;
+}
+
+.filters-pines-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0, 229, 255, 0.9);
+}
+
+/* Toggles en fila compacta */
+.filters-pines-toggles {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
-  padding: 6px 8px;
-  margin-bottom: 4px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  margin-bottom: 10px;
+}
+
+.filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
-  font-size: 12px;
-  color: var(--text-primary);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
   user-select: none;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
-.sidebar-filter-item:hover {
-  background: rgba(0,229,255,0.1);
+.filter-toggle:hover {
+  background: rgba(0, 229, 255, 0.08);
+  border-color: rgba(0, 229, 255, 0.2);
 }
 
-.sidebar-filter-item input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+.filter-toggle input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
   accent-color: var(--accent-cyan);
   cursor: pointer;
+  flex-shrink: 0;
 }
 
-.sidebar-filter-molecula {
-  flex-wrap: wrap;
+.filter-toggle input:checked + .filter-toggle-label {
+  color: #00e5ff;
 }
 
-.sidebar-filter-molecula span {
-  width: 100%;
-  margin-bottom: 4px;
+.filter-toggle-label {
+  white-space: nowrap;
+}
+
+/* Molécula: bloque compacto */
+.filters-pines-molecula {
+  margin-top: 0;
+}
+
+.filter-molecula-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 6px;
 }
 
 .sidebar-filter-select {
   flex: 1;
   min-width: 0;
-  background: rgba(15, 18, 30, 0.9);
+  background: rgba(15, 18, 30, 0.7);
   border: 1px solid var(--border-soft);
   border-radius: 8px;
   color: var(--text-primary);
-  font-size: 13px;
-  padding: 8px 10px;
+  font-size: 12px;
+  padding: 6px 8px;
   cursor: pointer;
 }
 
@@ -397,53 +438,65 @@
   border-color: var(--accent-cyan);
 }
 
-/* Buscador de molécula en sidebar */
+/* Buscador molécula */
 .molecula-search-wrap {
   position: relative;
   width: 100%;
-  margin-top: 4px;
+  margin-top: 0;
 }
+
 .molecula-search-input {
   width: 100%;
   box-sizing: border-box;
-  background: rgba(15, 18, 30, 0.7);
-  border: 1px solid var(--border-soft);
+  background: rgba(15, 18, 30, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   color: var(--text-primary);
   font-size: 12px;
-  padding: 6px 8px;
+  padding: 6px 10px;
   outline: none;
+  transition: border-color 0.2s, background 0.2s;
 }
+
 .molecula-search-input:focus {
   border-color: var(--accent-cyan);
+  background: rgba(15, 18, 30, 0.75);
 }
+
 .molecula-search-input::placeholder {
   color: var(--text-muted);
+  opacity: 0.8;
 }
+
 .molecula-dropdown {
   position: absolute;
   left: 0;
   right: 0;
   top: 100%;
   margin-top: 4px;
-  max-height: 220px;
+  max-height: 200px;
   overflow-y: auto;
-  background: rgba(15, 18, 30, 0.98);
-  border: 1px solid var(--border-soft);
+  background: rgba(18, 22, 40, 0.96);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   z-index: 1000;
 }
+
 .molecula-dropdown.hidden {
   display: none;
 }
+
 .molecula-dropdown-item {
-  padding: 8px 12px;
-  font-size: 13px;
+  padding: 6px 10px;
+  font-size: 12px;
   color: var(--text-primary);
   cursor: pointer;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.15s;
 }
+
 .molecula-dropdown-item:last-child {
   border-bottom: none;
 }

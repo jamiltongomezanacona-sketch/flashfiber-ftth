@@ -86,29 +86,33 @@
       </section>
 
       <section class="menu-section sidebar-filters">
-        <div class="menu-title">FILTROS PINES</div>
-        <label class="sidebar-filter-item">
-          <input type="checkbox" id="filterCentrales" checked />
-          <span>🏢 Centrales</span>
-        </label>
-        <label class="sidebar-filter-item">
-          <input type="checkbox" id="filterCierres" checked />
-          <span>🔒 Cierres</span>
-        </label>
-        <label class="sidebar-filter-item">
-          <input type="checkbox" id="filterEventos" checked />
-          <span>📝 Eventos</span>
-        </label>
-        <label class="sidebar-filter-item sidebar-filter-molecula">
-          <span>🧬 Molécula:</span>
+        <div class="filters-pines-header">
+          <span class="filters-pines-title">Pines en mapa</span>
+        </div>
+        <div class="filters-pines-toggles">
+          <label class="filter-toggle" title="Centrales">
+            <input type="checkbox" id="filterCentrales" checked />
+            <span class="filter-toggle-label">🏢 Centrales</span>
+          </label>
+          <label class="filter-toggle" title="Cierres">
+            <input type="checkbox" id="filterCierres" checked />
+            <span class="filter-toggle-label">🔒 Cierres</span>
+          </label>
+          <label class="filter-toggle" title="Eventos">
+            <input type="checkbox" id="filterEventos" checked />
+            <span class="filter-toggle-label">📝 Eventos</span>
+          </label>
+        </div>
+        <div class="filters-pines-molecula">
+          <span class="filter-molecula-label">🧬 Molécula</span>
           <div class="molecula-search-wrap">
-            <input type="text" id="filterMoleculaSearch" class="molecula-search-input" placeholder="Buscar central o molécula (ej: MU, SI02)..." autocomplete="off" />
+            <input type="text" id="filterMoleculaSearch" class="molecula-search-input" placeholder="Ej: MU, SI02..." autocomplete="off" />
             <select id="filterMolecula" class="sidebar-filter-select" aria-hidden="true" style="position:absolute;opacity:0;pointer-events:none;height:0;width:0;">
               <option value="">Todas</option>
             </select>
             <div id="filterMoleculaDropdown" class="molecula-dropdown hidden" role="listbox"></div>
           </div>
-        </label>
+        </div>
       </section>
 
     </nav>

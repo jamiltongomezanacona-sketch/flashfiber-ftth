@@ -153,6 +153,10 @@
         displayLabel = id || "Nodo";
       }
     }
+    // Sufijo con guión para UI (ej. SI22FH144_1 → SI22FH144-1)
+    if (displayLabel && /SI\d+FH\d+_\d+$/i.test(displayLabel)) {
+      displayLabel = displayLabel.replace(/_(\d+)$/, "-$1");
+    }
     label.textContent = displayLabel || "Nodo";
 
     // 📦 Contenedor hijos

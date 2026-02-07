@@ -367,6 +367,27 @@
     }
   }
 
+  /** Nombre corto para mostrar (ej. SI22FH144_1). Extrae del id largo o del nombre. */
+  function shortCableDisplayName(layerId, fallbackName) {
+    const from = (layerId || fallbackName || "").toString();
+    if (!from) return "";
+    // Extraer patrón SI##FH## o SI##FH##_# (sin espacios)
+    const normalized = from.replace(/\s+/g, "");
+    const match = normalized.match(/(SI\d+FH\d+(?:_\d+)?)/i);
+    if (match) return match[1];
+    // Id largo tipo FTTH_CENTRAL_MOL_MOLFH144_1 → últimas 2 partes
+    if (from.startsWith("FTTH_") && from.includes("_")) {
+      const parts = from.split("_");
+      if (parts.length >= 2) return parts.slice(-2).join("_");
+    }
+    return fallbackName || layerId || from;
+  }
+
+  /** Mismo nombre corto pero con sufijo con guión para UI (ej. SI22FH144-1). */
+  function cableNameForDisplay(layerId, fallbackName) {
+    return shortCableDisplayName(layerId, fallbackName).replace(/_(\d+)$/, "-$1");
+  }
+
   async function walkTreeForCables(node, basePath) {
     if (!node) return;
 
@@ -435,7 +456,7 @@
               if (!exists) {
                 searchIndex.cables.push({
                   id: id,
-                  name: codigo,
+                  name: shortCableDisplayName(node.id, codigo),
                   type: "cable",
                   layerId: node.id,
                   coordinates: coordinates,
@@ -746,21 +767,24 @@
         ${allResults.length} resultado${allResults.length > 1 ? "s" : ""}
       </div>
       <div class="search-results-list">
-        ${allResults.map(result => `
+        ${allResults.map(result => {
+          const displayName = result.type === "cable" ? cableNameForDisplay(result.layerId, result.name) : result.name;
+          return `
           <div class="search-result-item" data-type="${result.type}" data-id="${result.id}">
             <div class="search-result-icon ${result.type}">
               ${result.icon}
             </div>
             <div class="search-result-content">
               <div class="search-result-title">
-                ${highlightMatch(result.name, currentSearch)}
+                ${highlightMatch(displayName, currentSearch)}
                 <span class="search-result-badge">${result.type}</span>
               </div>
               <div class="search-result-subtitle">${result.subtitle || ""}</div>
             </div>
             <input type="checkbox" class="search-result-btn-seleccionar" title="Ubicar en el mapa" aria-label="Seleccionar" unchecked />
           </div>
-        `).join("")}
+        `;
+        }).join("")}
       </div>
     `;
     
@@ -864,7 +888,8 @@
     hideResults();
     searchInput.blur();
 
-    console.log(`🎯 Zoom a ${result.type}: ${result.name}`);
+    const zoomLabel = result.type === "cable" ? cableNameForDisplay(result.layerId, result.name) : result.name;
+    console.log(`🎯 Zoom a ${result.type}: ${zoomLabel}`);
   }
 
   /* =========================

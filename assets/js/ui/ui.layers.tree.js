@@ -424,6 +424,36 @@
   }
 
   /* =========================
+     Al activar un cable, activar también los pines (Centrales, Cierres, Eventos)
+  ========================= */
+  function showPinsWhenCableActivated() {
+    const App = window.__FTTH_APP__;
+    const CONFIG = window.__FTTH_CONFIG__ || {};
+    if (!App?.map) return;
+    const map = App.map;
+    const LAYER_CENTRALES = CONFIG.LAYERS?.CENTRALES || "CORPORATIVO_CENTRALES_ETB";
+    const LAYER_CIERRES = CONFIG.LAYERS?.CIERRES || "cierres-layer";
+    const LAYER_EVENTOS = CONFIG.LAYERS?.EVENTOS || "eventos-layer";
+    [LAYER_CENTRALES, LAYER_CIERRES, LAYER_EVENTOS].forEach(function (id) {
+      if (map.getLayer(id)) {
+        try {
+          map.setLayoutProperty(id, "visibility", "visible");
+        } catch (e) {}
+      }
+    });
+    const fc = document.getElementById("filterCentrales");
+    const fci = document.getElementById("filterCierres");
+    const fe = document.getElementById("filterEventos");
+    if (fc) fc.checked = true;
+    if (fci) fci.checked = true;
+    if (fe) fe.checked = true;
+  }
+
+  if (window.__FTTH_APP__) {
+    window.__FTTH_APP__.showPinsWhenCableActivated = showPinsWhenCableActivated;
+  }
+
+  /* =========================
      Toggle capa por ID directo
   ========================= */
   function toggleLayerById(layerId, visible) {
@@ -447,6 +477,12 @@
       if (current === desired) return;
       map.setLayoutProperty(layerId, "visibility", desired);
       console.log(`${visible ? "✅" : "❌"} Capa ${layerId} ${visible ? "habilitada" : "deshabilitada"}`);
+      // Si se activa una capa de cable (línea), activar también los pines
+      if (visible) {
+        const layer = map.getLayer(layerId);
+        const isCable = layer && (layer.type === "line" || layerId === "geojson-lines" || layerId === "ftth-cables");
+        if (isCable) showPinsWhenCableActivated();
+      }
     } else {
       console.warn("⚠️ Capa no encontrada:", layerId);
       // Intentar cargar la capa si no existe (para capas que se cargan dinámicamente)

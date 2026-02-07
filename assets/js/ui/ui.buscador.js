@@ -835,6 +835,9 @@
     // Solo activar la capa del cable seleccionado (nunca todas las líneas)
     if (result.type === "cable" && result.layerId && App.map.getLayer(result.layerId)) {
       App.map.setLayoutProperty(result.layerId, "visibility", "visible");
+      if (typeof App.showPinsWhenCableActivated === "function") {
+        App.showPinsWhenCableActivated();
+      }
     }
     if (result.type === "cierre") {
       if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {

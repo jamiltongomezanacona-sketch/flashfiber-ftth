@@ -394,6 +394,7 @@
       }
 
       handlerClickLayer = function (e) {
+        if (App.tools?.medicion?.isActive?.()) return;
         const f = e.features?.[0];
         if (!f) return;
         if (active) blockNextClick = true;
@@ -402,6 +403,7 @@
       };
       handlerClickFallback = function (e) {
         popupShownThisClick = false;
+        if (App.tools?.medicion?.isActive?.()) return;
         if (active) return;
         if (!App.map.getLayer(LAYER_ID)) return;
         setTimeout(() => {

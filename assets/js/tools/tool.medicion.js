@@ -74,6 +74,11 @@
 
         App.map.off("click", onMapClick);
         App.map.getCanvas().style.cursor = "";
+      },
+
+      /** Si la herramienta Medir está activa, los pines no deben abrir propiedades (prioridad al clic de medición). */
+      isActive() {
+        return active;
       }
     };
 

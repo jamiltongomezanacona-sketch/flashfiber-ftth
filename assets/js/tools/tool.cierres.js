@@ -822,6 +822,9 @@
     btnSave?.addEventListener("click", async (e) => {
       e.stopPropagation();
 
+      const user = window.FTTH_CORE?.auth?.currentUser;
+      const createdBy = user?.email || user?.displayName || user?.uid || "";
+
       const cierre = {
         codigo: document.getElementById("cierreCodigo").value.trim(),
         tipo: document.getElementById("cierreTipo").value,
@@ -830,7 +833,8 @@
         notas: document.getElementById("cierreNotas").value.trim(),
         lng: selectedLngLat?.lng,
         lat: selectedLngLat?.lat,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        createdBy
       };
 
       if (!cierre.codigo || !cierre.central || !cierre.molecula) {

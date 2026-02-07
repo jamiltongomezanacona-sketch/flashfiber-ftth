@@ -672,24 +672,23 @@
 btnSave?.addEventListener("click", async (e) => {
   e.stopPropagation();
   
+  const user = window.FTTH_CORE?.auth?.currentUser;
+  const createdBy = user?.email || user?.displayName || user?.uid || "";
+
   const evento = {
     tipo: (elTipo.value || "").trim(),
     accion: (elAccion.value || "").trim(),
     estado: (elEstado.value || "").trim(),
     tecnico: (elTecnico.value || "").trim(),
     notas: (elNotas.value || "").trim(),
-    
-    // 🏢 Central / 🧬 Molécula
     central: (elCentralEvento?.value || "").trim(),
     molecula: (elMoleculaEvento?.value || "").trim(),
-    
     lng: selectedLngLat?.lng,
     lat: selectedLngLat?.lat,
-    
-    // 📅 Fecha creación
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    createdBy
   };
-  
+
   const msg = validar(evento);
   if (msg) return alert(msg);
   

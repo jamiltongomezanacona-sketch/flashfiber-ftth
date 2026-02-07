@@ -32,6 +32,7 @@ async function guardarCierre(cierre) {
     lat: Number(cierre.lat),
     lng: Number(cierre.lng),
     createdAt: cierre.createdAt || new Date().toISOString(),
+    createdBy: cierre.createdBy || "",
     serverTime: serverTimestamp()
   };
 

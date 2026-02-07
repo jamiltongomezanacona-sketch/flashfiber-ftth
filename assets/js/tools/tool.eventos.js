@@ -516,26 +516,25 @@
     
     function setupEventosListener() {
       const FB = window.FTTH_FIREBASE;
-      if (!FB?.escucharEventos) {
-        console.warn("⚠️ FB.escucharEventos no disponible aún");
+      const escuchar = isCorporativoEvento ? FB?.escucharEventosCorp : FB?.escucharEventos;
+      if (!escuchar) {
+        console.warn("⚠️ Listener de eventos no disponible aún");
         return false;
       }
-      
+
       if (unsubscribeEventos) {
         unsubscribeEventos();
         unsubscribeEventos = null;
       }
-      
-      unsubscribeEventos = FB.escucharEventos((evt) => {
+
+      unsubscribeEventos = escuchar((evt) => {
         if (evt._deleted) {
-          // Si el evento fue eliminado, removerlo del mapa
           removeEventoFromMap(evt.id);
         } else {
-          // Agregar o actualizar evento en el mapa
           addEventoToMap(evt);
         }
       });
-      console.log("✅ Listener de eventos Firebase activo");
+      console.log(isCorporativoEvento ? "✅ Listener eventos corporativo activo" : "✅ Listener de eventos Firebase activo");
       return true;
     }
     
@@ -822,18 +821,22 @@ btnSave?.addEventListener("click", async (e) => {
   try {
     const editId = modal.dataset.editId;
     let eventoId = editId;
-    
+    const guardar = isCorporativoEvento ? FB.guardarEventoCorp : FB.guardarEvento;
+    const actualizar = isCorporativoEvento ? FB.actualizarEventoCorp : FB.actualizarEvento;
+
     /* =========================
-       1️⃣ Guardar evento base
+       1️⃣ Guardar evento base (FTTH → eventos | Corp → eventos_corporativo)
     ========================= */
     if (editId) {
       const update = { ...evento };
       delete update.createdAt;
       update.updatedAt = new Date().toISOString();
-      await FB.actualizarEvento(editId, update);
+      if (!actualizar) throw new Error("actualizarEvento no disponible");
+      await actualizar(editId, update);
       eventoId = editId;
     } else {
-      eventoId = await FB.guardarEvento(evento); // ⚠️ debe devolver ID
+      if (!guardar) throw new Error("guardarEvento no disponible");
+      eventoId = await guardar(evento);
     }
     
     if (!eventoId) {
@@ -876,9 +879,8 @@ btnSave?.addEventListener("click", async (e) => {
        3️⃣ Guardar URLs en Firestore
     ========================= */
     if (fotosURLs.length > 0) {
-      await FB.actualizarEvento(eventoId, {
-        fotos: fotosURLs
-      });
+      const actualizarFotos = isCorporativoEvento ? FB.actualizarEventoCorp : FB.actualizarEvento;
+      if (actualizarFotos) await actualizarFotos(eventoId, { fotos: fotosURLs });
     }
     
     // ✅ Agregar/actualizar evento en el mapa inmediatamente después de guardarlo
@@ -913,12 +915,11 @@ btnSave?.addEventListener("click", async (e) => {
       if (!confirm("¿Eliminar este evento?")) return;
 
       try {
-        // si tienes eliminarEvento en firebase, úsalo
-        if (FB.eliminarEvento) {
-          await FB.eliminarEvento(id);
+        const eliminar = isCorporativoEvento ? FB.eliminarEventoCorp : FB.eliminarEvento;
+        if (eliminar) {
+          await eliminar(id);
         } else {
-          // fallback: si no existe, avisa
-          console.warn("⚠️ eliminarEvento no existe en firebase.db.js");
+          console.warn("⚠️ eliminarEvento no disponible");
         }
 
         removeEventoFromMap(id);

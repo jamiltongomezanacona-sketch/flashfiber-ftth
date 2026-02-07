@@ -176,6 +176,11 @@
       const m = displayLabel.match(/^(SU\d+)_(SU\d+FH\d+.*)$/i);
       if (m) displayLabel = m[2];
     }
+    // Toberín: TO01_TO01FH144 → TO01FH144
+    if (displayLabel && /^TO\d+_TO\d+FH/i.test(displayLabel)) {
+      const m = displayLabel.match(/^(TO\d+)_(TO\d+FH\d+.*)$/i);
+      if (m) displayLabel = m[2];
+    }
     // Sufijo con guión para UI (ej. SI22FH144_1 → SI22FH144-1)
     if (displayLabel && /SI\d+FH\d+_\d+$/i.test(displayLabel)) {
       displayLabel = displayLabel.replace(/_(\d+)$/, "-$1");

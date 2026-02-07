@@ -1,0 +1,38 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_TOBERIN_TO30_TO30FH144",
+      "label": "TO30FH144",
+      "path": "TO30FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#000099",
+        "line-width": 4
+      }
+    },
+    {
+      "type": "layer",
+      "id": "FTTH_TOBERIN_TO30_TO30FH144_1",
+      "label": "TO30FH144_1",
+      "path": "TO30FH144_1.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#000099",
+        "line-width": 4
+      }
+    },
+    {
+      "type": "layer",
+      "id": "FTTH_TOBERIN_TO30_TO30FH48_2",
+      "label": "TO30FH48_2",
+      "path": "TO30FH48_2.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#000099",
+        "line-width": 4
+      }
+    }
+  ]
+}

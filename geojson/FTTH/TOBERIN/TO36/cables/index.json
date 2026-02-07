@@ -1,0 +1,27 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_TOBERIN_TO36_TO36FH48_1",
+      "label": "TO36FH48_1",
+      "path": "TO36FH48_1.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#990000",
+        "line-width": 4
+      }
+    },
+    {
+      "type": "layer",
+      "id": "FTTH_TOBERIN_TO36_TO36FH48_2",
+      "label": "TO36FH48_2",
+      "path": "TO36FH48_2.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#990000",
+        "line-width": 4
+      }
+    }
+  ]
+}

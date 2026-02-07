@@ -1,0 +1,12 @@
+{
+  "label": "Cierres",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_TOBERIN_TO10_cierres",
+      "label": "Cierres TO10",
+      "path": "cierres.geojson",
+      "typeLayer": "symbol"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_TOBERIN_TO34_TO34FH144",
+      "label": "TO34FH144",
+      "path": "TO34FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#07c41f",
+        "line-width": 4
+      }
+    }
+  ]
+}

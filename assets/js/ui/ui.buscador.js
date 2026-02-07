@@ -143,6 +143,17 @@
           App.map.setFilter(layerId, showPins ? filter : null);
         } catch (e) {}
       });
+      // Cierres del consolidado (CUNI, etc.): capa geojson-points filtrada por _molecula
+      if (App.map.getLayer("geojson-points")) {
+        const visibleConsolidated = showPins && filterCierres.checked;
+        const filterPoints = selectedMoleculaForPins
+          ? ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "_molecula"], selectedMoleculaForPins]]
+          : null;
+        try {
+          App.map.setLayoutProperty("geojson-points", "visibility", visibleConsolidated ? "visible" : "none");
+          App.map.setFilter("geojson-points", filterPoints || ["==", ["geometry-type"], "Point"]);
+        } catch (e) {}
+      }
       setCentralesVisibility();
     }
 
@@ -180,6 +191,17 @@
         App.map.setFilter(layerId, showPins ? filter : null);
       } catch (e) {}
     });
+    // Cierres del consolidado (CUNI): geojson-points con filtro por _molecula
+    if (App.map.getLayer("geojson-points")) {
+      const visibleConsolidated = showPins && (filterCierres?.checked !== false);
+      const filterPoints = selectedMoleculaForPins
+        ? ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "_molecula"], selectedMoleculaForPins]]
+        : ["==", ["geometry-type"], "Point"];
+      try {
+        App.map.setLayoutProperty("geojson-points", "visibility", visibleConsolidated ? "visible" : "none");
+        App.map.setFilter("geojson-points", filterPoints);
+      } catch (e) {}
+    }
   }
 
 

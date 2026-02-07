@@ -454,8 +454,8 @@
       <div class="pin-popup-row"><span class="pin-popup-label">Notas</span><span class="pin-popup-value">${notas}</span></div>
     </div>
     <div class="pin-popup-actions">
-      <button type="button" id="btnEditCierrePopup" class="pin-popup-btn pin-popup-btn-edit">✏️ Editar</button>
-      <button type="button" id="btnDeleteCierrePopup" class="pin-popup-btn pin-popup-btn-delete">🗑️ Eliminar</button>
+      <button type="button" data-pin-action="edit" class="pin-popup-btn pin-popup-btn-edit">✏️ Editar</button>
+      <button type="button" data-pin-action="delete" class="pin-popup-btn pin-popup-btn-delete">🗑️ Eliminar</button>
     </div>
   </div>
 `;
@@ -465,31 +465,42 @@
           .setHTML(html)
           .addTo(App.map);
 
-        setTimeout(() => {
-          const btnEdit = document.getElementById("btnEditCierrePopup");
-          btnEdit?.addEventListener("click", () => {
-            popup.remove();
-            abrirEdicionCierre(p);
-          });
-          const btnDelete = document.getElementById("btnDeleteCierrePopup");
-          btnDelete?.addEventListener("click", async () => {
-            if (!confirm("¿Eliminar este cierre?")) return;
-            try {
-              const FB = window.FTTH_FIREBASE;
-              const id = p.id || idStr;
-              if (FB?.eliminarCierre && id) {
-                await FB.eliminarCierre(id);
-                popup.remove();
-                console.log("✅ Cierre eliminado:", id);
-              } else {
-                alert("❌ No se pudo eliminar el cierre");
+        setTimeout(function () {
+          const popupEl = popup.getElement?.();
+          const container = popupEl || document.querySelector(".mapboxgl-popup-content");
+          if (!container) return;
+          const btnEdit = container.querySelector('[data-pin-action="edit"]');
+          const btnDelete = container.querySelector('[data-pin-action="delete"]');
+          if (btnEdit) {
+            btnEdit.addEventListener("click", function (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              popup.remove();
+              abrirEdicionCierre(p);
+            });
+          }
+          if (btnDelete) {
+            btnDelete.addEventListener("click", async function (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!confirm("¿Eliminar este cierre?")) return;
+              try {
+                const FB = window.FTTH_FIREBASE;
+                const id = p.id || idStr;
+                if (FB?.eliminarCierre && id) {
+                  await FB.eliminarCierre(id);
+                  popup.remove();
+                  console.log("✅ Cierre eliminado:", id);
+                } else {
+                  alert("❌ No se pudo eliminar el cierre");
+                }
+              } catch (err) {
+                console.error("❌ Error eliminando cierre:", err);
+                alert("❌ Error al eliminar el cierre");
               }
-            } catch (err) {
-              console.error("❌ Error eliminando cierre:", err);
-              alert("❌ Error al eliminar el cierre");
-            }
-          });
-        }, 80);
+            });
+          }
+        }, 0);
       }
 
       // Click en la capa de cierres → popup

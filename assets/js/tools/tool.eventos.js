@@ -326,8 +326,8 @@
       <div class="pin-popup-row"><span class="pin-popup-label">Notas</span><span class="pin-popup-value">${notas}</span></div>
     </div>
     <div class="pin-popup-actions">
-      <button type="button" id="btnEditEventoPopup" class="pin-popup-btn pin-popup-btn-edit">✏️ Editar</button>
-      <button type="button" id="btnDeleteEventoPopup" class="pin-popup-btn pin-popup-btn-delete">🗑️ Eliminar</button>
+      <button type="button" data-pin-action="edit" class="pin-popup-btn pin-popup-btn-edit">✏️ Editar</button>
+      <button type="button" data-pin-action="delete" class="pin-popup-btn pin-popup-btn-delete">🗑️ Eliminar</button>
     </div>
   </div>
 `;
@@ -337,30 +337,41 @@
           .setHTML(html)
           .addTo(App.map);
 
-        setTimeout(() => {
-          const btnEdit = document.getElementById("btnEditEventoPopup");
-          btnEdit?.addEventListener("click", () => {
-            popup.remove();
-            abrirEdicionEvento(p);
-          });
-          const btnDelete = document.getElementById("btnDeleteEventoPopup");
-          btnDelete?.addEventListener("click", async () => {
-            if (!confirm("¿Estás seguro de eliminar este evento?")) return;
-            try {
-              const FB = window.FTTH_FIREBASE;
-              if (FB?.eliminarEvento && p.id) {
-                await FB.eliminarEvento(p.id);
-                popup.remove();
-                console.log("✅ Evento eliminado:", p.id);
-              } else {
-                alert("❌ No se pudo eliminar el evento");
+        setTimeout(function () {
+          const popupEl = popup.getElement?.();
+          const container = popupEl || document.querySelector(".mapboxgl-popup-content");
+          if (!container) return;
+          const btnEdit = container.querySelector('[data-pin-action="edit"]');
+          const btnDelete = container.querySelector('[data-pin-action="delete"]');
+          if (btnEdit) {
+            btnEdit.addEventListener("click", function (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              popup.remove();
+              abrirEdicionEvento(p);
+            });
+          }
+          if (btnDelete) {
+            btnDelete.addEventListener("click", async function (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!confirm("¿Estás seguro de eliminar este evento?")) return;
+              try {
+                const FB = window.FTTH_FIREBASE;
+                if (FB?.eliminarEvento && p.id) {
+                  await FB.eliminarEvento(p.id);
+                  popup.remove();
+                  console.log("✅ Evento eliminado:", p.id);
+                } else {
+                  alert("❌ No se pudo eliminar el evento");
+                }
+              } catch (err) {
+                console.error("❌ Error eliminando evento:", err);
+                alert("❌ Error al eliminar el evento");
               }
-            } catch (err) {
-              console.error("❌ Error eliminando evento:", err);
-              alert("❌ Error al eliminar el evento");
-            }
-          });
-        }, 80);
+            });
+          }
+        }, 0);
       }
 
       // Click en la capa de eventos → popup

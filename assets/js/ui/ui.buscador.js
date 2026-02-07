@@ -976,11 +976,16 @@
           App.map.setFilter(LAYER_EVENTOS, ["==", ["get", "cable"], result.name]);
         }
       } else {
-        // GIS FTTH: una capa geojson-lines, filtrar por _layerId
+        // GIS FTTH: mostrar todos los cables de la misma molécula (ej. SI17FH144 → SI17FH48, SI17FH144, etc.)
+        const mol = result.molecula || getMoleculaFromCable(result);
         function applyCableFilter() {
           try {
             if (!App.map || !App.map.getLayer("geojson-lines")) return false;
-            App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_layerId"], result.layerId]]);
+            if (mol) {
+              App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_molecula"], mol]]);
+            } else {
+              App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_layerId"], result.layerId]]);
+            }
             App.map.setLayoutProperty("geojson-lines", "visibility", "visible");
             return true;
           } catch (e) {

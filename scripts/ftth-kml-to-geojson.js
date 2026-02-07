@@ -12,7 +12,7 @@ const path = require("path");
 
 const inputPath = process.argv[2];
 const centralKey = (process.argv[3] || "CUNI").toUpperCase();
-const CENTRAL_PREFIX = { CUNI: "CU", HOLANDA: "HO", BACHUE: "BA" };
+const CENTRAL_PREFIX = { CUNI: "CU", HOLANDA: "HO", BACHUE: "BA", FONTIBON: "FO" };
 const prefix = CENTRAL_PREFIX[centralKey] || centralKey.substring(0, 2);
 const outputBase = path.join(__dirname, "..", "geojson", "FTTH", centralKey);
 

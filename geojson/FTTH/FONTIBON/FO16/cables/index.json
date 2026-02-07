@@ -1,0 +1,27 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_FONTIBON_FO16_FO16FH144",
+      "label": "FO16FH144",
+      "path": "FO16FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#99ff00",
+        "line-width": 4
+      }
+    },
+    {
+      "type": "layer",
+      "id": "FTTH_FONTIBON_FO16_L_nea_sin_t_tulo",
+      "label": "Línea sin título",
+      "path": "L_nea_sin_t_tulo.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#99ff00",
+        "line-width": 4
+      }
+    }
+  ]
+}

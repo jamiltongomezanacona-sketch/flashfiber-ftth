@@ -1,0 +1,16 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_FONTIBON_FO08_FO08FH144",
+      "label": "FO08FH144",
+      "path": "FO08FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#862bc2",
+        "line-width": 4
+      }
+    }
+  ]
+}

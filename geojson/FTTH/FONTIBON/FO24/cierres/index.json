@@ -1,0 +1,12 @@
+{
+  "label": "Cierres",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_FONTIBON_FO24_cierres",
+      "label": "Cierres FO24",
+      "path": "cierres.geojson",
+      "typeLayer": "symbol"
+    }
+  ]
+}

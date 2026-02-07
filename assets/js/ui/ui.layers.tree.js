@@ -161,6 +161,11 @@
       const m = displayLabel.match(/^(BA\d+)_(BAO?\d+FH\d+.*)$/i);
       if (m) displayLabel = m[2].replace(/^BAO(\d)/i, "BA0$1");
     }
+    // Fontibón: FO05_FO05FH144 → FO05FH144
+    if (displayLabel && /^FO\d+_FO\d+FH/i.test(displayLabel)) {
+      const m = displayLabel.match(/^(FO\d+)_(FO\d+FH\d+.*)$/i);
+      if (m) displayLabel = m[2];
+    }
     // Sufijo con guión para UI (ej. SI22FH144_1 → SI22FH144-1)
     if (displayLabel && /SI\d+FH\d+_\d+$/i.test(displayLabel)) {
       displayLabel = displayLabel.replace(/_(\d+)$/, "-$1");

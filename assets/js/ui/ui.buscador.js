@@ -474,6 +474,9 @@
     // Bachue: BAO5FH144 → BA05FH144, BA05_BAO5FH144 → BA05FH144
     const matchBa = normalized.match(/(BAO?\d+FH\d+(?:_\d+)?)/i);
     if (matchBa) return matchBa[1].replace(/^BAO(\d)/gi, "BA0$1");
+    // Fontibón: FO05FH144
+    const matchFo = normalized.match(/(FO\d+FH\d+(?:_\d+)?)/i);
+    if (matchFo) return matchFo[1];
     if (from.startsWith("FTTH_") && from.includes("_")) {
       const parts = from.split("_");
       if (parts.length >= 2) return normalizeCuniCableName(parts.slice(-2).join("_"));

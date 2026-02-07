@@ -209,22 +209,21 @@
       if (node.type === "layer" && node.id) {
         toggleLayerById(node.id, checkbox.checked);
         
-        // Si la capa no existe y tiene path, intentar cargarla
+        // Si la capa no existe: en FTTH usar filter en geojson-lines; en Corporativo cargar árbol
         const App = window.__FTTH_APP__;
         const map = App?.map;
         if (map && !map.getLayer(node.id) && node.path) {
+          if (!window.__GEOJSON_INDEX__ && map.getLayer("geojson-lines")) {
+            toggleLayerById(node.id, checkbox.checked);
+            return;
+          }
           console.log("🔄 Capa no encontrada, intentando cargar:", node.id);
-          // Forzar recarga del árbol para cargar la capa
           if (typeof App.loadFTTHTree === "function") {
             await App.loadFTTHTree();
-            // Esperar un momento y volver a intentar el toggle
             setTimeout(() => {
-              if (map.getLayer(node.id)) {
-                toggleLayerById(node.id, checkbox.checked);
-              } else {
-                console.warn("⚠️ No se pudo cargar la capa:", node.id);
-                checkbox.checked = false; // Revertir checkbox si falla
-              }
+              if (map.getLayer(node.id)) toggleLayerById(node.id, checkbox.checked);
+              else if (!window.__GEOJSON_INDEX__ && map.getLayer("geojson-lines")) toggleLayerById(node.id, checkbox.checked);
+              else { console.warn("⚠️ No se pudo cargar la capa:", node.id); checkbox.checked = false; }
             }, 1000);
           }
         }
@@ -490,27 +489,31 @@
     if (map.getLayer(layerId)) {
       const current = map.getLayoutProperty(layerId, "visibility");
       const desired = visible ? "visible" : "none";
-      // Evitar toggles redundantes y bucles (solo aplicar si el estado cambia)
       if (current === desired) return;
       map.setLayoutProperty(layerId, "visibility", desired);
       console.log(`${visible ? "✅" : "❌"} Capa ${layerId} ${visible ? "habilitada" : "deshabilitada"}`);
-      // Si se activa una capa de cable (línea), activar pines filtrados por esa molécula
       if (visible) {
         const layer = map.getLayer(layerId);
         const isCable = layer && (layer.type === "line" || layerId === "geojson-lines" || layerId === "ftth-cables");
         if (isCable) showPinsWhenCableActivated(layerId);
       }
+    } else if (!window.__GEOJSON_INDEX__ && map.getLayer("geojson-lines")) {
+      // GIS FTTH con estructura tipo Corporativo: una sola capa (geojson-lines), filtrar por _layerId
+      if (visible) {
+        map.setFilter("geojson-lines", ["==", ["get", "_layerId"], layerId]);
+        map.setLayoutProperty("geojson-lines", "visibility", "visible");
+        showPinsWhenCableActivated(layerId);
+      } else {
+        map.setFilter("geojson-lines", ["==", ["get", "_layerId"], "__none__"]);
+      }
+      console.log(`${visible ? "✅" : "❌"} Cable ${layerId} (filter en geojson-lines) ${visible ? "visible" : "oculto"}`);
     } else {
       console.warn("⚠️ Capa no encontrada:", layerId);
-      // Intentar cargar la capa si no existe (para capas que se cargan dinámicamente)
       if (typeof App.loadFTTHTree === "function") {
         console.log("🔄 Intentando cargar capa:", layerId);
         App.loadFTTHTree();
-        // Reintentar después de un breve delay
         setTimeout(() => {
-          if (map.getLayer(layerId)) {
-            toggleLayerById(layerId, visible);
-          }
+          if (map.getLayer(layerId)) toggleLayerById(layerId, visible);
         }, 500);
       }
     }

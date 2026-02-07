@@ -535,17 +535,22 @@
                   feature.properties._layerId = node.id;
                   feature.properties._layerLabel = node.label;
                   feature.properties._layerType = node.typeLayer || "symbol";
+                  const moleculaMatch = (node.id || "").match(/([A-Z]{2}\d+)/);
+                  if (moleculaMatch) feature.properties._molecula = moleculaMatch[1];
                 });
                 
                 allFeatures.push(...e1Features);
                 console.log(`✅ ${e1Features.length} cierres E1 de ${node.id} (de ${geojson.features.length} totales)`);
               } else {
-                // Es cable, incluir todos los features
+                // Es cable, incluir todos los features (y _molecula para filtrar como en Corporativo)
+                const moleculaMatch = (node.id || "").match(/([A-Z]{2}\d+)/);
+                const _molecula = moleculaMatch ? moleculaMatch[1] : "";
                 geojson.features.forEach(feature => {
                   if (!feature.properties) feature.properties = {};
                   feature.properties._layerId = node.id;
                   feature.properties._layerLabel = node.label;
                   feature.properties._layerType = node.typeLayer || "line";
+                  if (_molecula) feature.properties._molecula = _molecula;
                 });
                 
                 allFeatures.push(...geojson.features);
@@ -754,6 +759,11 @@
      Cargar árbol raíz
   =============================== */
   async function loadFTTHTree() {
+    // ✅ GIS FTTH: misma estructura que Corporativo = una sola capa consolidada (geojson-lines); no crear N capas
+    if (!window.__GEOJSON_INDEX__) {
+      console.log("📂 FTTH: uso de capa única consolidada (geojson-lines), omitiendo carga de árbol de capas");
+      return;
+    }
     // ✅ Evitar cargas duplicadas simultáneas
     if (loadingTree) {
       console.log("⚠️ loadFTTHTree ya está en ejecución, omitiendo llamada duplicada");

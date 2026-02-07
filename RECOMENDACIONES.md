@@ -5,10 +5,10 @@
 ### GIS FTTH (implementado)
 - **Índice plano para buscador**: El buscador usa `geojson/cables-index.json` (un solo fetch). Si no existe o falla, hace fallback al árbol. Para regenerar el índice tras añadir/modificar cables: `node scripts/build-cables-index.js` desde la raíz del proyecto.
 - **Carga diferida del consolidado**: El GeoJSON consolidado (cables + cierres E1) se carga 2 segundos después del arranque del mapa en FTTH, para no bloquear la primera pintada. En GIS Corporativo no se ejecuta.
-- **Cache de GeoJSON**: Todos los `fetch` de índices y GeoJSON usan `cache: "default"` para que el navegador reutilice respuestas y se reduzcan descargas en visitas repetidas.
+- **Cache de GeoJSON**: Todos los `fetch` usan `cache: "default"`.
+- **Misma estructura que GIS Corporativo**: En FTTH una sola capa `geojson-lines`; al buscar o marcar cable en el árbol se filtra por `_layerId`. Features con `_layerId` y `_molecula`.
 
 ### Pendiente / mejoras
-- **Carga por central/molécula**: Cargar capas solo al expandir el árbol o al buscar (no todas al inicio).
 - **Límite de capas visibles**: Mantener “solo centrales + lo que el usuario eligió”.
 
 ### General

@@ -268,7 +268,16 @@
             const url = "../geojson/" + nextPath;
 
             const res = await fetch(url, { cache: "default" });
-            const json = await res.json();
+            if (!res.ok) {
+              // 404 u otro error: no parsear (evitar "Unexpected token" al parsear HTML como JSON)
+              return;
+            }
+            let json;
+            try {
+              json = await res.json();
+            } catch (e) {
+              return;
+            }
 
             const childNode = {
               label: child.label || json.label || "Carpeta",
@@ -283,7 +292,10 @@
             );
           }
         } catch (err) {
-          console.warn("⚠️ No se pudo cargar:", basePath + (child.index || child.path || ""), err.message);
+          // No saturar consola con 404 de índices opcionales
+          if (err.message && !err.message.includes("JSON") && !err.message.includes("404")) {
+            console.warn("⚠️ No se pudo cargar:", basePath + (child.index || child.path || ""), err.message);
+          }
         }
       });
       

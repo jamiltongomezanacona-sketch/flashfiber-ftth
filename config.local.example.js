@@ -14,6 +14,9 @@ window.__FTTH_SECRETS__ = {
   // true = mostrar logs de depuración (__FTTH_LOG__("log", ...)); false = silenciar en producción
   DEBUG: true,
 
+  // Código para permitir eliminar pines (cierres/eventos). Por defecto "7431"
+  // DELETE_PIN: "7431",
+
   // 🔥 Configuración de Firebase
   FIREBASE: {
     apiKey: "AIzaSyD3BNTIERRCZy5jRwN-KcIIQLeXFyg9gY4",

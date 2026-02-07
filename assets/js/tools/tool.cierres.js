@@ -484,6 +484,12 @@
           btnDelete.addEventListener("click", async function (e) {
             e.preventDefault();
             e.stopPropagation();
+            const codigo = window.prompt("Código para eliminar:");
+            const esperado = (window.__FTTH_CONFIG__ && window.__FTTH_CONFIG__.DELETE_PIN) || "7431";
+            if (codigo !== esperado) {
+              alert("Código incorrecto");
+              return;
+            }
             if (!confirm("¿Eliminar este cierre?")) return;
             try {
               const FB = window.FTTH_FIREBASE;
@@ -900,6 +906,12 @@
       const id = modal.dataset.editId;
       if (!id) return;
 
+      const codigo = window.prompt("Código para eliminar:");
+      const esperado = (window.__FTTH_CONFIG__ && window.__FTTH_CONFIG__.DELETE_PIN) || "7431";
+      if (codigo !== esperado) {
+        alert("Código incorrecto");
+        return;
+      }
       if (!confirm("¿Eliminar este cierre?")) return;
 
       try {

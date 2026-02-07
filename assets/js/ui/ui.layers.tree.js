@@ -6,7 +6,7 @@
   "use strict";
 
   const TREE_CONTAINER_ID = "layersTree";
-  const ROOT_INDEX = "../geojson/index.json";
+  const ROOT_INDEX = (typeof window !== "undefined" && window.__GEOJSON_INDEX__) || "../geojson/index.json";
 
   // ✅ Sistema de inicialización mejorado
   async function init() {

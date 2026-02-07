@@ -14,7 +14,7 @@
     return;
   }
 
-  const ROOT_INDEX = "../geojson/index.json";
+  const ROOT_INDEX = (typeof window !== "undefined" && window.__GEOJSON_INDEX__) || "../geojson/index.json";
   let restoring = false;
   let loadingTree = false; // ✅ Bloqueo para evitar cargas duplicadas
 

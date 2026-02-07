@@ -378,7 +378,8 @@
         }
       }
       // Fallback: recorrer árbol (múltiples fetches)
-      const indexRes = await fetch("../geojson/index.json", { cache: "default" });
+      const indexUrl = (typeof window !== "undefined" && window.__GEOJSON_INDEX__) || "../geojson/index.json";
+      const indexRes = await fetch(indexUrl, { cache: "default" });
       if (!indexRes.ok) throw new Error("Índice de cables no disponible");
       const root = await indexRes.json();
       await walkTreeForCables(root, "../geojson/");

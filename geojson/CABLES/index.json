@@ -1,0 +1,1 @@
+{"label":"CABLES","children":[{"type":"layer","id":"CABLES_KML","label":"Cables (KML)","path":"cables.geojson","typeLayer":"line","paint":{"line-color":["get","color"],"line-width":4}}]}

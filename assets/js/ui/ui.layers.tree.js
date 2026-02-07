@@ -424,13 +424,29 @@
   }
 
   /* =========================
-     Al activar un cable, activar también los pines (Centrales, Cierres, Eventos)
+     Extraer molécula del id de capa de cable (ej. FTTH_SANTA_INES_SI17_SI17FH144_1 → SI17)
   ========================= */
-  function showPinsWhenCableActivated() {
+  function extractMoleculaFromCableLayerId(layerId) {
+    if (!layerId || typeof layerId !== "string") return null;
+    if (layerId === "geojson-lines" || layerId === "ftth-cables") return null;
+    const parts = layerId.split("_");
+    const match = parts.find(function (p) { return /^[A-Z]{2}\d+$/.test(p); });
+    return match || null;
+  }
+
+  /* =========================
+     Al activar un cable: activar pines filtrados por la molécula de ese cable
+     (solo se muestran pines que corresponden al cable, ej. SI17FH144 → molecula SI17)
+  ========================= */
+  function showPinsWhenCableActivated(layerIdOrMolecula, moleculaFromSearch) {
     const App = window.__FTTH_APP__;
     const CONFIG = window.__FTTH_CONFIG__ || {};
     if (!App?.map) return;
     const map = App.map;
+    const molecula = moleculaFromSearch != null ? moleculaFromSearch : extractMoleculaFromCableLayerId(layerIdOrMolecula);
+    if (typeof App.setSelectedMoleculaForPins === "function") {
+      App.setSelectedMoleculaForPins(molecula);
+    }
     const LAYER_CENTRALES = CONFIG.LAYERS?.CENTRALES || "CORPORATIVO_CENTRALES_ETB";
     const LAYER_CIERRES = CONFIG.LAYERS?.CIERRES || "cierres-layer";
     const LAYER_EVENTOS = CONFIG.LAYERS?.EVENTOS || "eventos-layer";
@@ -477,11 +493,11 @@
       if (current === desired) return;
       map.setLayoutProperty(layerId, "visibility", desired);
       console.log(`${visible ? "✅" : "❌"} Capa ${layerId} ${visible ? "habilitada" : "deshabilitada"}`);
-      // Si se activa una capa de cable (línea), activar también los pines
+      // Si se activa una capa de cable (línea), activar pines filtrados por esa molécula
       if (visible) {
         const layer = map.getLayer(layerId);
         const isCable = layer && (layer.type === "line" || layerId === "geojson-lines" || layerId === "ftth-cables");
-        if (isCable) showPinsWhenCableActivated();
+        if (isCable) showPinsWhenCableActivated(layerId);
       }
     } else {
       console.warn("⚠️ Capa no encontrada:", layerId);

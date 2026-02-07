@@ -836,7 +836,7 @@
     if (result.type === "cable" && result.layerId && App.map.getLayer(result.layerId)) {
       App.map.setLayoutProperty(result.layerId, "visibility", "visible");
       if (typeof App.showPinsWhenCableActivated === "function") {
-        App.showPinsWhenCableActivated();
+        App.showPinsWhenCableActivated(result.layerId, result.molecula || null);
       }
     }
     if (result.type === "cierre") {

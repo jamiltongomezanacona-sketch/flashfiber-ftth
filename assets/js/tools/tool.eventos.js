@@ -282,6 +282,11 @@
         return;
       }
 
+      // En GIS Corporativo la capa de eventos debe verse siempre (como en FTTH cuando hay molécula)
+      if (isCorporativoEvento && App.map.getLayer(LAYER_ID)) {
+        App.map.setLayoutProperty(LAYER_ID, "visibility", "visible");
+      }
+
       // Escapar HTML para evitar rupturas y XSS en el popup
       function escapeHtml(str) {
         if (str == null) return "";
@@ -371,8 +376,9 @@
             if (!confirm("¿Estás seguro de eliminar este evento?")) return;
             try {
               const FB = window.FTTH_FIREBASE;
-              if (FB?.eliminarEvento && p.id) {
-                await FB.eliminarEvento(p.id);
+              const eliminar = isCorporativoEvento ? FB?.eliminarEventoCorp : FB?.eliminarEvento;
+              if (eliminar && p.id) {
+                await eliminar(p.id);
                 popup.remove();
                 console.log("✅ Evento eliminado:", p.id);
               } else {

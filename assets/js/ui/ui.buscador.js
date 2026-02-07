@@ -751,8 +751,15 @@
       e.stopPropagation();
       const type = row.dataset.type;
       const id = row.dataset.id;
-      const result = allResults.find(r => r.type === type && r.id === id);
-      if (result) selectResult(result);
+      const result = allResults.find(r => r.type === type && (String(r.id) === id || (r.layerId && String(r.layerId) === id)));
+      if (result) {
+        try {
+          selectResult(result);
+        } catch (err) {
+          console.error("❌ Error al seleccionar resultado:", err);
+          hideResults();
+        }
+      }
     });
   }
 
@@ -896,9 +903,11 @@
   function selectResult(result) {
     if (!App.map || !result.coordinates) {
       console.warn("⚠️ No se puede hacer zoom: mapa o coordenadas no disponibles");
+      hideResults();
       return;
     }
 
+    try {
     // Asegurar que la capa y los datos existan antes de zoom (para que se vea a la primera)
     if (result.type === "cierre") {
       if (!App.data) App.data = {};
@@ -969,19 +978,26 @@
       } else {
         // GIS FTTH: una capa geojson-lines, filtrar por _layerId
         function applyCableFilter() {
-          if (!App.map.getLayer("geojson-lines")) return false;
-          App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_layerId"], result.layerId]);
-          App.map.setLayoutProperty("geojson-lines", "visibility", "visible");
-          return true;
+          try {
+            if (!App.map || !App.map.getLayer("geojson-lines")) return false;
+            App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_layerId"], result.layerId]]);
+            App.map.setLayoutProperty("geojson-lines", "visibility", "visible");
+            return true;
+          } catch (e) {
+            console.warn("⚠️ applyCableFilter:", e);
+            return false;
+          }
         }
         if (!applyCableFilter()) {
           if (typeof App.loadConsolidatedGeoJSONToBaseMap === "function") {
             App.loadConsolidatedGeoJSONToBaseMap();
             setTimeout(function retry() {
-              if (applyCableFilter()) {
-                if (typeof App.showPinsWhenCableActivated === "function") {
+              try {
+                if (applyCableFilter() && typeof App.showPinsWhenCableActivated === "function") {
                   App.showPinsWhenCableActivated(result.layerId, result.molecula || getMoleculaFromCable(result));
                 }
+              } catch (e) {
+                console.warn("⚠️ Retry cable filter:", e);
               }
             }, 2500);
           }
@@ -1012,12 +1028,14 @@
       if (fe) fe.checked = true;
     }
 
-    // Cerrar resultados
+    const zoomLabel = result.type === "cable" ? cableNameForDisplay(result.layerId, result.name) : result.name;
+      console.log(`🎯 Zoom a ${result.type}: ${zoomLabel}`);
+    } catch (err) {
+      console.error("❌ Error en selectResult:", err);
+    }
+    // Siempre cerrar resultados y quitar foco
     hideResults();
     searchInput.blur();
-
-    const zoomLabel = result.type === "cable" ? cableNameForDisplay(result.layerId, result.name) : result.name;
-    console.log(`🎯 Zoom a ${result.type}: ${zoomLabel}`);
   }
 
   /* =========================

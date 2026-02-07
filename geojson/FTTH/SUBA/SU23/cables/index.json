@@ -1,0 +1,16 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_SUBA_SU23_SU23FH144",
+      "label": "SU23FH144",
+      "path": "SU23FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#9c0f9c",
+        "line-width": 4
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "label": "Cierres",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_SUBA_SU07_cierres",
+      "label": "Cierres SU07",
+      "path": "cierres.geojson",
+      "typeLayer": "symbol"
+    }
+  ]
+}

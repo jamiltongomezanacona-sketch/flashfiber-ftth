@@ -171,6 +171,11 @@
       const m = displayLabel.match(/^(CO\d+)_(CO\d+FH\d+.*)$/i);
       if (m) displayLabel = m[2];
     }
+    // Suba: SU01_SU01FH144 → SU01FH144
+    if (displayLabel && /^SU\d+_SU\d+FH/i.test(displayLabel)) {
+      const m = displayLabel.match(/^(SU\d+)_(SU\d+FH\d+.*)$/i);
+      if (m) displayLabel = m[2];
+    }
     // Sufijo con guión para UI (ej. SI22FH144_1 → SI22FH144-1)
     if (displayLabel && /SI\d+FH\d+_\d+$/i.test(displayLabel)) {
       displayLabel = displayLabel.replace(/_(\d+)$/, "-$1");

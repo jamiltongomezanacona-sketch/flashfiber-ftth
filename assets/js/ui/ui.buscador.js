@@ -480,6 +480,9 @@
     // Chico: CO04FH144 (central CHICO, moléculas COxx)
     const matchCo = normalized.match(/(CO\d+FH\d+(?:_\d+)?)/i);
     if (matchCo) return matchCo[1];
+    // Suba: SU01FH144 (central SUBA, moléculas SUxx)
+    const matchSu = normalized.match(/(SU\d+FH\d+(?:_\d+)?)/i);
+    if (matchSu) return matchSu[1];
     if (from.startsWith("FTTH_") && from.includes("_")) {
       const parts = from.split("_");
       if (parts.length >= 2) return normalizeCuniCableName(parts.slice(-2).join("_"));

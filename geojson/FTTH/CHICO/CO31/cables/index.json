@@ -1,0 +1,16 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_CHICO_CO31_CO31FH144",
+      "label": "CO31FH144",
+      "path": "CO31FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#910723",
+        "line-width": 4
+      }
+    }
+  ]
+}

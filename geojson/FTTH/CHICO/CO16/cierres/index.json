@@ -1,0 +1,12 @@
+{
+  "label": "Cierres",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_CHICO_CO16_cierres",
+      "label": "Cierres CO16",
+      "path": "cierres.geojson",
+      "typeLayer": "symbol"
+    }
+  ]
+}

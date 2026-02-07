@@ -1,0 +1,49 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_CHICO_CO17_CO17FH144",
+      "label": "CO17FH144",
+      "path": "CO17FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#660066",
+        "line-width": 4
+      }
+    },
+    {
+      "type": "layer",
+      "id": "FTTH_CHICO_CO17_CO17FH48-3",
+      "label": "CO17FH48-3",
+      "path": "CO17FH48-3.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#660066",
+        "line-width": 4
+      }
+    },
+    {
+      "type": "layer",
+      "id": "FTTH_CHICO_CO17_CO17FH48_1",
+      "label": "CO17FH48_1",
+      "path": "CO17FH48_1.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#660066",
+        "line-width": 4
+      }
+    },
+    {
+      "type": "layer",
+      "id": "FTTH_CHICO_CO17_CO17FH48_2",
+      "label": "CO17FH48_2",
+      "path": "CO17FH48_2.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#660066",
+        "line-width": 4
+      }
+    }
+  ]
+}

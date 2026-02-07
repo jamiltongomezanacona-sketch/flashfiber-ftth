@@ -166,6 +166,11 @@
       const m = displayLabel.match(/^(FO\d+)_(FO\d+FH\d+.*)$/i);
       if (m) displayLabel = m[2];
     }
+    // Chico: CO02_CO04FH144 → CO04FH144
+    if (displayLabel && /^CO\d+_CO\d+FH/i.test(displayLabel)) {
+      const m = displayLabel.match(/^(CO\d+)_(CO\d+FH\d+.*)$/i);
+      if (m) displayLabel = m[2];
+    }
     // Sufijo con guión para UI (ej. SI22FH144_1 → SI22FH144-1)
     if (displayLabel && /SI\d+FH\d+_\d+$/i.test(displayLabel)) {
       displayLabel = displayLabel.replace(/_(\d+)$/, "-$1");

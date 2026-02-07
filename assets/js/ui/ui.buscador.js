@@ -477,6 +477,9 @@
     // Fontibón: FO05FH144
     const matchFo = normalized.match(/(FO\d+FH\d+(?:_\d+)?)/i);
     if (matchFo) return matchFo[1];
+    // Chico: CO04FH144 (central CHICO, moléculas COxx)
+    const matchCo = normalized.match(/(CO\d+FH\d+(?:_\d+)?)/i);
+    if (matchCo) return matchCo[1];
     if (from.startsWith("FTTH_") && from.includes("_")) {
       const parts = from.split("_");
       if (parts.length >= 2) return normalizeCuniCableName(parts.slice(-2).join("_"));

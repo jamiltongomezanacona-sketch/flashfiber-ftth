@@ -1,0 +1,10 @@
+{
+  "label": "CO43",
+  "children": [
+    {
+      "type": "folder",
+      "label": "Cierres",
+      "index": "cierres/index.json"
+    }
+  ]
+}

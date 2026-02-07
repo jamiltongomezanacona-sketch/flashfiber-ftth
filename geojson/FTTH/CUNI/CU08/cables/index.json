@@ -1,0 +1,27 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_CUNI_CU08_CU08FH144",
+      "label": "CU08FH144",
+      "path": "CU08FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#ad20ad",
+        "line-width": 4
+      }
+    },
+    {
+      "type": "layer",
+      "id": "FTTH_CUNI_CU08_CU08FH24",
+      "label": "CU08FH24",
+      "path": "CU08FH24.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#ad20ad",
+        "line-width": 4
+      }
+    }
+  ]
+}

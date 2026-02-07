@@ -1,0 +1,12 @@
+{
+  "label": "Cierres",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_CUNI_CU15_cierres",
+      "label": "Cierres CU15",
+      "path": "cierres.geojson",
+      "typeLayer": "symbol"
+    }
+  ]
+}

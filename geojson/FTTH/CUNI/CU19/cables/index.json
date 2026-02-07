@@ -1,0 +1,16 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_CUNI_CU19_CU19FH144",
+      "label": "CU19FH144",
+      "path": "CU19FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#00780f",
+        "line-width": 4
+      }
+    }
+  ]
+}

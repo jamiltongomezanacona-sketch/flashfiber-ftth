@@ -388,6 +388,19 @@
     return shortCableDisplayName(layerId, fallbackName).replace(/_(\d+)$/, "-$1");
   }
 
+  /** Obtener molécula de un cable (ej. SI22): del índice o extraída de layerId/nombre. */
+  function getMoleculaFromCable(cable) {
+    if (cable.molecula && /^[A-Z]{2}\d+$/i.test(cable.molecula)) return cable.molecula;
+    if (cable.layerId && typeof cable.layerId === "string") {
+      const parts = cable.layerId.split("_");
+      const match = parts.find(function (p) { return /^[A-Z]{2}\d+$/.test(p); });
+      if (match) return match;
+    }
+    const from = (cable.name || "").toString();
+    const molMatch = from.match(/(SI\d+)/i);
+    return molMatch ? molMatch[1].toUpperCase() : null;
+  }
+
   async function walkTreeForCables(node, basePath) {
     if (!node) return;
 
@@ -741,9 +754,30 @@
         allResults.push(evento);
       }
     });
-    
+
+    // Añadir cables de la misma molécula (relacionados) cuando hay resultados de tipo cable
+    const cableResults = allResults.filter(function (r) { return r.type === "cable"; });
+    if (cableResults.length > 0) {
+      const molecules = new Set();
+      cableResults.forEach(function (r) {
+        const mol = getMoleculaFromCable(r);
+        if (mol) molecules.add(mol);
+      });
+      const existingIds = new Set(allResults.map(function (r) { return r.id; }));
+      const existingLayerIds = new Set(
+        allResults.filter(function (r) { return r.type === "cable"; }).map(function (r) { return r.layerId; })
+      );
+      const related = [];
+      searchIndex.cables.forEach(function (cable) {
+        if (existingIds.has(cable.id) || existingLayerIds.has(cable.layerId)) return;
+        const mol = getMoleculaFromCable(cable);
+        if (mol && molecules.has(mol)) related.push(cable);
+      });
+      allResults = allResults.concat(related);
+    }
+
     allResults = allResults.slice(0, SEARCH_MAX_RESULTS);
-    
+
     renderResults();
   }
 

@@ -15,170 +15,431 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', system-ui, sans-serif;
-      background: linear-gradient(135deg, #0a1929 0%, #132f4c 50%, #1e4976 100%);
+      background: var(--dark-primary);
       min-height: 100vh;
-      color: #e6f7ff;
+      color: var(--text-primary);
+      overflow-x: hidden;
     }
-    .header {
-      background: rgba(10, 25, 41, 0.85);
+
+    /* ========== HEADER ========== */
+    .config-header {
+      background: var(--card-bg);
       backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(0, 180, 216, 0.2);
-      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border-soft);
+      padding: 1rem 1.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
     }
-    .brand { display: flex; align-items: center; gap: 1rem; }
-    .brand .title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #00b4d8, #00e5ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    .config-header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
-    .brand .subtitle { font-size: 0.875rem; color: #a3d5ff; }
-    .user-box { display: flex; align-items: center; gap: 1rem; }
-    .user-name { color: #e6f7ff; font-weight: 500; font-size: 0.9375rem; }
-    .btn-logout { display: none; }
     .btn-back {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
       padding: 0.5rem 1rem;
-      background: rgba(0, 180, 216, 0.2);
-      border: 1px solid rgba(0, 180, 216, 0.4);
-      border-radius: 10px;
-      color: #00e5ff;
+      background: rgba(0, 180, 216, 0.15);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      color: var(--accent-cyan);
       text-decoration: none;
       font-size: 0.875rem;
       font-weight: 500;
       transition: all 0.2s ease;
     }
     .btn-back:hover {
-      background: rgba(0, 180, 216, 0.3);
-      border-color: #00e5ff;
+      background: rgba(0, 180, 216, 0.25);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 16px rgba(0, 229, 255, 0.15);
     }
-    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
-    .page-title {
+    .config-header .brand-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .config-header .brand-sub { font-size: 0.8125rem; color: var(--text-secondary); }
+    .config-header .user-name { color: var(--text-primary); font-weight: 500; font-size: 0.9375rem; }
+    .btn-logout { display: none; }
+
+    /* ========== MAIN ========== */
+    .config-main { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .config-hero {
+      margin-bottom: 2rem;
+      padding: 1.5rem 0;
+    }
+    .config-hero h1 {
       font-size: 1.75rem;
       font-weight: 700;
-      color: #e6f7ff;
-      margin-bottom: 2rem;
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       gap: 0.75rem;
     }
-    .page-title i { color: #00e5ff; }
-    .config-section {
-      background: rgba(19, 47, 76, 0.6);
-      border: 1px solid rgba(0, 180, 216, 0.2);
-      border-radius: 16px;
-      padding: 1.5rem;
-      margin-bottom: 1.25rem;
+    .config-hero h1 i {
+      color: var(--accent-cyan);
+      opacity: 0.95;
     }
-    .config-section h2 {
-      font-size: 1.1rem;
-      color: #00e5ff;
+    .config-hero p {
+      margin-top: 0.5rem;
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ========== CARDS ========== */
+    .config-grid {
+      display: grid;
+      gap: 1rem;
+    }
+    .config-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .config-card:hover {
+      border-color: rgba(0, 180, 216, 0.35);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    }
+    .config-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      gap: 1rem;
+    }
+    .config-card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .config-card-title i {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      background: rgba(0, 229, 255, 0.12);
+      color: var(--accent-cyan);
+    }
+    .config-card-badge {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      background: rgba(0, 200, 83, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(0, 200, 83, 0.3);
+    }
+    .config-card-badge.proximamente {
+      background: rgba(255, 170, 0, 0.15);
+      color: var(--warning);
+      border-color: rgba(255, 170, 0, 0.3);
+    }
+    .config-card-body {
+      padding: 1rem 1.25rem;
+    }
+    .config-card-desc {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
       margin-bottom: 1rem;
+    }
+    .config-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      flex-wrap: wrap;
+    }
+    .config-row:last-child { border-bottom: none; }
+    .config-row-label {
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .config-row-meta { font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem; }
+    .config-row-control {
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
-    .config-section p {
-      font-size: 0.9375rem;
-      color: #a3d5ff;
-      line-height: 1.5;
-    }
-    .config-section ul {
-      margin-top: 0.75rem;
-      padding-left: 1.25rem;
-      color: #a3d5ff;
-      font-size: 0.9375rem;
-      line-height: 1.7;
-    }
-    .footer {
-      text-align: center;
-      padding: 2rem 0;
-      color: #7dd3fc;
+    .config-input {
+      background: rgba(10, 25, 41, 0.8);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 0.75rem;
       font-size: 0.875rem;
+      color: var(--text-primary);
+      width: 140px;
+      transition: border-color 0.2s ease;
+    }
+    .config-input:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.15);
+    }
+    .config-input::placeholder { color: var(--text-secondary); opacity: 0.7; }
+    .config-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .config-btn-primary {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      color: #0a1929;
+    }
+    .config-btn-primary:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 4px 16px rgba(0, 229, 255, 0.35);
+    }
+    .config-btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--accent-cyan);
+      border: 1px solid var(--border-soft);
+    }
+    .config-btn-secondary:hover {
+      background: rgba(0, 229, 255, 0.1);
+      border-color: var(--accent-cyan);
+    }
+    .config-btn:disabled,
+    .config-btn.proximamente {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .toggle {
+      width: 44px;
+      height: 24px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid var(--border-soft);
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .toggle.on {
+      background: rgba(0, 229, 255, 0.3);
+      border-color: var(--accent-cyan);
+    }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s ease;
+    }
+    .toggle.on::after {
+      transform: translateX(20px);
+      background: var(--accent-cyan);
+    }
+    .footer-config {
+      text-align: center;
+      padding: 2rem 0 1rem;
+      color: var(--text-secondary);
+      font-size: 0.8125rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
       margin-top: 2rem;
     }
     @media (max-width: 767px) {
-      .header { padding: 0.75rem 1rem; }
-      .container { padding: 1rem; }
+      .config-header { padding: 0.75rem 1rem; }
+      .config-main { padding: 1.25rem 1rem; }
       .user-name { display: none; }
+      .config-row { flex-direction: column; align-items: flex-start; }
+      .config-input { width: 100%; max-width: 200px; }
     }
   </style>
 </head>
 
 <body class="app-dashboard">
 
-  <header class="header">
-    <div class="brand">
+  <header class="config-header">
+    <div class="config-header-left">
       <a href="home.html" class="btn-back" aria-label="Volver al inicio">
         <i class="fas fa-arrow-left"></i>
         <span>Inicio</span>
       </a>
       <div>
-        <div class="title">Flash Fiber FTTH</div>
-        <div class="subtitle">Configuración</div>
+        <div class="brand-title">Flash Fiber FTTH</div>
+        <div class="brand-sub">Admin · Configuración</div>
       </div>
     </div>
-    <div class="user-box">
-      <div class="user-name" id="usernameDisplay">Usuario</div>
-      <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
-    </div>
+    <div class="user-name" id="usernameDisplay">Usuario</div>
+    <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
   </header>
 
-  <main class="container">
-    <h1 class="page-title">
-      <i class="fas fa-cog"></i>
-      Admin · Configuración
-    </h1>
+  <main class="config-main">
+    <div class="config-hero">
+      <h1><i class="fas fa-cog"></i> Configuración</h1>
+      <p>Administración de usuarios, permisos y parámetros globales del sistema.</p>
+    </div>
 
-    <section class="config-section">
-      <h2><i class="fas fa-users"></i> Usuarios y permisos</h2>
-      <p>Gestión de usuarios, roles y acceso al sistema.</p>
-      <ul>
-        <li>Listar y editar usuarios</li>
-        <li>Asignar roles: Admin, Operador FTTH, Operador Corporativo, Solo lectura</li>
-        <li>Restablecer contraseña / invitaciones</li>
-      </ul>
-    </section>
+    <div class="config-grid">
 
-    <section class="config-section">
-      <h2><i class="fas fa-sliders-h"></i> Parámetros del sistema</h2>
-      <p>Configuración global de la plataforma.</p>
-      <ul>
-        <li>Contraseña de acceso a Capas</li>
-        <li>Código para eliminar pines (cierres/eventos)</li>
-        <li>Centrales y moléculas (prefijos)</li>
-      </ul>
-    </section>
+      <!-- Usuarios y permisos -->
+      <article class="config-card">
+        <div class="config-card-header">
+          <h2 class="config-card-title">
+            <i class="fas fa-users"></i>
+            Usuarios y permisos
+          </h2>
+          <span class="config-card-badge proximamente">Próximamente</span>
+        </div>
+        <div class="config-card-body">
+          <p class="config-card-desc">Gestión de usuarios, roles y acceso a GIS FTTH y Corporativo.</p>
+          <div class="config-row">
+            <div>
+              <div class="config-row-label">Roles disponibles</div>
+              <div class="config-row-meta">Admin, Operador FTTH, Operador Corp, Solo lectura</div>
+            </div>
+            <div class="config-row-control">
+              <button type="button" class="config-btn config-btn-secondary proximamente" disabled>
+                <i class="fas fa-user-cog"></i> Gestionar
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
 
-    <section class="config-section">
-      <h2><i class="fas fa-map"></i> GIS FTTH y Corporativo</h2>
-      <p>Opciones por módulo de mapa.</p>
-      <ul>
-        <li>Activar o desactivar módulos (Cierres, Eventos, Rutas)</li>
-        <li>Configuración de capas y consolidado GeoJSON</li>
-      </ul>
-    </section>
+      <!-- Parámetros del sistema -->
+      <article class="config-card">
+        <div class="config-card-header">
+          <h2 class="config-card-title">
+            <i class="fas fa-sliders-h"></i>
+            Parámetros del sistema
+          </h2>
+          <span class="config-card-badge">Activo</span>
+        </div>
+        <div class="config-card-body">
+          <p class="config-card-desc">Contraseñas y códigos de operación.</p>
+          <div class="config-row">
+            <div>
+              <div class="config-row-label">Contraseña Capas</div>
+              <div class="config-row-meta">Acceso al panel de capas en el mapa</div>
+            </div>
+            <div class="config-row-control">
+              <input type="password" class="config-input" id="inputCapasPassword" placeholder="••••••" maxlength="8" autocomplete="off" />
+              <button type="button" class="config-btn config-btn-primary" id="btnSaveCapasPassword" title="Guardar en memoria local">
+                <i class="fas fa-save"></i> Guardar
+              </button>
+            </div>
+          </div>
+          <div class="config-row">
+            <div>
+              <div class="config-row-label">Código eliminar pines</div>
+              <div class="config-row-meta">Para borrar cierres y eventos en mapa</div>
+            </div>
+            <div class="config-row-control">
+              <input type="password" class="config-input" id="inputDeletePinCode" placeholder="••••" maxlength="6" autocomplete="off" />
+              <button type="button" class="config-btn config-btn-primary" id="btnSaveDeleteCode">
+                <i class="fas fa-save"></i> Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
 
-    <section class="config-section">
-      <h2><i class="fas fa-key"></i> Integraciones</h2>
-      <p>Credenciales y servicios externos.</p>
-      <ul>
-        <li>Mapbox (token)</li>
-        <li>Firebase (proyecto y reglas)</li>
-      </ul>
-    </section>
+      <!-- GIS FTTH y Corporativo -->
+      <article class="config-card">
+        <div class="config-card-header">
+          <h2 class="config-card-title">
+            <i class="fas fa-map-marked-alt"></i>
+            GIS FTTH y Corporativo
+          </h2>
+          <span class="config-card-badge proximamente">Próximamente</span>
+        </div>
+        <div class="config-card-body">
+          <p class="config-card-desc">Opciones por módulo de mapa.</p>
+          <div class="config-row">
+            <div>
+              <div class="config-row-label">Módulos operación</div>
+              <div class="config-row-meta">Cierres, Eventos, Rutas en GIS FTTH</div>
+            </div>
+            <div class="toggle-wrap">
+              <span class="config-row-meta">Activos</span>
+              <div class="toggle on" id="toggleModulos" title="Solo visual"></div>
+            </div>
+          </div>
+          <div class="config-row">
+            <div>
+              <div class="config-row-label">Reportar Evento Corp</div>
+              <div class="config-row-meta">Disponible en GIS Corporativo</div>
+            </div>
+            <div class="toggle-wrap">
+              <span class="config-row-meta">Activo</span>
+              <div class="toggle on" id="toggleEventoCorp" title="Solo visual"></div>
+            </div>
+          </div>
+        </div>
+      </article>
 
-    <footer class="footer">
+      <!-- Integraciones -->
+      <article class="config-card">
+        <div class="config-card-header">
+          <h2 class="config-card-title">
+            <i class="fas fa-key"></i>
+            Integraciones
+          </h2>
+          <span class="config-card-badge">Solo lectura</span>
+        </div>
+        <div class="config-card-body">
+          <p class="config-card-desc">Estado de servicios externos (configuración en archivos del proyecto).</p>
+          <div class="config-row">
+            <div>
+              <div class="config-row-label">Mapbox</div>
+              <div class="config-row-meta">Mapas base y estilos</div>
+            </div>
+            <span class="config-card-badge" id="badgeMapbox">—</span>
+          </div>
+          <div class="config-row">
+            <div>
+              <div class="config-row-label">Firebase</div>
+              <div class="config-row-meta">Auth, Firestore, Storage</div>
+            </div>
+            <span class="config-card-badge" id="badgeFirebase">—</span>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <footer class="footer-config">
       © 2026 Flash Fiber · Plataforma FTTH
     </footer>
   </main>
@@ -186,17 +447,68 @@
   <script type="module" src="/assets/js/services/firebase.js"></script>
   <script type="module" src="/assets/js/services/firebase.db.js"></script>
   <script type="module" src="/assets/js/core/auth.guard.js"></script>
+  <script src="/assets/js/config.js" defer></script>
 
   <script>
-    const waitForUser = setInterval(() => {
-      if (window.__USER__) {
-        clearInterval(waitForUser);
-        const el = document.getElementById("usernameDisplay");
-        if (el) el.textContent = window.__USER__.nombre || window.__USER__.email || "Usuario";
-      }
-    }, 100);
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) logoutBtn.style.display = "none";
+    (function() {
+      const waitForUser = setInterval(function() {
+        if (window.__USER__) {
+          clearInterval(waitForUser);
+          var el = document.getElementById("usernameDisplay");
+          if (el) el.textContent = window.__USER__.nombre || window.__USER__.email || "Usuario";
+        }
+      }, 100);
+      var logoutBtn = document.getElementById("logoutBtn");
+      if (logoutBtn) logoutBtn.style.display = "none";
+
+      // Parámetros: cargar valores por defecto desde config
+      var CONFIG = window.__FTTH_CONFIG__ || {};
+      var capasPassword = CONFIG.SEARCH?.CAPAS_PASSWORD || "7431";
+      var deleteCode = CONFIG.DELETE_PIN || "7431";
+      try {
+        var storedCapas = localStorage.getItem("ff_capas_password");
+        var storedDelete = localStorage.getItem("ff_delete_pin_code");
+        if (storedCapas) capasPassword = storedCapas;
+        if (storedDelete) deleteCode = storedDelete;
+      } catch (e) {}
+      var inputCapas = document.getElementById("inputCapasPassword");
+      var inputDelete = document.getElementById("inputDeletePinCode");
+      if (inputCapas) inputCapas.placeholder = capasPassword ? "••••••" : "Ej. 7431";
+      if (inputDelete) inputDelete.placeholder = deleteCode ? "••••" : "Ej. 7431";
+
+      document.getElementById("btnSaveCapasPassword")?.addEventListener("click", function() {
+        var val = (inputCapas?.value || "").trim();
+        if (!val) { alert("Escribe la contraseña para Capas."); return; }
+        try {
+          localStorage.setItem("ff_capas_password", val);
+          alert("Contraseña de Capas guardada (local). Debes actualizar ui.panel.js para usarla.");
+        } catch (e) { alert("No se pudo guardar."); }
+      });
+      document.getElementById("btnSaveDeleteCode")?.addEventListener("click", function() {
+        var val = (inputDelete?.value || "").trim();
+        if (!val) { alert("Escribe el código para eliminar pines."); return; }
+        try {
+          localStorage.setItem("ff_delete_pin_code", val);
+          alert("Código guardado (local). Puedes usarlo al eliminar cierres/eventos.");
+        } catch (e) { alert("No se pudo guardar."); }
+      });
+
+      // Toggles solo visual
+      ["toggleModulos", "toggleEventoCorp"].forEach(function(id) {
+        var t = document.getElementById(id);
+        if (t) t.addEventListener("click", function() { this.classList.toggle("on"); });
+      });
+
+      // Integraciones: mostrar estado si hay config
+      setTimeout(function() {
+        var hasMapbox = !!(window.__FTTH_CONFIG__?.MAPBOX_TOKEN || window.__FTTH_SECRETS__?.MAPBOX_TOKEN);
+        var hasFirebase = !!(window.FTTH_FIREBASE || window.__FTTH_APP__);
+        var elM = document.getElementById("badgeMapbox");
+        var elF = document.getElementById("badgeFirebase");
+        if (elM) elM.textContent = hasMapbox ? "Configurado" : "No config";
+        if (elF) elF.textContent = hasFirebase ? "Conectado" : "—";
+      }, 500);
+    })();
   </script>
 
 </body>

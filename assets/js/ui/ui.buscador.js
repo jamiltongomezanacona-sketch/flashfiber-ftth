@@ -817,8 +817,9 @@
       }
     });
 
-    // Añadir cables de la misma molécula (relacionados) cuando hay resultados de tipo cable
+    // Añadir cables de la misma molécula (relacionados): ej. buscar SI17FH144 → mostrar también SI17FH48, etc.
     const cableResults = allResults.filter(function (r) { return r.type === "cable"; });
+    let maxResults = SEARCH_MAX_RESULTS;
     if (cableResults.length > 0) {
       const molecules = new Set();
       cableResults.forEach(function (r) {
@@ -836,9 +837,10 @@
         if (mol && molecules.has(mol)) related.push(cable);
       });
       allResults = allResults.concat(related);
+      maxResults = Math.max(SEARCH_MAX_RESULTS, allResults.length);
     }
 
-    allResults = allResults.slice(0, SEARCH_MAX_RESULTS);
+    allResults = allResults.slice(0, maxResults);
 
     renderResults();
   }

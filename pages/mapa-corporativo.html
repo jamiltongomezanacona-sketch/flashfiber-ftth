@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="/assets/css/search.css">
 </head>
 
-<body class="app-map" data-gis="corporativo">
+<body class="app-map app-map-corporativo" data-gis="corporativo">
   <script>window.__GEOJSON_INDEX__ = "../geojson/index-corporativo.json";</script>
 
   <header class="header">
@@ -73,46 +73,8 @@
       </section>
 
       <section class="menu-section">
-        <div class="menu-title">OPERACION</div>
-        <button class="menu-item" data-action="eventos">📝 Reportar Evento</button>
-        <button class="menu-item" data-action="cierres">🧱 Montar Cierre</button>
-        <button class="menu-item" data-action="ruta">🛣️ Montar Ruta</button>
-        <button class="menu-item">📷 Fotos</button>
-      </section>
-
-      <section class="menu-section">
         <div class="menu-title">RED CORPORATIVA</div>
-        <button class="menu-item" id="btnOpenLayers">🧱 Capas</button>
-      </section>
-
-      <section class="menu-section sidebar-filters">
-        <div class="filters-pines-header">
-          <span class="filters-pines-title">Pines en mapa</span>
-        </div>
-        <div class="filters-pines-toggles">
-          <label class="filter-toggle" title="Centrales">
-            <input type="checkbox" id="filterCentrales" checked />
-            <span class="filter-toggle-label">🏢 Centrales</span>
-          </label>
-          <label class="filter-toggle" title="Cierres">
-            <input type="checkbox" id="filterCierres" checked />
-            <span class="filter-toggle-label">🔒 Cierres</span>
-          </label>
-          <label class="filter-toggle" title="Eventos">
-            <input type="checkbox" id="filterEventos" checked />
-            <span class="filter-toggle-label">📝 Eventos</span>
-          </label>
-        </div>
-        <div class="filters-pines-molecula">
-          <span class="filter-molecula-label">🧬 Molécula</span>
-          <div class="molecula-search-wrap">
-            <input type="text" id="filterMoleculaSearch" class="molecula-search-input" placeholder="Ej: MU, SI02..." autocomplete="off" />
-            <select id="filterMolecula" class="sidebar-filter-select" aria-hidden="true" style="position:absolute;opacity:0;pointer-events:none;height:0;width:0;">
-              <option value="">Todas</option>
-            </select>
-            <div id="filterMoleculaDropdown" class="molecula-dropdown hidden" role="listbox"></div>
-          </div>
-        </div>
+        <button class="menu-item" id="btnOpenLayers">🗺️ Capas</button>
       </section>
 
     </nav>
@@ -169,188 +131,6 @@
 
   </div>
 
-  <!-- 🛣️ MODAL RUTA -->
-  <div id="routeModal" class="route-modal hidden">
-    <div class="route-card">
-
-      <div class="route-header">
-        <span>🛣️ Nueva Ruta</span>
-        <button id="closeRouteModal">✕</button>
-      </div>
-
-      <div class="route-body">
-
-        <label>📛 Nombre</label>
-        <input id="routeName" placeholder="Ej: Troncal BA01 Norte">
-
-        <label>🧱 Tipo</label>
-        <select id="routeType">
-          <option value="troncal">Troncal</option>
-          <option value="distribucion">Distribución</option>
-          <option value="acometida">Acometida</option>
-          <option value="mantenimiento">Mantenimiento</option>
-        </select>
-
-        <label>🏢 Central</label>
-        <input id="routeCentral" placeholder="Ej: BACHUE">
-
-        <label>📝 Observaciones</label>
-        <textarea id="routeNotes" placeholder="Notas técnicas..."></textarea>
-
-        <p id="routeDistance">Distancia: 0 m</p>
-
-      </div>
-
-      <div class="route-actions">
-        <button class="route-btn primary" id="btnSaveRoute">💾 Guardar</button>
-        <button class="route-btn danger" id="btnCancelRoute">Cancelar</button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- 🔒 MODAL CIERRE -->
-  <div id="cierreModal" class="route-modal hidden">
-    <div class="route-card">
-
-      <div class="route-header">
-        <span>🔒 Nuevo Cierre</span>
-        <button id="closeCierreModal">✕</button>
-      </div>
-
-      <div class="route-body">
-
-        <label>📦 Tipo</label>
-        <select id="cierreTipo">
-          <option value="">Seleccione Tipo</option>
-          <option value="E1">E1 - Derivación</option>
-          <option value="E2">E2 - Splitter</option>
-          <option value="NAP">NAP</option>
-        </select>
-
-        <label>🏢 Central</label>
-        <select id="cierreCentral" disabled>
-          <option value="">Seleccione Central</option>
-          <option value="BACHUE">Bachué</option>
-          <option value="CHICO">Chicó</option>
-          <option value="CUNI">Cuni</option>
-          <option value="FONTIBON">Fontibón</option>
-          <option value="GUAYMARAL">Guaymaral</option>
-          <option value="HOLANDA">Holanda</option>
-          <option value="MUZU">Muzú</option>
-          <option value="SANTA_INES">Santa Inés</option>
-          <option value="SUBA">Suba</option>
-          <option value="TOBERIN">Toberín</option>
-        </select>
-
-        <label>🧬 Molécula</label>
-        <select id="cierreMolecula" disabled>
-          <option value="">Seleccione Molécula</option>
-        </select>
-
-        <!-- Campos dinámicos según tipo -->
-        <div id="cierreCamposDinamicos"></div>
-
-        <label>🏷️ Código Generado</label>
-        <input id="cierreCodigo" readonly style="background:#1a1a1a;color:#4ade80;font-weight:bold" placeholder="Se generará automáticamente">
-
-        <label>📝 Observaciones</label>
-        <textarea id="cierreNotas"></textarea>
-
-      </div>
-
-      <div class="route-actions">
-        <button class="route-btn primary" id="btnSaveCierre">💾 Guardar</button>
-
-        <button class="route-btn danger" id="btnDeleteCierre">
-          🗑️ Eliminar
-        </button>
-
-        <button class="route-btn danger" id="btnCancelCierre">
-          Cancelar
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ================= MODAL EVENTO ================= -->
-  <div id="eventoModal" class="route-modal hidden">
-
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h3>🚨 Registrar Evento</h3>
-        <button id="closeEventoModal">✖</button>
-      </div>
-
-      <div class="modal-body">
-
-        <label>Tipo</label>
-        <select id="eventoTipo">
-          <option value="">Seleccione</option>
-          <option>VANDALISMO</option>
-          <option>CORTE</option>
-          <option>OBRAS</option>
-          <option>MANTENIMIENTO</option>
-        </select>
-
-        <label>Acción</label>
-        <select id="eventoAccion">
-          <option value="">Seleccione</option>
-          <option>EMPALME_PROVISIONAL</option>
-          <option>AJUSTE DE HILO</option>
-          <option>RECONSTRUCCION</option>
-          <option>BANDEJA</option>
-        </select>
-
-        <label>Estado</label>
-        <select id="eventoEstado">
-          <option>CRITICO</option>
-          <option>PROVISIONAL</option>
-          <option>RESUELTO</option>
-        </select>
-        <label>🏢 Central</label>
-        <select id="eventoCentral">
-          <option value="">Seleccione Central</option>
-          <option value="BACHUE">Bachué</option>
-          <option value="CHICO">Chicó</option>
-          <option value="CUNI">Cuni</option>
-          <option value="FONTIBON">Fontibón</option>
-          <option value="GUAYMARAL">Guaymaral</option>
-          <option value="HOLANDA">Holanda</option>
-          <option value="MUZU">Muzú</option>
-          <option value="SANTA_INES">Santa Inés</option>
-          <option value="SUBA">Suba</option>
-          <option value="TOBERIN">Toberín</option>
-        </select>
-
-        <label>🧬 Molécula</label>
-        <select id="eventoMolecula" disabled>
-          <option value="">Seleccione Molécula</option>
-        </select>
-
-        <label>Técnico</label>
-        <input id="eventoTecnico" placeholder="Nombre técnico">
-
-        <!-- 📸 FOTOS DEL EVENTO -->
-        <label>📷 Fotos</label>
-        <input type="file" id="fotoInput" accept="image/*" capture="environment" multiple>
-        <div id="fotoPreview" class="foto-preview"></div>
-
-        <label>Notas</label>
-        <textarea id="eventoNotas"></textarea>
-
-      </div>
-
-      <div class="modal-footer">
-        <button id="btnSaveEvento">💾 Guardar</button>
-        <button id="btnDeleteEvento">🗑️ Eliminar</button>
-      </div>
-
-    </div>
-  </div>
-
 <!-- LIBS (defer: no bloquean el render, se ejecutan en orden al terminar el parse) -->
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js" defer></script>
@@ -371,33 +151,20 @@
 <!-- Auth Guard - Protección de rutas -->
 <script type="module" src="/assets/js/core/auth.guard.js"></script>
 
-<!-- FIREBASE SERVICES -->
-<script type="module" src="/assets/js/services/firebase.cierres.js"></script>
-<script type="module" src="/assets/js/services/firebase.eventos.js"></script>
-<script type="module" src="/assets/js/services/firebase.rutas.js"></script>
-<script type="module" src="/assets/js/services/firebase.storage.js"></script>
-
-<!-- APP CORE -->
+<!-- APP CORE (Corporativo: sin firebase cierres/eventos/rutas) -->
 <script src="/assets/js/app.js" defer></script>
-<script src="/assets/js/storage.js" defer></script>
-<script src="/assets/js/storage.cierres.js" defer></script>
-<script src="/assets/js/utils/centrales.js" defer></script>
 <script src="/assets/js/ui/ui.menu.js" defer></script>
 
-<!-- MAPA -->
+<!-- MAPA (Corporativo: solo init, controls, layers; sin mapa.ftth.js) -->
 <script src="/assets/js/map/mapa.init.js" defer></script>
 <script src="/assets/js/map/mapa.controls.js" defer></script>
 <script src="/assets/js/map/mapa.layers.js" defer></script>
-<script src="/assets/js/map/mapa.ftth.js" defer></script>
 
-<!-- TOOLS -->
+<!-- TOOLS (Corporativo: solo GPS, Medir, Navegar, Capas) -->
 <script src="/assets/js/tools/tool.medicion.js" defer></script>
 <script src="/assets/js/tools/tool.gps.js" defer></script>
 <script src="/assets/js/tools/tool.navegacion.js?v=2026" defer></script>
 <script src="/assets/js/tools/tool.capas.js" defer></script>
-<script src="/assets/js/tools/tool.rutas.js" defer></script>
-<script src="/assets/js/tools/tool.cierres.js" defer></script>
-<script src="/assets/js/tools/tool.eventos.js" defer></script>
 
 <!-- UI -->
 <script src="/assets/js/ui/ui.panel.js" defer></script>

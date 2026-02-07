@@ -156,10 +156,10 @@
       const m = displayLabel.match(/^(HO\d+)_(HO\d+FH\d+.*)$/i);
       if (m) displayLabel = m[2];
     }
-    // Bachue: BA02_BA02FH144 → BA02FH144
-    if (displayLabel && /^BA\d+_BA\d+FH/i.test(displayLabel)) {
-      const m = displayLabel.match(/^(BA\d+)_(BA\d+FH\d+.*)$/i);
-      if (m) displayLabel = m[2];
+    // Bachue: BA05_BAO5FH144 → BA05FH144, BA02_BA02FH144 → BA02FH144
+    if (displayLabel && /^BA\d+_BAO?\d+FH/i.test(displayLabel)) {
+      const m = displayLabel.match(/^(BA\d+)_(BAO?\d+FH\d+.*)$/i);
+      if (m) displayLabel = m[2].replace(/^BAO(\d)/i, "BA0$1");
     }
     // Sufijo con guión para UI (ej. SI22FH144_1 → SI22FH144-1)
     if (displayLabel && /SI\d+FH\d+_\d+$/i.test(displayLabel)) {

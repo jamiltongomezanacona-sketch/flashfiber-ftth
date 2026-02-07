@@ -21,8 +21,8 @@ function shortCableDisplayName(layerId, fallbackName) {
   if (matchCuni) return matchCuni[1].replace(/^CUO(\d)/i, "CU0$1");
   const matchHo = normalized.match(/(HO\d+FH\d+)/i);
   if (matchHo) return matchHo[1];
-  const matchBa = normalized.match(/(BA\d+FH\d+)/i);
-  if (matchBa) return matchBa[1];
+  const matchBa = normalized.match(/(BAO?\d+FH\d+)/i);
+  if (matchBa) return matchBa[1].replace(/^BAO(\d)/i, "BA0$1");
   if (from.startsWith("FTTH_") && from.includes("_")) {
     const parts = from.split("_");
     if (parts.length >= 2) return parts.slice(-2).join("_");

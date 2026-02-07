@@ -24,11 +24,10 @@
   // ✅ TOKEN
   mapboxgl.accessToken = CONFIG.MAPBOX_TOKEN;
 
-  // 🗺️ MAPA BASE – SOLO CALLES
-  // Centro inicial: Santa Inés (coordenadas de la central)
+  // 🗺️ MAPA BASE – light-v11 (único estilo que evita "glyphs > 65535" en Mapbox GL)
   const map = new mapboxgl.Map({
     container: "map",
-    style: "mapbox://styles/mapbox/streets-v12",
+    style: "mapbox://styles/mapbox/light-v11",
     center: [-74.088195, 4.562537], // Central Santa Inés
     zoom: 14, // Zoom más cercano para ver el sector de Santa Inés
     bearing: 0,

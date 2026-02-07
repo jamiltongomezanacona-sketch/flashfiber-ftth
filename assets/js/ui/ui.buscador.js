@@ -28,6 +28,9 @@
   let allResults = [];
   let currentSearch = "";
 
+  // GIS Corporativo: solo buscar los 235 cables de CABLES (no FTTH)
+  const isCorporativo = typeof window !== "undefined" && !!window.__GEOJSON_INDEX__;
+
   // Índice de búsqueda (centrales, cables, cierres y eventos desde Firebase)
   const searchIndex = {
     centrales: [],
@@ -50,27 +53,28 @@
      Inicialización
   ========================= */
   async function init() {
-    // ✅ Configurar event listeners de inmediato (antes de cargar datos)
     setupEventListeners();
-    
-    // ✅ Cargar centrales inmediatamente (rápido)
-    loadCentrales().then(() => {
-      console.log(`✅ Centrales cargadas: ${searchIndex.centrales.length}`);
-    });
-    
-    // ✅ Cargar cables en paralelo (puede tardar más)
-    loadCables().then(() => {
-      console.log(`✅ Cables cargados: ${searchIndex.cables.length}`);
-    });
-    
-    console.log("🔍 Buscador inicializado - cargando datos en segundo plano");
-    
-    // ✅ Cargar cierres y eventos cuando Firebase esté disponible (en segundo plano)
-    waitForFirebaseAndLoadCierres();
-    waitForFirebaseAndLoadEventos();
-    setupFilterToggles();
-    setupMoleculaFilter();
-    if (App) App.setSelectedMoleculaForPins = setSelectedMoleculaForPins;
+
+    if (isCorporativo) {
+      // GIS Corporativo: solo los 235 cables de CABLES (no centrales/cierres/eventos FTTH)
+      loadCablesCorporativo().then(() => {
+        console.log(`✅ Buscador Corporativo: ${searchIndex.cables.length} cables`);
+      });
+      console.log("🔍 Buscador GIS Corporativo - solo cables CABLES");
+    } else {
+      loadCentrales().then(() => {
+        console.log(`✅ Centrales cargadas: ${searchIndex.centrales.length}`);
+      });
+      loadCables().then(() => {
+        console.log(`✅ Cables cargados: ${searchIndex.cables.length}`);
+      });
+      waitForFirebaseAndLoadCierres();
+      waitForFirebaseAndLoadEventos();
+      setupFilterToggles();
+      setupMoleculaFilter();
+      if (App) App.setSelectedMoleculaForPins = setSelectedMoleculaForPins;
+      console.log("🔍 Buscador inicializado - cargando datos en segundo plano");
+    }
   }
 
   async function waitForFirebaseAndLoadCierres(maxAttempts = 100) {
@@ -347,11 +351,48 @@
   }
 
   /* =========================
+     GIS Corporativo: solo cables de CABLES (235 cables del KML)
+  ========================= */
+  const CABLES_CORPORATIVO_URL = "../geojson/CABLES/cables.geojson";
+
+  async function loadCablesCorporativo() {
+    searchIndex.cables = [];
+    try {
+      const res = await fetch(CABLES_CORPORATIVO_URL, { cache: "default" });
+      if (!res.ok) throw new Error("No se pudo cargar cables corporativos");
+      const geojson = await res.json();
+      if (!geojson.features || !geojson.features.length) return;
+      geojson.features.forEach(feature => {
+        const name = feature.properties?.name || "Sin nombre";
+        let coordinates = null;
+        if (feature.geometry?.type === "LineString" && feature.geometry.coordinates?.length > 0) {
+          const mid = Math.floor(feature.geometry.coordinates.length / 2);
+          coordinates = feature.geometry.coordinates[mid];
+        }
+        if (coordinates) {
+          searchIndex.cables.push({
+            id: name,
+            name: name,
+            type: "cable",
+            layerId: "CABLES_KML",
+            coordinates: coordinates,
+            icon: "🧵",
+            subtitle: "Cable corporativo"
+          });
+        }
+      });
+    } catch (err) {
+      console.warn("⚠️ Error cargando cables corporativos:", err);
+    }
+  }
+
+  /* =========================
      Cargar cables: índice único (1 fetch) o fallback al árbol (N fetches)
   ========================= */
   const CABLES_INDEX_URL = "../geojson/cables-index.json";
 
   async function loadCables() {
+    if (isCorporativo) return;
     try {
       console.log("🔍 Iniciando carga de cables para buscador...");
       const res = await fetch(CABLES_INDEX_URL, { cache: "default" });
@@ -733,8 +774,7 @@
       if (retryCount < SEARCH_MAX_RETRIES) {
         searchResults.innerHTML = `<div class="search-no-results"><i class="fas fa-spinner fa-spin"></i><div>Cargando índice de búsqueda...</div></div>`;
         searchResults.classList.remove("hidden");
-        loadCentrales();
-        loadCables();
+        if (isCorporativo) loadCablesCorporativo(); else { loadCentrales(); loadCables(); }
         setTimeout(() => performSearch(query, retryCount + 1), SEARCH_RETRY_DELAY_MS);
       } else {
         searchResults.innerHTML = `<div class="search-no-results"><i class="fas fa-search"></i><div>No se encontraron resultados</div></div>`;

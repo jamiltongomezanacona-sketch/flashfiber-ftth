@@ -443,14 +443,20 @@
 
         const notas = p.notas ? escapeHtml(String(p.notas).slice(0, 120)) + (String(p.notas).length > 120 ? "…" : "") : "—";
         const html = `
-  <div class="popup pin-popup popup-resumen" style="min-width:220px;max-width:320px;font-size:14px;line-height:1.5;color:#fff">
-    <div style="padding:10px 12px">
-      <div style="font-size:15px;font-weight:bold;margin-bottom:10px;color:#00e5ff">🔒 ${nombrePin}</div>
-      <div style="font-size:13px;margin:5px 0;color:#e0e0e0"><span style="color:#00e5ff">Fecha de creación:</span> ${escapeHtml(fecha)}</div>
-      <div style="font-size:13px;margin:5px 0;color:#e0e0e0"><span style="color:#00e5ff">Creado por:</span> ${creadoPor}</div>
-      <div style="font-size:13px;margin:5px 0;color:#e0e0e0"><span style="color:#00e5ff">Notas:</span> ${notas}</div>
+  <div class="popup pin-popup pin-popup-card">
+    <div class="pin-popup-header">
+      <div class="pin-popup-header-icon cierre">🔒</div>
+      <h3 class="pin-popup-title">${nombrePin}</h3>
     </div>
-    <button id="btnEditCierrePopup" class="popup-btn" style="width:100%;padding:6px;font-size:12px;background:linear-gradient(135deg, #2196f3, #1565c0)">✏️ Editar</button>
+    <div class="pin-popup-body">
+      <div class="pin-popup-row"><span class="pin-popup-label">Fecha de creación</span><span class="pin-popup-value">${escapeHtml(fecha)}</span></div>
+      <div class="pin-popup-row"><span class="pin-popup-label">Creado por</span><span class="pin-popup-value">${creadoPor}</span></div>
+      <div class="pin-popup-row"><span class="pin-popup-label">Notas</span><span class="pin-popup-value">${notas}</span></div>
+    </div>
+    <div class="pin-popup-actions">
+      <button type="button" id="btnEditCierrePopup" class="pin-popup-btn pin-popup-btn-edit">✏️ Editar</button>
+      <button type="button" id="btnDeleteCierrePopup" class="pin-popup-btn pin-popup-btn-delete">🗑️ Eliminar</button>
+    </div>
   </div>
 `;
 
@@ -464,6 +470,24 @@
           btnEdit?.addEventListener("click", () => {
             popup.remove();
             abrirEdicionCierre(p);
+          });
+          const btnDelete = document.getElementById("btnDeleteCierrePopup");
+          btnDelete?.addEventListener("click", async () => {
+            if (!confirm("¿Eliminar este cierre?")) return;
+            try {
+              const FB = window.FTTH_FIREBASE;
+              const id = p.id || idStr;
+              if (FB?.eliminarCierre && id) {
+                await FB.eliminarCierre(id);
+                popup.remove();
+                console.log("✅ Cierre eliminado:", id);
+              } else {
+                alert("❌ No se pudo eliminar el cierre");
+              }
+            } catch (err) {
+              console.error("❌ Error eliminando cierre:", err);
+              alert("❌ Error al eliminar el cierre");
+            }
           });
         }, 80);
       }

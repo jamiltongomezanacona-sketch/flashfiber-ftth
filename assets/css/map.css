@@ -282,25 +282,24 @@ main.map-wrapper {
    Popup cierres / eventos - Estilo moderno
 ================================ */
 
-/* Asegurar que el popup quede siempre por encima del mapa */
 .mapboxgl-popup {
   z-index: 10000 !important;
   pointer-events: auto !important;
 }
 
 .mapboxgl-popup-content {
-  background: rgba(15, 18, 30, 0.95) !important;
-  color: #ffffff !important;
-  border-radius: 12px !important;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important;
-  padding: 14px 16px !important;
+  background: linear-gradient(165deg, rgba(22, 28, 48, 0.98), rgba(15, 20, 36, 0.98)) !important;
+  color: #e8ecf4 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(0, 229, 255, 0.15) !important;
+  padding: 0 !important;
   font-size: 14px !important;
-  min-width: 280px;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 229, 255, 0.2);
+  min-width: 300px;
+  max-width: 340px;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
 }
 
-/* Propiedades del pin: título y valores más visibles */
 .pin-popup .mapboxgl-popup-content,
 .mapboxgl-popup-content .pin-popup {
   font-size: 14px !important;
@@ -308,20 +307,138 @@ main.map-wrapper {
 }
 
 .mapboxgl-popup-tip {
-  border-top-color: rgba(20,20,20,0.88) !important;
+  border-top-color: rgba(22, 28, 48, 0.98) !important;
 }
 
-/* Botón del popup */
-.popup-btn {
-  width: 100%;
-  padding: 8px;
-  margin-top: 8px;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #2196f3, #1565c0);
-  color: white;
+/* Card del popup */
+.pin-popup-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.pin-popup-header {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pin-popup-header-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.pin-popup-header-icon.cierre {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.25), rgba(0, 180, 216, 0.2));
+  color: #00e5ff;
+}
+
+.pin-popup-header-icon.evento {
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.25), rgba(255, 87, 34, 0.2));
+  color: #ff9800;
+}
+
+.pin-popup-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.pin-popup-body {
+  padding: 12px 16px 14px;
+}
+
+.pin-popup-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 6px 0;
   font-size: 13px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.pin-popup-row:last-child {
+  border-bottom: none;
+}
+
+.pin-popup-label {
+  color: rgba(255,255,255,0.5);
+  flex-shrink: 0;
+}
+
+.pin-popup-value {
+  color: #e0e6ed;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* Acciones: Editar y Eliminar siempre visibles */
+.pin-popup-actions {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px 16px;
+  background: rgba(0,0,0,0.2);
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.pin-popup-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: transform 0.12s ease, box-shadow 0.2s ease;
+}
+
+.pin-popup-btn:active {
+  transform: scale(0.97);
+}
+
+.pin-popup-btn-edit {
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.35);
+}
+
+.pin-popup-btn-edit:hover {
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.45);
+}
+
+.pin-popup-btn-delete {
+  background: linear-gradient(135deg, #e53935, #c62828);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(229, 57, 53, 0.35);
+}
+
+.pin-popup-btn-delete:hover {
+  box-shadow: 0 4px 12px rgba(229, 57, 53, 0.45);
+}
+
+/* Compatibilidad con clases antiguas */
+.popup-btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease;
 }
 
 .popup-btn:active {

@@ -72,11 +72,11 @@
       }, 500);
     }
 
-    // ✅ GIS FTTH: carga diferida del consolidado (cables + cierres) para no bloquear arranque
+    // ✅ GIS FTTH: carga del consolidado (cables + cierres); 600ms para que los cables estén pronto
     if (!window.__GEOJSON_INDEX__ && App.loadConsolidatedGeoJSONToBaseMap) {
       setTimeout(() => {
         App.loadConsolidatedGeoJSONToBaseMap();
-      }, 2000);
+      }, 600);
     }
 
     // 🌍 Capas FTTH

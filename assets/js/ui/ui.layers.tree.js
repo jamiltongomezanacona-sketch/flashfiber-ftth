@@ -498,13 +498,13 @@
         if (isCable) showPinsWhenCableActivated(layerId);
       }
     } else if (!window.__GEOJSON_INDEX__ && map.getLayer("geojson-lines")) {
-      // GIS FTTH con estructura tipo Corporativo: una sola capa (geojson-lines), filtrar por _layerId
+      // GIS FTTH: una capa geojson-lines, filtrar por _layerId (mantener geometry-type)
       if (visible) {
-        map.setFilter("geojson-lines", ["==", ["get", "_layerId"], layerId]);
+        map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_layerId"], layerId]]);
         map.setLayoutProperty("geojson-lines", "visibility", "visible");
         showPinsWhenCableActivated(layerId);
       } else {
-        map.setFilter("geojson-lines", ["==", ["get", "_layerId"], "__none__"]);
+        map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_layerId"], "__none__"]]);
       }
       console.log(`${visible ? "✅" : "❌"} Cable ${layerId} (filter en geojson-lines) ${visible ? "visible" : "oculto"}`);
     } else {

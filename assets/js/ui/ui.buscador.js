@@ -967,20 +967,24 @@
           App.map.setFilter(LAYER_EVENTOS, ["==", ["get", "cable"], result.name]);
         }
       } else {
-        // GIS FTTH con estructura tipo Corporativo: una capa geojson-lines, filtrar por _layerId
-        if (App.map.getLayer("geojson-lines")) {
-          App.map.setFilter("geojson-lines", ["==", ["get", "_layerId"], result.layerId]);
+        // GIS FTTH: una capa geojson-lines, filtrar por _layerId
+        function applyCableFilter() {
+          if (!App.map.getLayer("geojson-lines")) return false;
+          App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_layerId"], result.layerId]);
           App.map.setLayoutProperty("geojson-lines", "visibility", "visible");
-        } else {
-          const mol = getMoleculaFromCable(result);
-          const cablesSameMol = mol
-            ? searchIndex.cables.filter(function (c) { return getMoleculaFromCable(c) === mol; })
-            : [result];
-          cablesSameMol.forEach(function (c) {
-            if (c.layerId && App.map.getLayer(c.layerId)) {
-              App.map.setLayoutProperty(c.layerId, "visibility", "visible");
-            }
-          });
+          return true;
+        }
+        if (!applyCableFilter()) {
+          if (typeof App.loadConsolidatedGeoJSONToBaseMap === "function") {
+            App.loadConsolidatedGeoJSONToBaseMap();
+            setTimeout(function retry() {
+              if (applyCableFilter()) {
+                if (typeof App.showPinsWhenCableActivated === "function") {
+                  App.showPinsWhenCableActivated(result.layerId, result.molecula || getMoleculaFromCable(result));
+                }
+              }
+            }, 2500);
+          }
         }
         if (typeof App.showPinsWhenCableActivated === "function") {
           App.showPinsWhenCableActivated(result.layerId, result.molecula || getMoleculaFromCable(result));

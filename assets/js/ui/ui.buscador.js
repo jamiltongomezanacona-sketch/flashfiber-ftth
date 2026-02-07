@@ -332,7 +332,7 @@
   ========================= */
   async function loadCentrales() {
     try {
-      const res = await fetch("../geojson/CORPORATIVO/centrales-etb.geojson", { cache: "no-store" });
+      const res = await fetch("../geojson/CORPORATIVO/centrales-etb.geojson", { cache: "default" });
       const geojson = await res.json();
       
       if (geojson.features) {
@@ -576,7 +576,7 @@
                   }
                 }
                 
-                const res = await fetch(url, { cache: "no-store" });
+                const res = await fetch(url, { cache: "default" });
                 if (!res.ok) {
                   console.warn(`⚠️ No se pudo cargar índice: ${url} (${res.status})`);
                   return;

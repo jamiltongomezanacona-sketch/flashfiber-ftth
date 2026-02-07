@@ -52,7 +52,7 @@
   ========================= */
   async function loadRoot() {
     try {
-      const res = await fetch(ROOT_INDEX, { cache: "no-store" });
+      const res = await fetch(ROOT_INDEX, { cache: "default" });
       const root = await res.json();
       const container = document.getElementById(TREE_CONTAINER_ID);
       container.innerHTML = "";
@@ -253,7 +253,7 @@
             const nextPath = basePath + child.index;
             const url = "../geojson/" + nextPath;
 
-            const res = await fetch(url, { cache: "no-store" });
+            const res = await fetch(url, { cache: "default" });
             const json = await res.json();
 
             const childNode = {

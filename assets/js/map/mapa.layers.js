@@ -501,7 +501,7 @@
             }
             loadedUrls.add(url);
             
-            const res = await fetch(url, { cache: "no-store" });
+            const res = await fetch(url, { cache: "default" });
             if (!res.ok) {
               console.warn(`⚠️ No se pudo cargar: ${url}`);
               return;
@@ -574,7 +574,7 @@
                 (async () => {
                   try {
                     const url = basePath + child.index;
-                    const res = await fetch(url, { cache: "no-store" });
+                    const res = await fetch(url, { cache: "default" });
                     const json = await res.json();
                     const nextBase = basePath + child.index.replace("index.json", "");
                     const updatedPath = newPath + (json.label ? "/" + json.label : "");
@@ -593,7 +593,7 @@
       }
       
       // Cargar árbol raíz y consolidar
-      const res = await fetch(ROOT_INDEX, { cache: "no-store" });
+      const res = await fetch(ROOT_INDEX, { cache: "default" });
       const root = await res.json();
       await collectGeoJSON(root, "../geojson/", "");
       
@@ -763,7 +763,7 @@
     loadingTree = true;
     try {
       console.log("📂 Cargando árbol FTTH...");
-      const res = await fetch(ROOT_INDEX, { cache: "no-store" });
+      const res = await fetch(ROOT_INDEX, { cache: "default" });
       const root = await res.json();
 
       await walkNode(root, "../geojson/");
@@ -809,7 +809,7 @@
         if (child.index) {
           try {
             const url = basePath + child.index;
-            const res = await fetch(url, { cache: "no-store" });
+            const res = await fetch(url, { cache: "default" });
             const json = await res.json();
 
             const nextBase =
@@ -886,7 +886,7 @@
 
     try {
       console.log(`📥 Fetching GeoJSON desde: ${url}`);
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await fetch(url, { cache: "default" });
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       }
@@ -1367,7 +1367,7 @@
       console.log("🏢 Cargando centrales ETB (fijas)...");
       
       // Cargar GeoJSON de centrales
-      const res = await fetch("../geojson/CORPORATIVO/centrales-etb.geojson", { cache: "no-store" });
+      const res = await fetch("../geojson/CORPORATIVO/centrales-etb.geojson", { cache: "default" });
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       }

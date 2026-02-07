@@ -64,7 +64,7 @@
       if (dataCache) return dataCache;
 
       try {
-        const resp = await fetch(INDEX_URL);
+        const resp = await fetch(INDEX_URL, { cache: "default" });
         if (!resp.ok) throw new Error("No se pudo leer index.json");
 
         const json = await resp.json();

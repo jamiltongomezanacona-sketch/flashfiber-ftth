@@ -72,10 +72,11 @@
       }, 500);
     }
 
-    // ✅ CARGAR TODO EL GEOJSON CONSOLIDADO EN EL MAPA BASE
-    // Esto se ejecuta automáticamente desde mapa.layers.js, pero lo aseguramos aquí también
-    if (App.loadConsolidatedGeoJSONToBaseMap) {
-      App.loadConsolidatedGeoJSONToBaseMap();
+    // ✅ GIS FTTH: carga diferida del consolidado (cables + cierres) para no bloquear arranque
+    if (!window.__GEOJSON_INDEX__ && App.loadConsolidatedGeoJSONToBaseMap) {
+      setTimeout(() => {
+        App.loadConsolidatedGeoJSONToBaseMap();
+      }, 2000);
     }
 
     // 🌍 Capas FTTH

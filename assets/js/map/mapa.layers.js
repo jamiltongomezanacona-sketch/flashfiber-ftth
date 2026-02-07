@@ -1254,11 +1254,13 @@
     if (!map || !map.isStyleLoaded()) return;
     const ids = App.__ftthLayerIds || [];
     let enforced = 0;
+    const isCorporativo = !!window.__GEOJSON_INDEX__;
     const filterCentrales = typeof document !== "undefined" ? document.getElementById("filterCentrales") : null;
     const centralesVisible = !filterCentrales || filterCentrales.checked;
     const pinsLayerIds = [CONFIG.LAYERS?.CIERRES, CONFIG.LAYERS?.EVENTOS].filter(Boolean);
     if (pinsLayerIds.length === 0) pinsLayerIds.push("cierres-layer", "eventos-layer");
     pinsLayerIds.forEach(layerId => {
+      if (isCorporativo && (layerId === "eventos-layer" || layerId === (CONFIG.LAYERS?.EVENTOS))) return;
       if (map.getLayer(layerId)) {
         try {
           map.setLayoutProperty(layerId, "visibility", "none");

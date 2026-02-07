@@ -18,11 +18,16 @@
   }
 
   async function waitForDependencies(maxAttempts = 80) {
+    const isCorporativo = !!window.__GEOJSON_INDEX__;
     for (let i = 0; i < maxAttempts; i++) {
       const App = window.__FTTH_APP__;
       const FB = window.FTTH_FIREBASE;
 
       if (App?.map && FB?.guardarEvento && FB?.escucharEventos) {
+        if (isCorporativo && !FB?.escucharEventosCorp) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          continue;
+        }
         console.log("✅ tool.eventos: Dependencias disponibles después de", i + 1, "intentos");
         return true;
       }
@@ -33,11 +38,11 @@
     console.warn("⚠️ tool.eventos: Dependencias no disponibles después de esperar", maxAttempts, "intentos");
     console.warn("💡 Reintentando en 2 segundos...");
     
-    // ✅ Retry después de 2 segundos
-    setTimeout(async () => {
+    setTimeout(() => {
       const App = window.__FTTH_APP__;
       const FB = window.FTTH_FIREBASE;
-      if (App?.map && FB?.guardarEvento && FB?.escucharEventos) {
+      const ok = App?.map && FB?.guardarEvento && FB?.escucharEventos && (!isCorporativo || FB?.escucharEventosCorp);
+      if (ok) {
         console.log("✅ tool.eventos: Dependencias disponibles en retry");
         initializeTool();
       } else {
@@ -52,8 +57,10 @@
     const App = window.__FTTH_APP__;
     const FB = window.FTTH_FIREBASE;
 
-    if (!App?.map || !FB?.guardarEvento || !FB?.escucharEventos) {
-      console.error("❌ tool.eventos: Dependencias no disponibles");
+    const isCorporativo = !!window.__GEOJSON_INDEX__;
+    const listenerOk = isCorporativo ? FB?.escucharEventosCorp : FB?.escucharEventos;
+    if (!App?.map || !FB?.guardarEvento || !listenerOk) {
+      console.error("❌ tool.eventos: Dependencias no disponibles (mapa, guardar, listener)");
       return;
     }
 
@@ -437,17 +444,27 @@
        Render eventos
     =============================== */
     function refreshLayer() {
-      const source = App.map.getSource(SOURCE_ID);
-      if (!source) {
-        // Si el source no existe, inicializar la capa
-        initLayer();
-        return;
+      if (!App?.map) return;
+      let source = null;
+      try {
+        source = App.map.getSource(SOURCE_ID);
+      } catch (_) {
+        source = null;
       }
-
-      source.setData({
-        type: "FeatureCollection",
-        features: App.data.eventos
-      });
+      if (!source) {
+        initLayer();
+        try {
+          source = App.map.getSource(SOURCE_ID);
+        } catch (_) {
+          return;
+        }
+      }
+      if (source) {
+        source.setData({
+          type: "FeatureCollection",
+          features: App.data.eventos || []
+        });
+      }
     }
 
     function addEventoToMap(evt) {

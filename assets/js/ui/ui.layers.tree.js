@@ -137,11 +137,15 @@
     
     checkbox.checked = shouldBeChecked;
 
-    // 🏷️ Label: usar node.label; si falta o es el id completo, mostrar nombre corto (ej. SI22FH144_1)
+    // 🏷️ Label: capas de cable (FTTH_...) siempre nombre corto ej. SI22FH144_1
     const label = document.createElement("span");
     let displayLabel = node.label;
-    if (!displayLabel || displayLabel === node.id) {
-      const id = node.id || "";
+    const id = node.id || "";
+    const isFullCableId = id && id.includes("_") && (id.startsWith("FTTH_") || id.split("_").length >= 4);
+    if (isFullCableId) {
+      const parts = id.split("_");
+      displayLabel = parts.length >= 2 ? parts.slice(-2).join("_") : id;
+    } else if (!displayLabel || displayLabel === node.id) {
       if (id && id.includes("_")) {
         const parts = id.split("_");
         displayLabel = parts.length >= 2 ? parts.slice(-2).join("_") : id;

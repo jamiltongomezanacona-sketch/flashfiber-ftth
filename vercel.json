@@ -1,7 +1,9 @@
 {
+  "buildCommand": "echo Static",
+  "outputDirectory": ".",
   "rewrites": [
-    { "source": "/", "destination": "/index.html" },
-    { "source": "/home", "destination": "/pages/home.html" },
-    { "source": "/mapa-ftth", "destination": "/pages/mapa-ftth.html" }
+    {"source": "/", "destination": "/index.html"},
+    {"source": "/home", "destination": "/pages/home.html"},
+    {"source": "/mapa-ftth", "destination": "/pages/mapa-ftth.html"}
   ]
 }

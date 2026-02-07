@@ -12,13 +12,13 @@
   <!-- MAPBOX -->
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet" />
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="../assets/css/theme.css">
-  <link rel="stylesheet" href="../assets/css/mobile.css">
-  <link rel="stylesheet" href="../assets/css/layout.css">
-  <link rel="stylesheet" href="../assets/css/map.css">
-  <link rel="stylesheet" href="../assets/css/panels.css">
-  <link rel="stylesheet" href="../assets/css/search.css">
+  <!-- CSS (rutas absolutas para rewrite /mapa-ftth) -->
+  <link rel="stylesheet" href="/assets/css/theme.css">
+  <link rel="stylesheet" href="/assets/css/mobile.css">
+  <link rel="stylesheet" href="/assets/css/layout.css">
+  <link rel="stylesheet" href="/assets/css/map.css">
+  <link rel="stylesheet" href="/assets/css/panels.css">
+  <link rel="stylesheet" href="/assets/css/search.css">
 </head>
 
 <body class="app-map">
@@ -359,50 +359,50 @@
 <script>
   window.__FTTH_SECRETS__ = window.__FTTH_SECRETS__ || {};
 </script>
-<script src="../assets/js/config.js" defer></script>
+<script src="/assets/js/config.js" defer></script>
 
 <!-- ✅ INITIALIZER (debe cargarse antes de otros módulos) -->
-<script type="module" src="../assets/js/core/initializer.js"></script>
+<script type="module" src="/assets/js/core/initializer.js"></script>
 
 <!-- FIREBASE CORE -->
-<script type="module" src="../assets/js/services/firebase.js"></script>
-<script type="module" src="../assets/js/services/firebase.db.js"></script>
+<script type="module" src="/assets/js/services/firebase.js"></script>
+<script type="module" src="/assets/js/services/firebase.db.js"></script>
 
 <!-- Auth Guard - Protección de rutas -->
-<script type="module" src="../assets/js/core/auth.guard.js"></script>
+<script type="module" src="/assets/js/core/auth.guard.js"></script>
 
 <!-- FIREBASE SERVICES -->
-<script type="module" src="../assets/js/services/firebase.cierres.js"></script>
-<script type="module" src="../assets/js/services/firebase.eventos.js"></script>
-<script type="module" src="../assets/js/services/firebase.rutas.js"></script>
-<script type="module" src="../assets/js/services/firebase.storage.js"></script>
+<script type="module" src="/assets/js/services/firebase.cierres.js"></script>
+<script type="module" src="/assets/js/services/firebase.eventos.js"></script>
+<script type="module" src="/assets/js/services/firebase.rutas.js"></script>
+<script type="module" src="/assets/js/services/firebase.storage.js"></script>
 
 <!-- APP CORE -->
-<script src="../assets/js/app.js" defer></script>
-<script src="../assets/js/storage.js" defer></script>
-<script src="../assets/js/storage.cierres.js" defer></script>
-<script src="../assets/js/utils/centrales.js" defer></script>
-<script src="../assets/js/ui/ui.menu.js" defer></script>
+<script src="/assets/js/app.js" defer></script>
+<script src="/assets/js/storage.js" defer></script>
+<script src="/assets/js/storage.cierres.js" defer></script>
+<script src="/assets/js/utils/centrales.js" defer></script>
+<script src="/assets/js/ui/ui.menu.js" defer></script>
 
 <!-- MAPA -->
-<script src="../assets/js/map/mapa.init.js" defer></script>
-<script src="../assets/js/map/mapa.controls.js" defer></script>
-<script src="../assets/js/map/mapa.layers.js" defer></script>
-<script src="../assets/js/map/mapa.ftth.js" defer></script>
+<script src="/assets/js/map/mapa.init.js" defer></script>
+<script src="/assets/js/map/mapa.controls.js" defer></script>
+<script src="/assets/js/map/mapa.layers.js" defer></script>
+<script src="/assets/js/map/mapa.ftth.js" defer></script>
 
 <!-- TOOLS -->
-<script src="../assets/js/tools/tool.medicion.js" defer></script>
-<script src="../assets/js/tools/tool.gps.js" defer></script>
-<script src="../assets/js/tools/tool.navegacion.js?v=2026" defer></script>
-<script src="../assets/js/tools/tool.capas.js" defer></script>
-<script src="../assets/js/tools/tool.rutas.js" defer></script>
-<script src="../assets/js/tools/tool.cierres.js" defer></script>
-<script src="../assets/js/tools/tool.eventos.js" defer></script>
+<script src="/assets/js/tools/tool.medicion.js" defer></script>
+<script src="/assets/js/tools/tool.gps.js" defer></script>
+<script src="/assets/js/tools/tool.navegacion.js?v=2026" defer></script>
+<script src="/assets/js/tools/tool.capas.js" defer></script>
+<script src="/assets/js/tools/tool.rutas.js" defer></script>
+<script src="/assets/js/tools/tool.cierres.js" defer></script>
+<script src="/assets/js/tools/tool.eventos.js" defer></script>
 
 <!-- UI -->
-<script src="../assets/js/ui/ui.panel.js" defer></script>
-<script src="../assets/js/ui/ui.layers.tree.js" defer></script>
-<script src="../assets/js/ui/ui.buscador.js" defer></script>
+<script src="/assets/js/ui/ui.panel.js" defer></script>
+<script src="/assets/js/ui/ui.layers.tree.js" defer></script>
+<script src="/assets/js/ui/ui.buscador.js" defer></script>
 
 
 

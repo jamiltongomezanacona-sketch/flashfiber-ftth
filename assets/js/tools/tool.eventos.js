@@ -332,46 +332,45 @@
   </div>
 `;
 
+        const wrap = document.createElement("div");
+        wrap.innerHTML = html.trim();
+        const content = wrap.firstElementChild;
+
         const popup = new mapboxgl.Popup({ closeButton: true })
           .setLngLat(lngLat)
-          .setHTML(html)
+          .setDOMContent(content)
           .addTo(App.map);
 
-        setTimeout(function () {
-          const popupEl = popup.getElement?.();
-          const container = popupEl || document.querySelector(".mapboxgl-popup-content");
-          if (!container) return;
-          const btnEdit = container.querySelector('[data-pin-action="edit"]');
-          const btnDelete = container.querySelector('[data-pin-action="delete"]');
-          if (btnEdit) {
-            btnEdit.addEventListener("click", function (e) {
-              e.preventDefault();
-              e.stopPropagation();
-              popup.remove();
-              abrirEdicionEvento(p);
-            });
-          }
-          if (btnDelete) {
-            btnDelete.addEventListener("click", async function (e) {
-              e.preventDefault();
-              e.stopPropagation();
-              if (!confirm("¿Estás seguro de eliminar este evento?")) return;
-              try {
-                const FB = window.FTTH_FIREBASE;
-                if (FB?.eliminarEvento && p.id) {
-                  await FB.eliminarEvento(p.id);
-                  popup.remove();
-                  console.log("✅ Evento eliminado:", p.id);
-                } else {
-                  alert("❌ No se pudo eliminar el evento");
-                }
-              } catch (err) {
-                console.error("❌ Error eliminando evento:", err);
-                alert("❌ Error al eliminar el evento");
+        const btnEdit = content.querySelector('[data-pin-action="edit"]');
+        const btnDelete = content.querySelector('[data-pin-action="delete"]');
+        if (btnEdit) {
+          btnEdit.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            popup.remove();
+            abrirEdicionEvento(p);
+          });
+        }
+        if (btnDelete) {
+          btnDelete.addEventListener("click", async function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!confirm("¿Estás seguro de eliminar este evento?")) return;
+            try {
+              const FB = window.FTTH_FIREBASE;
+              if (FB?.eliminarEvento && p.id) {
+                await FB.eliminarEvento(p.id);
+                popup.remove();
+                console.log("✅ Evento eliminado:", p.id);
+              } else {
+                alert("❌ No se pudo eliminar el evento");
               }
-            });
-          }
-        }, 0);
+            } catch (err) {
+              console.error("❌ Error eliminando evento:", err);
+              alert("❌ Error al eliminar el evento");
+            }
+          });
+        }
       }
 
       // Click en la capa de eventos → popup

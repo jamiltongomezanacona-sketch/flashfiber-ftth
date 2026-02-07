@@ -460,47 +460,46 @@
   </div>
 `;
 
+        const wrap = document.createElement("div");
+        wrap.innerHTML = html.trim();
+        const content = wrap.firstElementChild;
+
         const popup = new mapboxgl.Popup({ closeButton: true })
           .setLngLat(lngLat)
-          .setHTML(html)
+          .setDOMContent(content)
           .addTo(App.map);
 
-        setTimeout(function () {
-          const popupEl = popup.getElement?.();
-          const container = popupEl || document.querySelector(".mapboxgl-popup-content");
-          if (!container) return;
-          const btnEdit = container.querySelector('[data-pin-action="edit"]');
-          const btnDelete = container.querySelector('[data-pin-action="delete"]');
-          if (btnEdit) {
-            btnEdit.addEventListener("click", function (e) {
-              e.preventDefault();
-              e.stopPropagation();
-              popup.remove();
-              abrirEdicionCierre(p);
-            });
-          }
-          if (btnDelete) {
-            btnDelete.addEventListener("click", async function (e) {
-              e.preventDefault();
-              e.stopPropagation();
-              if (!confirm("¿Eliminar este cierre?")) return;
-              try {
-                const FB = window.FTTH_FIREBASE;
-                const id = p.id || idStr;
-                if (FB?.eliminarCierre && id) {
-                  await FB.eliminarCierre(id);
-                  popup.remove();
-                  console.log("✅ Cierre eliminado:", id);
-                } else {
-                  alert("❌ No se pudo eliminar el cierre");
-                }
-              } catch (err) {
-                console.error("❌ Error eliminando cierre:", err);
-                alert("❌ Error al eliminar el cierre");
+        const btnEdit = content.querySelector('[data-pin-action="edit"]');
+        const btnDelete = content.querySelector('[data-pin-action="delete"]');
+        if (btnEdit) {
+          btnEdit.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            popup.remove();
+            abrirEdicionCierre(p);
+          });
+        }
+        if (btnDelete) {
+          btnDelete.addEventListener("click", async function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!confirm("¿Eliminar este cierre?")) return;
+            try {
+              const FB = window.FTTH_FIREBASE;
+              const id = p.id || idStr;
+              if (FB?.eliminarCierre && id) {
+                await FB.eliminarCierre(id);
+                popup.remove();
+                console.log("✅ Cierre eliminado:", id);
+              } else {
+                alert("❌ No se pudo eliminar el cierre");
               }
-            });
-          }
-        }, 0);
+            } catch (err) {
+              console.error("❌ Error eliminando cierre:", err);
+              alert("❌ Error al eliminar el cierre");
+            }
+          });
+        }
       }
 
       // Click en la capa de cierres → popup

@@ -476,7 +476,7 @@
                             nodeIdLower.includes("centrales");
           
           if (isExcluded || (!isCable && !isCierre)) {
-            console.log(`⏭️ Omitiendo capa (solo cables y cierres E1): ${node.id}, path: ${fullPath}`);
+            console.log(`⏭️ Omitiendo capa (solo cables y cierres): ${node.id}, path: ${fullPath}`);
             return;
           }
           
@@ -510,27 +510,26 @@
             
             // Validar que tenga features
             if (geojson && geojson.features && geojson.features.length > 0) {
-              // Si es cierre, filtrar solo E1
+              // Si es cierre, incluir E1 y E0 (por corte)
               if (isCierre) {
-                const e1Features = geojson.features.filter(feature => {
+                const cierreFeatures = geojson.features.filter(feature => {
                   const tipo = feature.properties?.tipo || 
                               feature.properties?.type ||
                               feature.properties?.name?.toUpperCase();
-                  // Verificar si es E1 (puede estar en diferentes propiedades)
-                  const isE1 = tipo === "E1" || 
-                               tipo?.includes("E1") ||
-                               feature.properties?.codigo?.includes("E1") ||
-                               feature.properties?.name?.includes("E1");
-                  return isE1;
+                  const name = (feature.properties?.name || "").toUpperCase();
+                  const codigo = feature.properties?.codigo || "";
+                  const isE1 = tipo === "E1" || tipo?.includes("E1") || codigo.includes("E1") || name.includes("E1");
+                  const isE0 = tipo === "E0" || tipo?.includes("E0") || name.includes("E0 POR CORTE");
+                  return isE1 || isE0;
                 });
                 
-                if (e1Features.length === 0) {
-                  console.log(`⏭️ Omitiendo cierres (ninguno es E1): ${node.id}`);
+                if (cierreFeatures.length === 0) {
+                  console.log(`⏭️ Omitiendo cierres (ninguno E1/E0): ${node.id}`);
                   return;
                 }
                 
-                // Agregar metadata de la capa a cada feature E1
-                e1Features.forEach(feature => {
+                // Agregar metadata de la capa a cada feature
+                cierreFeatures.forEach(feature => {
                   if (!feature.properties) feature.properties = {};
                   feature.properties._layerId = node.id;
                   feature.properties._layerLabel = node.label;
@@ -539,8 +538,8 @@
                   if (moleculaMatch) feature.properties._molecula = moleculaMatch[1];
                 });
                 
-                allFeatures.push(...e1Features);
-                console.log(`✅ ${e1Features.length} cierres E1 de ${node.id} (de ${geojson.features.length} totales)`);
+                allFeatures.push(...cierreFeatures);
+                console.log(`✅ ${cierreFeatures.length} cierres (E1+E0) de ${node.id} (de ${geojson.features.length} totales)`);
               } else {
                 // Es cable, incluir todos los features (y _molecula para filtrar como en Corporativo)
                 const moleculaMatch = (node.id || "").match(/([A-Z]{2}\d+)/);

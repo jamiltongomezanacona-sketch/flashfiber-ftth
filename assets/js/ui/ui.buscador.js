@@ -468,6 +468,9 @@
     // CUNI: CUO6FH144 o FTTH_CUNI_CU06_CUO6FH144 → CU06FH144
     const matchCuni = normalized.match(/(CUO?\d+FH\d+(?:_\d+)?)/i);
     if (matchCuni) return normalizeCuniCableName(matchCuni[1]);
+    // Holanda: HO01FH144
+    const matchHo = normalized.match(/(HO\d+FH\d+(?:_\d+)?)/i);
+    if (matchHo) return matchHo[1];
     if (from.startsWith("FTTH_") && from.includes("_")) {
       const parts = from.split("_");
       if (parts.length >= 2) return normalizeCuniCableName(parts.slice(-2).join("_"));

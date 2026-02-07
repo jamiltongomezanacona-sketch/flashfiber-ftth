@@ -1,0 +1,27 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_HOLANDA_HO23_SI23FH144",
+      "label": "SI23FH144",
+      "path": "SI23FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#512cf9",
+        "line-width": 4
+      }
+    },
+    {
+      "type": "layer",
+      "id": "FTTH_HOLANDA_HO23_HO23FH144-2",
+      "label": "HO23FH144-2",
+      "path": "HO23FH144-2.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#000099",
+        "line-width": 4
+      }
+    }
+  ]
+}

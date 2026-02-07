@@ -1,0 +1,16 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_HOLANDA_HO12_HO12FH144",
+      "label": "HO12FH144",
+      "path": "HO12FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#07c41f",
+        "line-width": 4
+      }
+    }
+  ]
+}

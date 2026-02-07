@@ -151,6 +151,11 @@
       const m = displayLabel.match(/^(CU\d+)_(CUO?\d+FH\d+.*)$/i);
       if (m) displayLabel = m[2].replace(/^CUO(\d)/i, "CU0$1");
     }
+    // Holanda: HO01_HO01FH144 → HO01FH144
+    if (displayLabel && /^HO\d+_HO\d+FH/i.test(displayLabel)) {
+      const m = displayLabel.match(/^(HO\d+)_(HO\d+FH\d+.*)$/i);
+      if (m) displayLabel = m[2];
+    }
     // Sufijo con guión para UI (ej. SI22FH144_1 → SI22FH144-1)
     if (displayLabel && /SI\d+FH\d+_\d+$/i.test(displayLabel)) {
       displayLabel = displayLabel.replace(/_(\d+)$/, "-$1");

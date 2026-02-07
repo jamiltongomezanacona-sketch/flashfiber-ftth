@@ -1,0 +1,38 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_HOLANDA_HO18_HO18FH144",
+      "label": "HO18FH144",
+      "path": "HO18FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#025e40",
+        "line-width": 4
+      }
+    },
+    {
+      "type": "layer",
+      "id": "FTTH_HOLANDA_HO18_HO18FH144_1",
+      "label": "HO18FH144_1",
+      "path": "HO18FH144_1.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#025e40",
+        "line-width": 4
+      }
+    },
+    {
+      "type": "layer",
+      "id": "FTTH_HOLANDA_HO18_HO18FH144_2",
+      "label": "HO18FH144_2",
+      "path": "HO18FH144_2.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#025e40",
+        "line-width": 4
+      }
+    }
+  ]
+}

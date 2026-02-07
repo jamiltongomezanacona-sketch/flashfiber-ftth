@@ -1,0 +1,12 @@
+{
+  "label": "Cierres",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_HOLANDA_HO13_cierres",
+      "label": "Cierres HO13",
+      "path": "cierres.geojson",
+      "typeLayer": "symbol"
+    }
+  ]
+}

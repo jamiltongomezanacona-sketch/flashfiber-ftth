@@ -452,20 +452,27 @@
     }
   }
 
-  /** Nombre corto para mostrar (ej. SI22FH144_1). Extrae del id largo o del nombre. */
+  /** Normalizar nombre cable CUNI: CUO6FH144 → CU06FH144 (O a 0). */
+  function normalizeCuniCableName(s) {
+    if (!s || typeof s !== "string") return s;
+    return s.replace(/CUO(\d)/gi, "CU0$1");
+  }
+
+  /** Nombre corto para mostrar (ej. SI22FH144_1, CU06FH144). Extrae del id largo o del nombre. */
   function shortCableDisplayName(layerId, fallbackName) {
     const from = (layerId || fallbackName || "").toString();
     if (!from) return "";
-    // Extraer patrón SI##FH## o SI##FH##_# (sin espacios)
     const normalized = from.replace(/\s+/g, "");
     const match = normalized.match(/(SI\d+FH\d+(?:_\d+)?)/i);
     if (match) return match[1];
-    // Id largo tipo FTTH_CENTRAL_MOL_MOLFH144_1 → últimas 2 partes
+    // CUNI: CUO6FH144 o FTTH_CUNI_CU06_CUO6FH144 → CU06FH144
+    const matchCuni = normalized.match(/(CUO?\d+FH\d+(?:_\d+)?)/i);
+    if (matchCuni) return normalizeCuniCableName(matchCuni[1]);
     if (from.startsWith("FTTH_") && from.includes("_")) {
       const parts = from.split("_");
-      if (parts.length >= 2) return parts.slice(-2).join("_");
+      if (parts.length >= 2) return normalizeCuniCableName(parts.slice(-2).join("_"));
     }
-    return fallbackName || layerId || from;
+    return normalizeCuniCableName(fallbackName || layerId || from);
   }
 
   /** Mismo nombre corto pero con sufijo con guión para UI (ej. SI22FH144-1). */

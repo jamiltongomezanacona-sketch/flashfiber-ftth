@@ -73,6 +73,11 @@
       </section>
 
       <section class="menu-section">
+        <div class="menu-title">OPERACION</div>
+        <button class="menu-item" data-action="eventos">📝 Reportar Evento</button>
+      </section>
+
+      <section class="menu-section">
         <div class="menu-title">RED CORPORATIVA</div>
         <button class="menu-item" id="btnOpenLayers">🗺️ Capas</button>
       </section>
@@ -131,6 +136,82 @@
 
   </div>
 
+  <!-- ================= MODAL EVENTO (igual que GIS FTTH) ================= -->
+  <div id="eventoModal" class="route-modal hidden">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h3>🚨 Registrar Evento</h3>
+        <button id="closeEventoModal">✖</button>
+      </div>
+
+      <div class="modal-body">
+
+        <label>Tipo</label>
+        <select id="eventoTipo">
+          <option value="">Seleccione</option>
+          <option>VANDALISMO</option>
+          <option>CORTE</option>
+          <option>OBRAS</option>
+          <option>MANTENIMIENTO</option>
+        </select>
+
+        <label>Acción</label>
+        <select id="eventoAccion">
+          <option value="">Seleccione</option>
+          <option>EMPALME_PROVISIONAL</option>
+          <option>AJUSTE DE HILO</option>
+          <option>RECONSTRUCCION</option>
+          <option>BANDEJA</option>
+        </select>
+
+        <label>Estado</label>
+        <select id="eventoEstado">
+          <option>CRITICO</option>
+          <option>PROVISIONAL</option>
+          <option>RESUELTO</option>
+        </select>
+        <label>🏢 Central</label>
+        <select id="eventoCentral">
+          <option value="">Seleccione Central</option>
+          <option value="BACHUE">Bachué</option>
+          <option value="CHICO">Chicó</option>
+          <option value="CUNI">Cuni</option>
+          <option value="FONTIBON">Fontibón</option>
+          <option value="GUAYMARAL">Guaymaral</option>
+          <option value="HOLANDA">Holanda</option>
+          <option value="MUZU">Muzú</option>
+          <option value="SANTA_INES">Santa Inés</option>
+          <option value="SUBA">Suba</option>
+          <option value="TOBERIN">Toberín</option>
+        </select>
+
+        <label>🧬 Molécula</label>
+        <select id="eventoMolecula" disabled>
+          <option value="">Seleccione Molécula</option>
+        </select>
+
+        <label>Técnico</label>
+        <input id="eventoTecnico" placeholder="Nombre técnico">
+
+        <label>📷 Fotos</label>
+        <input type="file" id="fotoInput" accept="image/*" capture="environment" multiple>
+        <div id="fotoPreview" class="foto-preview"></div>
+
+        <label>Notas</label>
+        <textarea id="eventoNotas"></textarea>
+
+      </div>
+
+      <div class="modal-footer">
+        <button id="btnSaveEvento">💾 Guardar</button>
+        <button id="btnDeleteEvento">🗑️ Eliminar</button>
+      </div>
+
+    </div>
+  </div>
+
 <!-- LIBS (defer: no bloquean el render, se ejecutan en orden al terminar el parse) -->
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js" defer></script>
@@ -147,24 +228,26 @@
 <!-- FIREBASE CORE -->
 <script type="module" src="/assets/js/services/firebase.js"></script>
 <script type="module" src="/assets/js/services/firebase.db.js"></script>
+<script type="module" src="/assets/js/services/firebase.eventos.js"></script>
 
 <!-- Auth Guard - Protección de rutas -->
 <script type="module" src="/assets/js/core/auth.guard.js"></script>
 
-<!-- APP CORE (Corporativo: sin firebase cierres/eventos/rutas) -->
+<!-- APP CORE -->
 <script src="/assets/js/app.js" defer></script>
 <script src="/assets/js/ui/ui.menu.js" defer></script>
 
-<!-- MAPA (Corporativo: solo init, controls, layers; sin mapa.ftth.js) -->
+<!-- MAPA -->
 <script src="/assets/js/map/mapa.init.js" defer></script>
 <script src="/assets/js/map/mapa.controls.js" defer></script>
 <script src="/assets/js/map/mapa.layers.js" defer></script>
 
-<!-- TOOLS (Corporativo: solo GPS, Medir, Navegar, Capas) -->
+<!-- TOOLS (GPS, Medir, Navegar, Capas, Reportar Evento) -->
 <script src="/assets/js/tools/tool.medicion.js" defer></script>
 <script src="/assets/js/tools/tool.gps.js" defer></script>
 <script src="/assets/js/tools/tool.navegacion.js?v=2026" defer></script>
 <script src="/assets/js/tools/tool.capas.js" defer></script>
+<script src="/assets/js/tools/tool.eventos.js" defer></script>
 
 <!-- UI -->
 <script src="/assets/js/ui/ui.panel.js" defer></script>

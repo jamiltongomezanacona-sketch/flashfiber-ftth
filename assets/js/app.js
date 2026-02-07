@@ -6,6 +6,7 @@
   "use strict";
 
   const CONFIG = window.__FTTH_CONFIG__;
+  const log = window.__FTTH_LOG__;
   if (!CONFIG) {
     console.error("❌ FTTH_CONFIG no cargado");
     return;
@@ -27,7 +28,8 @@
     },
 
     log(msg) {
-      console.log("🧠 FTTH:", msg);
+      if (log) log("log", "🧠 FTTH:", msg);
+      else console.log("🧠 FTTH:", msg);
     },
 
     setMap(mapInstance) {
@@ -63,7 +65,9 @@
 // El initializer se carga automáticamente y configura los alias
 if (typeof window !== "undefined" && window.__FTTH_INITIALIZER__) {
   window.__FTTH_INITIALIZER__.onReady(() => {
-    console.log("✅ App: Sistema inicializado correctamente");
+    var _log = window.__FTTH_LOG__;
+    if (_log) _log("log", "✅ App: Sistema inicializado correctamente");
+    else console.log("✅ App: Sistema inicializado correctamente");
   });
 }
 

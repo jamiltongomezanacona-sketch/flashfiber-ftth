@@ -13,30 +13,23 @@
     await waitForDependencies();
     console.log("🌳 UI Layers Tree listo");
     loadRoot();
-    
-    // ✅ Recargar árbol después de que las capas consolidadas se registren
-    const App = window.__FTTH_APP__;
-    if (App) {
-      // Esperar a que se carguen las capas consolidadas
-      const checkInterval = setInterval(() => {
-        if (App.__ftthLayerIds && App.__ftthLayerIds.length > 0) {
-          const hasConsolidated = App.__ftthLayerIds.some(id => 
-            id.startsWith("geojson-") || id.startsWith("ftth-")
-          );
-          if (hasConsolidated) {
-            clearInterval(checkInterval);
-            // Recargar árbol para incluir capas consolidadas
-            setTimeout(() => {
-              loadRoot();
-              console.log("🔄 Árbol recargado con capas consolidadas");
-            }, 1000);
-          }
-        }
-      }, 500);
-      
-      // Limpiar después de 10 segundos si no se encuentran capas
-      setTimeout(() => clearInterval(checkInterval), 10000);
+
+    // Recargar árbol cuando las capas consolidadas estén listas (evento en lugar de setInterval)
+    function onConsolidatedLayersReady() {
+      setTimeout(() => {
+        loadRoot();
+        console.log("🔄 Árbol recargado con capas consolidadas");
+      }, 400);
     }
+    window.addEventListener("ftth-consolidated-layers-ready", onConsolidatedLayersReady, { once: false });
+
+    // Fallback: si el evento no llega en 10 s, recargar una vez por si ya hay capas
+    setTimeout(() => {
+      const App = window.__FTTH_APP__;
+      if (App?.__ftthLayerIds?.length && App.__ftthLayerIds.some(id => id.startsWith("geojson-") || id.startsWith("ftth-"))) {
+        loadRoot();
+      }
+    }, 10000);
   }
 
   async function waitForDependencies(maxAttempts = 100) {

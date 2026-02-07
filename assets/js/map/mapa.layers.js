@@ -741,7 +741,9 @@
       }
       
       console.log(`✅ GeoJSON consolidado cargado en mapa base: ${consolidated.features.length} features totales`);
-      // Forzar que solo centrales queden visibles (robusto)
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("ftth-consolidated-layers-ready"));
+      }
       setTimeout(enforceOnlyCentralesVisible, 150);
     } catch (err) {
       console.error("❌ Error cargando GeoJSON consolidado en mapa base:", err);

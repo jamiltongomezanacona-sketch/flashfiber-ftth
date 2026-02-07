@@ -347,21 +347,42 @@
   }
 
   /* =========================
-     Cargar cables desde árbol GeoJSON
+     Cargar cables: índice único (1 fetch) o fallback al árbol (N fetches)
   ========================= */
+  const CABLES_INDEX_URL = "../geojson/cables-index.json";
+
   async function loadCables() {
     try {
       console.log("🔍 Iniciando carga de cables para buscador...");
-      const res = await fetch("../geojson/index.json", { cache: "no-store" });
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      const res = await fetch(CABLES_INDEX_URL, { cache: "default" });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          searchIndex.cables = data.map(function (c) {
+            return {
+              id: c.id,
+              name: c.name,
+              type: "cable",
+              layerId: c.layerId,
+              coordinates: c.coordinates,
+              icon: "🧵",
+              subtitle: c.subtitle || "",
+              central: c.central || "",
+              molecula: c.molecula || "",
+              tipo: c.tipo || "",
+              fibras: c.fibras || ""
+            };
+          });
+          console.log("✅ Cables cargados desde índice único:", searchIndex.cables.length);
+          return;
+        }
       }
-      const root = await res.json();
-      
-      // Recorrer árbol recursivamente
+      // Fallback: recorrer árbol (múltiples fetches)
+      const indexRes = await fetch("../geojson/index.json", { cache: "default" });
+      if (!indexRes.ok) throw new Error("Índice de cables no disponible");
+      const root = await indexRes.json();
       await walkTreeForCables(root, "../geojson/");
-      
-      console.log(`✅ Cables cargados en buscador: ${searchIndex.cables.length} cables encontrados`);
+      console.log("✅ Cables cargados desde árbol:", searchIndex.cables.length);
     } catch (error) {
       console.error("❌ Error cargando cables para buscador:", error);
     }
@@ -437,7 +458,7 @@
           }
         }
         
-        const res = await fetch(url, { cache: "no-store" });
+        const res = await fetch(url, { cache: "default" });
         if (!res.ok) {
           console.warn(`⚠️ No se pudo cargar cable: ${url} (${res.status})`);
           return;

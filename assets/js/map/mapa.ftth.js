@@ -85,6 +85,9 @@
         App.__ftthLayerIds.push("ftth-puntos");
         console.log(`✅ Capa ftth-puntos registrada en sistema FTTH`);
       }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("ftth-consolidated-layers-ready"));
+      }
     }
 
     console.log("✅ Capas FTTH cargadas");

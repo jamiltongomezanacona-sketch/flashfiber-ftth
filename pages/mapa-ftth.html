@@ -351,19 +351,15 @@
     </div>
   </div>
 
-<!-- LIBS -->
-<script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+<!-- LIBS (defer: no bloquean el render, se ejecutan en orden al terminar el parse) -->
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js" defer></script>
 
-<!-- CONFIG -->
-<!-- ❌ DESHABILITADO: Carga de config.local.js (genera errores 404 y MIME type) -->
-<!-- El archivo config.local.js es opcional y se usan valores por defecto de config.js -->
+<!-- CONFIG (inline se ejecuta ya; config.js tiene defer y corre antes que los módulos) -->
 <script>
-  // ❌ DESHABILITADO: No cargar config.local.js para evitar errores
-  // Inicializar __FTTH_SECRETS__ vacío para que config.js use valores por defecto
   window.__FTTH_SECRETS__ = window.__FTTH_SECRETS__ || {};
 </script>
-<script src="../assets/js/config.js"></script>
+<script src="../assets/js/config.js" defer></script>
 
 <!-- ✅ INITIALIZER (debe cargarse antes de otros módulos) -->
 <script type="module" src="../assets/js/core/initializer.js"></script>
@@ -382,33 +378,31 @@
 <script type="module" src="../assets/js/services/firebase.storage.js"></script>
 
 <!-- APP CORE -->
-<script src="../assets/js/app.js"></script>
-<script src="../assets/js/storage.js"></script>
-<script src="../assets/js/storage.cierres.js"></script>
-<script src="../assets/js/utils/centrales.js"></script>
-<script src="../assets/js/ui/ui.menu.js"></script>
-
+<script src="../assets/js/app.js" defer></script>
+<script src="../assets/js/storage.js" defer></script>
+<script src="../assets/js/storage.cierres.js" defer></script>
+<script src="../assets/js/utils/centrales.js" defer></script>
+<script src="../assets/js/ui/ui.menu.js" defer></script>
 
 <!-- MAPA -->
-<script src="../assets/js/map/mapa.init.js"></script>
-<script src="../assets/js/map/mapa.controls.js"></script>
-<script src="../assets/js/map/mapa.layers.js"></script>
-<script src="../assets/js/map/mapa.ftth.js"></script>
-
+<script src="../assets/js/map/mapa.init.js" defer></script>
+<script src="../assets/js/map/mapa.controls.js" defer></script>
+<script src="../assets/js/map/mapa.layers.js" defer></script>
+<script src="../assets/js/map/mapa.ftth.js" defer></script>
 
 <!-- TOOLS -->
-<script src="../assets/js/tools/tool.medicion.js"></script>
-<script src="../assets/js/tools/tool.gps.js"></script>
-<script src="../assets/js/tools/tool.navegacion.js?v=2026"></script>
-<script src="../assets/js/tools/tool.capas.js"></script>
-<script src="../assets/js/tools/tool.rutas.js"></script>
-<script src="../assets/js/tools/tool.cierres.js"></script>
-<script src="../assets/js/tools/tool.eventos.js"></script>
+<script src="../assets/js/tools/tool.medicion.js" defer></script>
+<script src="../assets/js/tools/tool.gps.js" defer></script>
+<script src="../assets/js/tools/tool.navegacion.js?v=2026" defer></script>
+<script src="../assets/js/tools/tool.capas.js" defer></script>
+<script src="../assets/js/tools/tool.rutas.js" defer></script>
+<script src="../assets/js/tools/tool.cierres.js" defer></script>
+<script src="../assets/js/tools/tool.eventos.js" defer></script>
 
 <!-- UI -->
-<script src="../assets/js/ui/ui.panel.js"></script>
-<script src="../assets/js/ui/ui.layers.tree.js"></script>
-<script src="../assets/js/ui/ui.buscador.js"></script>
+<script src="../assets/js/ui/ui.panel.js" defer></script>
+<script src="../assets/js/ui/ui.layers.tree.js" defer></script>
+<script src="../assets/js/ui/ui.buscador.js" defer></script>
 
 
 

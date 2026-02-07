@@ -8,9 +8,12 @@
 ========================================================= */
 
 window.__FTTH_SECRETS__ = {
-  // 🔑 Token de Mapbox (Actualizado)
-  MAPBOX_TOKEN: "pk.eyJ1IjoiamFtaWx0b244NCIsImEiOiJjbWpxMjB4eDkydWdmM2RwdTVib3htb284In0.5gk_bRtcnXLshXE9eMeryg",
-  
+  // 🔑 Token de Mapbox (obligatorio; sin él el mapa no cargará)
+  MAPBOX_TOKEN: "tu_token_mapbox_aquí",
+
+  // true = mostrar logs de depuración (__FTTH_LOG__("log", ...)); false = silenciar en producción
+  DEBUG: true,
+
   // 🔥 Configuración de Firebase
   FIREBASE: {
     apiKey: "AIzaSyD3BNTIERRCZy5jRwN-KcIIQLeXFyg9gY4",

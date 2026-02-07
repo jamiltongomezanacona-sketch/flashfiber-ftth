@@ -55,6 +55,7 @@
     let active = false;
     let selectedLngLat = null;
     let blockNextClick = false;
+    let handlerClickLayer = null, handlerClickFallback = null, handlerMouseEnter = null, handlerMouseLeave = null;
 
     const modal      = document.getElementById("cierreModal");
     const btnSave    = document.getElementById("btnSaveCierre");
@@ -502,18 +503,22 @@
         }
       }
 
-      // Click en la capa de cierres → popup
-      if (!App || !App.map) return;
-      App.map.on("click", LAYER_ID, (e) => {
+      // Desregistrar listeners previos (evita duplicados tras style.load)
+      if (handlerClickLayer && App.map) {
+        App.map.off("click", LAYER_ID, handlerClickLayer);
+        App.map.off("click", handlerClickFallback);
+        App.map.off("mouseenter", LAYER_ID, handlerMouseEnter);
+        App.map.off("mouseleave", LAYER_ID, handlerMouseLeave);
+      }
+
+      handlerClickLayer = function (e) {
         const f = e.features?.[0];
         if (!f) return;
         if (active) blockNextClick = true;
         showCierrePopup(f, e.lngLat);
         popupShownThisClick = true;
-      });
-
-      // Fallback: click en cualquier parte del mapa (por si otra capa está encima)
-      App.map.on("click", (e) => {
+      };
+      handlerClickFallback = function (e) {
         popupShownThisClick = false;
         if (active) return;
         if (!App.map.getLayer(LAYER_ID)) return;
@@ -522,17 +527,18 @@
           const hits = App.map.queryRenderedFeatures(e.point, { layers: [LAYER_ID] });
           if (hits.length) showCierrePopup(hits[0], e.lngLat);
         }, 0);
-      });
+      };
+      handlerMouseEnter = function () {
+        if (App && App.map) App.map.getCanvas().style.cursor = "pointer";
+      };
+      handlerMouseLeave = function () {
+        if (App && App.map) App.map.getCanvas().style.cursor = "";
+      };
 
-      // Cursor pointer al pasar sobre cierre
-      if (App && App.map) {
-        App.map.on("mouseenter", LAYER_ID, () => {
-          if (App && App.map) App.map.getCanvas().style.cursor = "pointer";
-        });
-        App.map.on("mouseleave", LAYER_ID, () => {
-          if (App && App.map) App.map.getCanvas().style.cursor = "";
-        });
-      }
+      App.map.on("click", LAYER_ID, handlerClickLayer);
+      App.map.on("click", handlerClickFallback);
+      App.map.on("mouseenter", LAYER_ID, handlerMouseEnter);
+      App.map.on("mouseleave", LAYER_ID, handlerMouseLeave);
 
       console.log("✅ Capa cierres creada (estilo Google Maps)");
     }

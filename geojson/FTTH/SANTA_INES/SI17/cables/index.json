@@ -3,23 +3,12 @@
   "children": [
     {
       "type": "layer",
-      "id": "FTTH_SANTA_INES_SI17_SI17FH144",
-      "label": "SI17FH144 · Troncal 144F",
-      "path": "SI17FH144.geojson",
+      "id": "FTTH_SANTA_INES_SI17_RUTA_ALTERNATIVA",
+      "label": "RUTA ALTERNATIVA",
+      "path": "RUTA_ALTERNATIVA.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#000080",
-        "line-width": 4
-      }
-    },
-    {
-      "type": "layer",
-      "id": "FTTH_SANTA_INES_SI17_SI17FH48",
-      "label": "SI17FH48 · Troncal 48F",
-      "path": "SI17FH48.geojson",
-      "typeLayer": "line",
-      "paint": {
-        "line-color": "#000080",
+        "line-color": "#9c0374",
         "line-width": 4
       }
     }

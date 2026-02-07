@@ -10,21 +10,6 @@
       "type": "folder",
       "label": "Cierres",
       "index": "cierres/index.json"
-    },
-    {
-      "type": "folder",
-      "label": "Rutas",
-      "index": "rutas/index.json"
-    },
-    {
-      "type": "folder",
-      "label": "Eventos",
-      "index": "eventos/index.json"
-    },
-    {
-      "type": "folder",
-      "label": "Mantenimientos",
-      "index": "mantenimientos/index.json"
     }
   ]
 }

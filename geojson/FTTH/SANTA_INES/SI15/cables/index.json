@@ -4,22 +4,22 @@
     {
       "type": "layer",
       "id": "FTTH_SANTA_INES_SI15_SI15FH144",
-      "label": "SI15FH144 · Troncal 144F",
+      "label": "SI15FH144",
       "path": "SI15FH144.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#FF8040",
+        "line-color": "#660066",
         "line-width": 4
       }
     },
     {
       "type": "layer",
       "id": "FTTH_SANTA_INES_SI15_SI15FH144_1",
-      "label": "SI15FH144_1 · Troncal 144F",
+      "label": "SI15FH144_1",
       "path": "SI15FH144_1.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#FF8040",
+        "line-color": "#660066",
         "line-width": 4
       }
     }

@@ -4,11 +4,11 @@
     {
       "type": "layer",
       "id": "FTTH_SANTA_INES_SI26_SI26FH144",
-      "label": "SI26FH144 · Troncal 144F",
+      "label": "SI26FH144",
       "path": "SI26FH144.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#6000FF",
+        "line-color": "#1a0dd6",
         "line-width": 4
       }
     }

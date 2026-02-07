@@ -1,4 +1,12 @@
 {
   "label": "Cierres",
-  "children": []
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_SANTA_INES_SI17_cierres",
+      "label": "Cierres SI17",
+      "path": "cierres.geojson",
+      "typeLayer": "symbol"
+    }
+  ]
 }

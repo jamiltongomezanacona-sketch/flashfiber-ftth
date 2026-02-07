@@ -3,12 +3,34 @@
   "children": [
     {
       "type": "layer",
-      "id": "FTTH_SANTA_INES_SI24_SI24FH144",
-      "label": "SI24FH144 · Troncal 144F",
-      "path": "SI24FH144.geojson",
+      "id": "FTTH_SANTA_INES_SI24_SI22FH144",
+      "label": "SI22FH144",
+      "path": "SI22FH144.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#0080FF",
+        "line-color": "#000099",
+        "line-width": 4
+      }
+    },
+    {
+      "type": "layer",
+      "id": "FTTH_SANTA_INES_SI24_SI22FH144_1",
+      "label": "SI22FH144_1",
+      "path": "SI22FH144_1.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#512cf9",
+        "line-width": 4
+      }
+    },
+    {
+      "type": "layer",
+      "id": "FTTH_SANTA_INES_SI24_TENDIDO_DE_1000_MTS",
+      "label": "TENDIDO DE 1000 MTS",
+      "path": "TENDIDO_DE_1000_MTS.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#660066",
         "line-width": 4
       }
     }

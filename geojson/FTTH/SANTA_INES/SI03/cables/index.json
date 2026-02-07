@@ -3,23 +3,23 @@
   "children": [
     {
       "type": "layer",
-      "id": "FTTH_SANTA_INES_SI03_SI03FH144",
-      "label": "SI03FH144 · Troncal 144F",
-      "path": "SI03FH144.geojson",
+      "id": "FTTH_SANTA_INES_SI03_SI03FH48",
+      "label": "SI03FH48",
+      "path": "SI03FH48.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#0000FF",
+        "line-color": "#000099",
         "line-width": 4
       }
     },
     {
       "type": "layer",
-      "id": "FTTH_SANTA_INES_SI03_SI03FH48",
-      "label": "SI03FH48 · Troncal 48F",
-      "path": "SI03FH48.geojson",
+      "id": "FTTH_SANTA_INES_SI03_SI03FH144",
+      "label": "SI03FH144",
+      "path": "SI03FH144.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#0000FF",
+        "line-color": "#000099",
         "line-width": 4
       }
     }

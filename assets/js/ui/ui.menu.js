@@ -76,6 +76,16 @@ document.addEventListener("DOMContentLoaded", () => {
           "visibility",
           visible ? "none" : "visible"
         );
+
+        // GIS FTTH: al ACTIVAR capas, mostrar TODOS los cables (quitar filtro por _layerId)
+        if (id === "geojson-lines" && !visible) {
+          try {
+            map.setFilter("geojson-lines", ["==", ["geometry-type"], "LineString"]);
+            console.log("🧵 geojson-lines: filtro quitado → se muestran todos los cables");
+          } catch (e) {
+            console.warn("⚠️ No se pudo quitar filtro geojson-lines:", e);
+          }
+        }
       });
 
       console.log("🗺️ Toggle FTTH:", ftthLayers.length, "capas");

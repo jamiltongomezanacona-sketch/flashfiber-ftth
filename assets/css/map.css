@@ -179,7 +179,16 @@ main.map-wrapper {
   transform: translateY(-2px); /* Feedback visual */
 }
 
-/* Botones de girar mapa (izq/der): visibles en todos los tamaños */
+/* Botones girar mapa (izq/der): solo en PC; ocultos en tablet y celular */
+.map-controls button.map-control-pc {
+  display: none !important;
+}
+@media (min-width: 1024px) {
+  .map-controls button.map-control-pc {
+    display: flex !important;
+  }
+}
+
 .map-controls button.active {
   background: var(--accent-green);
   color: #003;

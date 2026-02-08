@@ -238,9 +238,10 @@ btnBaseMap?.addEventListener("click", () => {
 
   modoSatelite = !modoSatelite;
 
+  const CONFIG = window.__FTTH_CONFIG__;
   const estilo = modoSatelite
-    ? "mapbox://styles/mapbox/satellite-streets-v12"
-    : "mapbox://styles/mapbox/streets-v12";
+    ? (CONFIG?.MAP?.STYLES?.satellite || "mapbox://styles/mapbox/satellite-streets-v12")
+    : (CONFIG?.MAP?.STYLES?.streets || "mapbox://styles/mapbox/streets-v12");
 
   console.log("🎨 Cambiando estilo:", estilo);
 

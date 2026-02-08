@@ -19,6 +19,12 @@ window.__FTTH_CONFIG__ = {
 
   MAP: {
     STYLE_DEFAULT: "mapbox://styles/mapbox/dark-v11",
+    // Estilos disponibles para el botón de base (panel)
+    STYLES: {
+      dark: "mapbox://styles/mapbox/dark-v11",
+      streets: "mapbox://styles/mapbox/streets-v12",
+      satellite: "mapbox://styles/mapbox/satellite-streets-v12"
+    },
     CENTER: [-74.1, 4.65],   // Bogotá
     ZOOM: 12,
     PITCH: 45,

@@ -1,33 +1,35 @@
 # 📊 Procesar Datos GeoJSON de Santa Inés
 
+**Ejecutar siempre desde la raíz del proyecto.**
+
 ## 🚀 Instrucciones Rápidas
 
 ### Opción 1: Desde archivo JSON
 
-1. **Guarda los datos GeoJSON** que proporcionaste en un archivo llamado `datos_santa_ines.json` en la raíz del proyecto.
+1. **Guarda los datos GeoJSON** en un archivo llamado `datos_santa_ines.json` en la raíz del proyecto.
 
 2. **Ejecuta el procesador:**
    ```bash
-   node setup_and_process.js
+   node scripts/data/setup_and_process.js
    ```
 
 ### Opción 2: Desde stdin (línea de comandos)
 
 1. **Crea el archivo desde stdin:**
    ```bash
-   node create_data_file.js < datos.json
+   node scripts/data/create_data_file.js < datos.json
    ```
    
    O pega los datos directamente:
    ```bash
-   node create_data_file.js
+   node scripts/data/create_data_file.js
    # Pega los datos JSON aquí
    # Presiona Ctrl+D (Linux/Mac) o Ctrl+Z + Enter (Windows)
    ```
 
 2. **Luego procesa:**
    ```bash
-   node setup_and_process.js
+   node scripts/data/setup_and_process.js
    ```
 
 ## 📋 Qué hace el script

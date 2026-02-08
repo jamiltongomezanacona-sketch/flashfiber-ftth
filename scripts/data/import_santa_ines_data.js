@@ -1,10 +1,11 @@
 // Script para importar y procesar datos GeoJSON de Santa Inés
+// Ejecutar desde la raíz: node scripts/data/import_santa_ines_data.js
 const fs = require('fs');
 const path = require('path');
 
-// Datos proporcionados por el usuario (se leerán desde un archivo)
-const GEODATA_PATH = path.join(__dirname, 'datos_santa_ines.json');
-const OUTPUT_BASE = path.join(__dirname, 'geojson', 'FTTH', 'SANTA_INES');
+const ROOT = path.join(__dirname, '..', '..');
+const GEODATA_PATH = path.join(ROOT, 'datos_santa_ines.json');
+const OUTPUT_BASE = path.join(ROOT, 'geojson', 'FTTH', 'SANTA_INES');
 
 // Función para extraer molécula del nombre
 function getMolecule(name) {

@@ -1,16 +1,18 @@
 # 🚀 Guía Rápida: Procesar Datos GeoJSON
 
+**Ejecutar siempre desde la raíz del proyecto.**
+
 ## ⚡ Método Más Rápido
 
 ### Opción 1: Todo en un solo paso (Recomendado)
 
 ```bash
-node crear_y_procesar.js
+node scripts/data/crear_y_procesar.js
 ```
 
 Luego:
 1. Pega los datos JSON completos que proporcionaste al inicio
-2. Presiona **Ctrl+Z + Enter** (Windows)
+2. Presiona **Ctrl+Z + Enter** (Windows) o **Ctrl+D** (Linux/Mac)
 
 El script:
 - ✅ Crea el archivo `datos_santa_ines.json`
@@ -22,13 +24,13 @@ El script:
 
 **Paso 1: Crear el archivo**
 ```bash
-node crear_archivo_completo.js
+node scripts/data/create_data_file.js
 ```
-(Pega los datos y presiona Ctrl+Z + Enter)
+(Pega los datos JSON y presiona Ctrl+D en Linux/Mac o Ctrl+Z + Enter en Windows)
 
 **Paso 2: Procesar**
 ```bash
-node setup_and_process.js
+node scripts/data/setup_and_process.js
 ```
 
 ## 📋 Datos Necesarios

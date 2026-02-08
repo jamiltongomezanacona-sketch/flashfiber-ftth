@@ -559,7 +559,11 @@
         if (isCable) showPinsWhenCableActivated(layerId);
       }
     } else if (!window.__GEOJSON_INDEX__ && map.getLayer("geojson-lines")) {
-      // GIS FTTH: una capa geojson-lines, filtrar por _layerId (mantener geometry-type)
+      // GIS FTTH: solo aplicar filtro de cable si el id es de cables (no _cierres / _eventos que son puntos)
+      const isCierresOrEventosNode = /_cierres$|_eventos$/i.test(layerId);
+      if (isCierresOrEventosNode) {
+        return;
+      }
       if (visible) {
         map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_layerId"], layerId]]);
         map.setLayoutProperty("geojson-lines", "visibility", "visible");
@@ -569,9 +573,10 @@
       }
       console.log(`${visible ? "✅" : "❌"} Cable ${layerId} (filter en geojson-lines) ${visible ? "visible" : "oculto"}`);
     } else {
-      console.warn("⚠️ Capa no encontrada:", layerId);
-      if (typeof App.loadFTTHTree === "function") {
-        console.log("🔄 Intentando cargar capa:", layerId);
+      if (!/_(cierres|eventos)$/i.test(layerId)) {
+        console.warn("⚠️ Capa no encontrada:", layerId);
+      }
+      if (typeof App.loadFTTHTree === "function" && !/_(cierres|eventos)$/i.test(layerId)) {
         App.loadFTTHTree();
         setTimeout(() => {
           if (map.getLayer(layerId)) toggleLayerById(layerId, visible);

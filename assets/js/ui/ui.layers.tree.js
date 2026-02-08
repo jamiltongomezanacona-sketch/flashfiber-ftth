@@ -547,6 +547,13 @@
       if (visible) {
         const layer = map.getLayer(layerId);
         const isCable = layer && (layer.type === "line" || layerId === "geojson-lines" || layerId === "ftth-cables");
+        // GIS FTTH: al activar la capa consolidada de cables, mostrar TODOS los cables de todas las moléculas
+        if (layerId === "geojson-lines") {
+          try {
+            map.setFilter("geojson-lines", ["==", ["geometry-type"], "LineString"]);
+            console.log("🧵 geojson-lines: todos los cables visibles");
+          } catch (e) {}
+        }
         if (isCable) showPinsWhenCableActivated(layerId);
       }
     } else if (!window.__GEOJSON_INDEX__ && map.getLayer("geojson-lines")) {

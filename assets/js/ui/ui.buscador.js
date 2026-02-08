@@ -50,6 +50,60 @@
   const MAP_FLYTO_DURATION_MS = CONFIG.MAP_FLYTO_DURATION_MS ?? 1500;
 
   /* =========================
+     Coordenadas (decimal y DMS)
+  ========================= */
+  /**
+   * Parsea coordenadas en formato decimal (4.583832, -74.229158) o DMS (4°34'53.3"N 74°13'43.7"W).
+   * @param {string} query - Texto del buscador
+   * @returns {[number, number]|null} [lng, lat] en orden GeoJSON/Mapbox, o null si no es coordenada
+   */
+  function parseCoordinates(query) {
+    const trimmed = query.trim();
+    if (!trimmed) return null;
+
+    // Formato decimal: uno o dos números con coma o espacio (ej. "4.583832, -74.229158" o "-74.229158 4.583832")
+    const decimalMatch = trimmed.match(/^(-?\d+\.?\d*)\s*[,;\s]\s*(-?\d+\.?\d*)$/);
+    if (decimalMatch) {
+      const a = parseFloat(decimalMatch[1]);
+      const b = parseFloat(decimalMatch[2]);
+      if (isNaN(a) || isNaN(b)) return null;
+      // GeoJSON/Mapbox usa [lng, lat]. Detectar orden: el valor en [-90,90] es lat, el otro lng.
+      let lng, lat;
+      if (Math.abs(a) <= 90 && Math.abs(b) <= 180) {
+        lat = a;
+        lng = b;
+      } else if (Math.abs(b) <= 90 && Math.abs(a) <= 180) {
+        lng = a;
+        lat = b;
+      } else {
+        return null;
+      }
+      if (lng >= -180 && lng <= 180 && lat >= -90 && lat <= 90) return [lng, lat];
+      return null;
+    }
+
+    // Formato DMS: 4°34'53.3"N 74°13'43.7"W (grados ' minutos " segundos N/S/E/W)
+    const dmsLat = trimmed.match(/(\d+)[°º]\s*(\d+)['′]?\s*(\d*\.?\d*)?["″]?\s*([NnSs])/);
+    const dmsLng = trimmed.match(/(\d+)[°º]\s*(\d+)['′]?\s*(\d*\.?\d*)?["″]?\s*([EeWw])/);
+    if (dmsLat && dmsLng) {
+      const latDeg = parseInt(dmsLat[1], 10);
+      const latMin = parseInt(dmsLat[2], 10);
+      const latSec = parseFloat(dmsLat[3]) || 0;
+      const latSign = /[Nn]/.test(dmsLat[4]) ? 1 : -1;
+      const lat = latSign * (latDeg + latMin / 60 + latSec / 3600);
+
+      const lngDeg = parseInt(dmsLng[1], 10);
+      const lngMin = parseInt(dmsLng[2], 10);
+      const lngSec = parseFloat(dmsLng[3]) || 0;
+      const lngSign = /[Ee]/.test(dmsLng[4]) ? 1 : -1;
+      const lng = lngSign * (lngDeg + lngMin / 60 + lngSec / 3600);
+
+      if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) return [lng, lat];
+    }
+    return null;
+  }
+
+  /* =========================
      Inicialización
   ========================= */
   async function init() {
@@ -824,6 +878,21 @@
 
     currentSearch = query;
     if (typeof retryCount !== "number") retryCount = 0;
+
+    // ✅ Búsqueda por coordenadas (decimal o DMS): ir directo a resultado único
+    const coords = parseCoordinates(query);
+    if (coords) {
+      allResults = [{
+        type: "coordenadas",
+        id: "coords-" + coords[0].toFixed(6) + "-" + coords[1].toFixed(6),
+        name: "Ir a coordenadas",
+        subtitle: query.trim(),
+        coordinates: coords,
+        icon: "<i class=\"fas fa-map-marker-alt\"></i>"
+      }];
+      renderResults();
+      return;
+    }
 
     // ✅ Si el índice está vacío, mostrar "Cargando..." y reintentar cuando haya datos
     const totalItems = searchIndex.centrales.length + searchIndex.cables.length + searchIndex.cierres.length + searchIndex.eventos.length;

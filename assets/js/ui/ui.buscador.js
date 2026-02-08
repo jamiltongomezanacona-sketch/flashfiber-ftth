@@ -27,6 +27,8 @@
   let searchTimeout = null;
   let allResults = [];
   let currentSearch = "";
+  /** Pin de ubicación cuando se busca por coordenadas (se reemplaza en cada búsqueda nueva) */
+  let markerCoordenadas = null;
 
   // GIS Corporativo: solo buscar los 235 cables de CABLES (no FTTH)
   const isCorporativo = typeof window !== "undefined" && !!window.__GEOJSON_INDEX__;
@@ -1072,6 +1074,19 @@
         });
       }
       window.dispatchEvent(new CustomEvent("ftth-refresh-eventos"));
+    }
+
+    // Pin de ubicación para búsqueda por coordenadas
+    if (result.type === "coordenadas") {
+      if (markerCoordenadas) {
+        markerCoordenadas.remove();
+        markerCoordenadas = null;
+      }
+      if (window.mapboxgl) {
+        markerCoordenadas = new mapboxgl.Marker({ color: "#00e5ff" })
+          .setLngLat(result.coordinates)
+          .addTo(App.map);
+      }
     }
 
     // Hacer zoom al resultado

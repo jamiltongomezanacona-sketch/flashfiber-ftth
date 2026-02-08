@@ -1,10 +1,12 @@
 /* =========================================================
    FlashFiber FTTH | mapa.controls.js
-   Rotación ON / OFF (zoom siempre activo)
+   Rotación ON / OFF + Botones girar izquierda/derecha (PC)
 ========================================================= */
 
 (() => {
   "use strict";
+
+  const ROTATE_STEP = 15; // grados por clic en botones girar
 
   const App = window.__FTTH_APP__;
   if (!App) return;
@@ -48,5 +50,36 @@
         console.log("🧭 Giro DESACTIVADO");
       }
     });
+
+    // Botones girar mapa (PC): izquierda / derecha
+    const btnRotateLeft = document.getElementById("btnRotateLeft");
+    const btnRotateRight = document.getElementById("btnRotateRight");
+
+    if (btnRotateLeft) {
+      btnRotateLeft.addEventListener("click", () => {
+        const current = map.getBearing();
+        const next = current - ROTATE_STEP;
+        map.easeTo({ bearing: next, duration: 300 });
+        if (!rotationEnabled) {
+          map.dragRotate.enable();
+          map.touchZoomRotate.enableRotation();
+          btnRotate.classList.add("active");
+          rotationEnabled = true;
+        }
+      });
+    }
+    if (btnRotateRight) {
+      btnRotateRight.addEventListener("click", () => {
+        const current = map.getBearing();
+        const next = current + ROTATE_STEP;
+        map.easeTo({ bearing: next, duration: 300 });
+        if (!rotationEnabled) {
+          map.dragRotate.enable();
+          map.touchZoomRotate.enableRotation();
+          btnRotate.classList.add("active");
+          rotationEnabled = true;
+        }
+      });
+    }
   };
 })();

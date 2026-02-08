@@ -55,14 +55,48 @@ node scripts/build-cables-index.js
 | [RECOMENDACIONES.md](RECOMENDACIONES.md) | Rendimiento, seguridad, UX y mantenimiento |
 | [ANALISIS_Y_MEJORAS.md](ANALISIS_Y_MEJORAS.md) | Análisis del proyecto y checklist de mejoras |
 
-## Estructura breve
+## Estructura del proyecto
 
-- `index.html` — Login
-- `pages/` — Home, mapa FTTH, mapa corporativo, configuración
-- `assets/js/` — Lógica (config, mapa, tools, UI, servicios Firebase)
-- `geojson/` — Datos GeoJSON (FTTH, corporativo, índices)
-- `scripts/` — Build (índice de cables) y conversión KML→GeoJSON
-- `scripts/data/` — Scripts para procesar/importar datos Santa Inés
+Mantener esta organización para que el código siga siendo fácil de mantener.
+
+```
+flashfiber-ftth/
+├── index.html              # Entrada: login
+├── pages/                   # Páginas HTML (home, mapas, configuración)
+│   ├── home.html
+│   ├── mapa-ftth.html
+│   ├── mapa-corporativo.html
+│   └── configuracion.html
+├── assets/
+│   ├── css/                # Estilos (theme, layout, map, panels, search, mobile)
+│   ├── icons/              # Iconos PWA (icon-192, icon-512)
+│   └── js/
+│       ├── app.js          # Estado global de la app
+│       ├── config.js       # Configuración (token, capas, constantes)
+│       ├── core/           # Inicialización y auth (initializer, auth.guard)
+│       ├── map/            # Mapa: init, controls, layers, ftth
+│       ├── services/       # Firebase, API, GPS (firebase.*, gps)
+│       ├── storage*.js     # Persistencia local (storage, storage.cierres)
+│       ├── tools/          # Herramientas: tool.capas, tool.cierres, tool.eventos, etc.
+│       ├── ui/             # Interfaz: ui.buscador, ui.layers.tree, ui.login, ui.menu, etc.
+│       └── utils/          # Utilidades: centrales, errorHandler, validators, devtools-guard
+├── geojson/                # Datos GeoJSON (FTTH, CORPORATIVO, índices); no tocar estructura
+├── scripts/                # Scripts Node (ejecutar desde raíz)
+│   ├── build-cables-index.js   # Regenerar índice del buscador
+│   ├── *-kml-to-geojson.js     # Conversión KML → GeoJSON
+│   └── data/               # Procesar/importar datos Santa Inés (crear_y_procesar, setup_and_process, etc.)
+├── config.local.example.js # Plantilla de credenciales (copiar a config.local.js)
+├── manifest.json           # PWA
+├── sw.js                   # Service Worker
+└── vercel.json             # Despliegue (rewrites)
+```
+
+**Convenciones:**
+- **Nuevo JS de la app** → `assets/js/`, dentro de la carpeta que corresponda (`core/`, `map/`, `services/`, `tools/`, `ui/`, `utils/`). Dejar `app.js`, `config.js` y `storage*.js` en la raíz de `assets/js/` (las páginas los cargan por ruta).
+- **Nuevos scripts de datos o build** → `scripts/` o `scripts/data/`; no añadir scripts en la raíz.
+- **Nueva página** → `pages/`, con **nombre descriptivo** (ej. `mapa-ftth.html`, `configuracion.html`). No usar nombres aleatorios ni UUID.
+- **Documentación** → raíz, con nombre claro (`README_*.md`, `GUIA_*.md`, etc.); evitar muchos `.md` de una sola tarea.
+- **Credenciales y secretos** → solo en `config.local.js` (en `.gitignore`); no subir a GitHub.
 
 ## Despliegue
 

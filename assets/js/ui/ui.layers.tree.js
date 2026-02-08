@@ -543,6 +543,7 @@
       const desired = visible ? "visible" : "none";
       if (current === desired) return;
       map.setLayoutProperty(layerId, "visibility", desired);
+      if (layerId === "geojson-lines" && App) App.__cablesExplicitlyVisible = visible;
       console.log(`${visible ? "✅" : "❌"} Capa ${layerId} ${visible ? "habilitada" : "deshabilitada"}`);
       if (visible) {
         const layer = map.getLayer(layerId);
@@ -551,6 +552,7 @@
         if (layerId === "geojson-lines") {
           try {
             map.setFilter("geojson-lines", ["==", ["geometry-type"], "LineString"]);
+            if (App) App.__cablesExplicitlyVisible = true;
             console.log("🧵 geojson-lines: todos los cables visibles");
           } catch (e) {}
         }

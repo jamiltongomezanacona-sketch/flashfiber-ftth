@@ -1277,19 +1277,22 @@
         } catch (e) {}
       }
     });
+    const cablesExplicitlyVisible = !!App.__cablesExplicitlyVisible;
     ids.forEach(id => {
       if (!id || !map.getLayer(id)) return;
       const isCentral = id.includes("CENTRALES") || id.includes("CORPORATIVO");
-      const current = map.getLayoutProperty(id, "visibility");
       if (isCentral) {
+        const current = map.getLayoutProperty(id, "visibility");
         const want = centralesVisible ? "visible" : "none";
         if (current !== want) {
           try { map.setLayoutProperty(id, "visibility", want); enforced++; } catch (e) {}
         }
-      } else {
-        if (current !== "none") {
-          try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) {}
-        }
+        return;
+      }
+      if (cablesExplicitlyVisible && (id === "geojson-lines" || id === "geojson-points")) return;
+      const current = map.getLayoutProperty(id, "visibility");
+      if (current !== "none") {
+        try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) {}
       }
     });
     // También revisar capas del estilo que no estén en __ftthLayerIds
@@ -1301,6 +1304,7 @@
       if (!isFtth) return;
       const isCentral = id.includes("CENTRALES") || id.includes("CORPORATIVO");
       if (isCentral) return;
+      if (cablesExplicitlyVisible && (id === "geojson-lines" || id === "geojson-points")) return;
       const current = map.getLayoutProperty(id, "visibility");
       if (current !== "none") {
         try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) {}

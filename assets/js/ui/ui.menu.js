@@ -81,10 +81,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (id === "geojson-lines" && !visible) {
           try {
             map.setFilter("geojson-lines", ["==", ["geometry-type"], "LineString"]);
+            if (App) App.__cablesExplicitlyVisible = true;
             console.log("🧵 geojson-lines: filtro quitado → se muestran todos los cables");
           } catch (e) {
             console.warn("⚠️ No se pudo quitar filtro geojson-lines:", e);
           }
+        }
+        if (id === "geojson-lines" && visible) {
+          if (App) App.__cablesExplicitlyVisible = false;
         }
       });
 

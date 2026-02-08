@@ -1076,16 +1076,11 @@
       window.dispatchEvent(new CustomEvent("ftth-refresh-eventos"));
     }
 
-    // Pin de ubicación para búsqueda por coordenadas
+    // Pin de ubicación para búsqueda por coordenadas (se añade al terminar el flyTo)
     if (result.type === "coordenadas") {
       if (markerCoordenadas) {
         markerCoordenadas.remove();
         markerCoordenadas = null;
-      }
-      if (window.mapboxgl) {
-        markerCoordenadas = new mapboxgl.Marker({ color: "#00e5ff" })
-          .setLngLat(result.coordinates)
-          .addTo(App.map);
       }
     }
 
@@ -1095,6 +1090,24 @@
       zoom: result.type === "central" ? 15 : 17,
       duration: MAP_FLYTO_DURATION_MS
     });
+
+    // Añadir pin de coordenadas cuando termine el movimiento (así el marcador no se pierde)
+    if (result.type === "coordenadas" && window.mapboxgl) {
+      App.map.once("moveend", function () {
+        if (markerCoordenadas) {
+          markerCoordenadas.remove();
+          markerCoordenadas = null;
+        }
+        var el = document.createElement("div");
+        el.className = "search-coordenadas-marker";
+        el.setAttribute("aria-hidden", "true");
+        el.innerHTML = "<i class=\"fas fa-map-marker-alt\"></i>";
+        el.style.cssText = "font-size: 36px; color: #00e5ff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); cursor: pointer;";
+        markerCoordenadas = new mapboxgl.Marker({ element: el })
+          .setLngLat(result.coordinates)
+          .addTo(App.map);
+      });
+    }
 
     // Mostrar capas del cable seleccionado
     if (result.type === "cable") {

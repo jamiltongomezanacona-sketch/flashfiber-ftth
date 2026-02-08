@@ -13,10 +13,10 @@ document.addEventListener("DOMContentLoaded", () => {
     clearInterval(wait);
     console.log("✅ ui.menu.js cargado");
 
-    const btnCapas = document.getElementById("btnCapas");
+    const btnCapas = document.getElementById("btnOpenLayers") || document.getElementById("btnCapas");
 
     if (!btnCapas) {
-      console.warn("⚠️ Botón btnCapasFTTH no encontrado en DOM");
+      console.warn("⚠️ Botón Capas (btnOpenLayers/btnCapas) no encontrado en DOM");
       return;
     }
 

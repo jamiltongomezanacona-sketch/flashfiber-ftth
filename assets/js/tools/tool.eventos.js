@@ -329,24 +329,31 @@
         }
 
         const fecha = p.createdAt ? new Date(p.createdAt).toLocaleString() : "Sin fecha";
-        const creadoPor = escapeHtml(String(p.createdBy || p.creadoPor || "—"));
+        const creadoPorRaw = p.createdBy || p.creadoPor || "";
+        const creadoPor = creadoPorRaw ? escapeHtml(String(creadoPorRaw)) : "";
         const nombrePin = escapeHtml(p.tipo || p.nombre || "Evento");
 
-        const notas = p.notas ? escapeHtml(String(p.notas).slice(0, 120)) + (String(p.notas).length > 120 ? "…" : "") : "—";
+        const notasRaw = p.notas ? String(p.notas).trim() : "";
+        const notas = notasRaw ? escapeHtml(notasRaw.slice(0, 120)) + (notasRaw.length > 120 ? "…" : "") : "";
+
+        const rows = [
+          `<div class="pin-popup-row"><span class="pin-popup-label">Fecha de creación</span><span class="pin-popup-value">${escapeHtml(fecha)}</span></div>`
+        ];
+        if (creadoPor) rows.push(`<div class="pin-popup-row"><span class="pin-popup-label">Creado por</span><span class="pin-popup-value">${creadoPor}</span></div>`);
+        if (notas) rows.push(`<div class="pin-popup-row"><span class="pin-popup-label">Notas</span><span class="pin-popup-value">${notas}</span></div>`);
+
         const html = `
-  <div class="popup pin-popup pin-popup-card">
+  <div class="popup pin-popup pin-popup-card" role="dialog" aria-label="Propiedades del evento">
     <div class="pin-popup-header">
       <div class="pin-popup-header-icon evento">🚨</div>
       <h3 class="pin-popup-title">${nombrePin}</h3>
     </div>
     <div class="pin-popup-body">
-      <div class="pin-popup-row"><span class="pin-popup-label">Fecha de creación</span><span class="pin-popup-value">${escapeHtml(fecha)}</span></div>
-      <div class="pin-popup-row"><span class="pin-popup-label">Creado por</span><span class="pin-popup-value">${creadoPor}</span></div>
-      <div class="pin-popup-row"><span class="pin-popup-label">Notas</span><span class="pin-popup-value">${notas}</span></div>
+      ${rows.join("")}
     </div>
     <div class="pin-popup-actions">
-      <button type="button" data-pin-action="edit" class="pin-popup-btn pin-popup-btn-edit">✏️ Editar</button>
-      <button type="button" data-pin-action="delete" class="pin-popup-btn pin-popup-btn-delete">🗑️ Eliminar</button>
+      <button type="button" data-pin-action="edit" class="pin-popup-btn pin-popup-btn-edit" aria-label="Editar evento">✏️ Editar</button>
+      <button type="button" data-pin-action="delete" class="pin-popup-btn pin-popup-btn-delete" aria-label="Eliminar evento">🗑️ Eliminar</button>
     </div>
   </div>
 `;
@@ -355,7 +362,7 @@
         wrap.innerHTML = html.trim();
         const content = wrap.firstElementChild;
 
-        const popup = new mapboxgl.Popup({ closeButton: true })
+        const popup = new mapboxgl.Popup({ closeButton: true, closeOnClick: true })
           .setLngLat(lngLat)
           .setDOMContent(content)
           .addTo(App.map);

@@ -27,8 +27,8 @@
   let searchTimeout = null;
   let allResults = [];
   let currentSearch = "";
-  /** Pin de ubicación cuando se busca por coordenadas (se reemplaza en cada búsqueda nueva) */
-  let markerCoordenadas = null;
+  const PIN_COORDS_SOURCE_ID = "search-coordenadas-pin";
+  const PIN_COORDS_LAYER_ID = "search-coordenadas-pin-layer";
 
   // GIS Corporativo: solo buscar los 235 cables de CABLES (no FTTH)
   const isCorporativo = typeof window !== "undefined" && !!window.__GEOJSON_INDEX__;
@@ -1076,12 +1076,12 @@
       window.dispatchEvent(new CustomEvent("ftth-refresh-eventos"));
     }
 
-    // Pin de ubicación para búsqueda por coordenadas (se añade al terminar el flyTo)
+    // Pin de ubicación para búsqueda por coordenadas (capa del mapa, no Marker DOM)
     if (result.type === "coordenadas") {
-      if (markerCoordenadas) {
-        markerCoordenadas.remove();
-        markerCoordenadas = null;
-      }
+      try {
+        if (App.map.getLayer(PIN_COORDS_LAYER_ID)) App.map.removeLayer(PIN_COORDS_LAYER_ID);
+        if (App.map.getSource(PIN_COORDS_SOURCE_ID)) App.map.removeSource(PIN_COORDS_SOURCE_ID);
+      } catch (e) {}
     }
 
     // Hacer zoom al resultado
@@ -1091,21 +1091,29 @@
       duration: MAP_FLYTO_DURATION_MS
     });
 
-    // Añadir pin de coordenadas cuando termine el movimiento (así el marcador no se pierde)
-    if (result.type === "coordenadas" && window.mapboxgl) {
+    // Añadir pin como capa (círculo visible) cuando termine el movimiento
+    if (result.type === "coordenadas") {
       App.map.once("moveend", function () {
-        if (markerCoordenadas) {
-          markerCoordenadas.remove();
-          markerCoordenadas = null;
-        }
-        var el = document.createElement("div");
-        el.className = "search-coordenadas-marker";
-        el.setAttribute("aria-hidden", "true");
-        el.innerHTML = "<i class=\"fas fa-map-marker-alt\"></i>";
-        el.style.cssText = "font-size: 36px; color: #00e5ff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); cursor: pointer;";
-        markerCoordenadas = new mapboxgl.Marker({ element: el })
-          .setLngLat(result.coordinates)
-          .addTo(App.map);
+        try {
+          if (App.map.getLayer(PIN_COORDS_LAYER_ID)) App.map.removeLayer(PIN_COORDS_LAYER_ID);
+          if (App.map.getSource(PIN_COORDS_SOURCE_ID)) App.map.removeSource(PIN_COORDS_SOURCE_ID);
+        } catch (e) {}
+        var geo = {
+          type: "FeatureCollection",
+          features: [{ type: "Feature", geometry: { type: "Point", coordinates: result.coordinates } }]
+        };
+        App.map.addSource(PIN_COORDS_SOURCE_ID, { type: "geojson", data: geo });
+        App.map.addLayer({
+          id: PIN_COORDS_LAYER_ID,
+          type: "circle",
+          source: PIN_COORDS_SOURCE_ID,
+          paint: {
+            "circle-radius": 16,
+            "circle-color": "#00e5ff",
+            "circle-stroke-width": 3,
+            "circle-stroke-color": "#ffffff"
+          }
+        });
       });
     }
 

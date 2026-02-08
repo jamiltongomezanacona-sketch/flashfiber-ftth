@@ -292,7 +292,7 @@
 /* Celular: más ajustado al texto, scroll en el menú; no llega al borde inferior para no tapar/ocultar contenido con los botones flotantes del mapa */
 @media (max-width: 767px) {
   .sidebar {
-    max-width: min(240px, 72vw);
+    max-width: min(200px, 62vw);
     /* El sidebar no llega a la parte inferior: deja zona libre para los botones flotantes del mapa */
     bottom: 88px; /* ~20px margen + 48px altura botón + 20px margen de seguridad */
   }

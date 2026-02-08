@@ -178,13 +178,16 @@ button,
 @media (max-width: 767px) {
   .mapboxgl-popup-content {
     min-width: 0 !important;
-    max-width: min(260px, calc(100vw - 32px)) !important;
+    max-width: min(280px, calc(100vw - 32px)) !important;
     width: auto !important;
     max-height: 85vh !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
-    border-radius: 12px !important;
-    box-shadow: 0 10px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(0, 229, 255, 0.2) !important;
+    border-radius: 18px !important;
+    box-shadow:
+      0 20px 40px -12px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.06),
+      0 0 0 1px rgba(0, 229, 255, 0.08) !important;
     font-size: 13px !important;
   }
 
@@ -193,15 +196,15 @@ button,
   }
 
   .pin-popup-header {
-    padding: 10px 12px 8px;
-    gap: 8px;
+    padding: 12px 14px 10px;
+    gap: 10px;
   }
 
   .pin-popup-header-icon {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     font-size: 18px;
-    border-radius: 8px;
+    border-radius: 10px;
   }
 
   .pin-popup-title {
@@ -211,10 +214,12 @@ button,
     flex: 1;
     min-width: 0;
     word-break: break-word;
+    text-transform: capitalize;
+    letter-spacing: -0.02em;
   }
 
   .pin-popup-body {
-    padding: 8px 12px 10px;
+    padding: 10px 14px 12px;
     max-height: 35vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -223,48 +228,48 @@ button,
   .pin-popup-row {
     flex-direction: column;
     gap: 2px;
-    padding: 6px 0;
+    padding: 7px 0;
     font-size: 12px;
     align-items: flex-start;
   }
 
   .pin-popup-label {
-    font-size: 10px;
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: rgba(255,255,255,0.45);
+    color: rgba(255, 255, 255, 0.5);
   }
 
   .pin-popup-value {
     text-align: left;
     font-size: 12px;
-    color: #e8ecf4;
+    color: #e2e8f0;
     line-height: 1.4;
   }
 
   .pin-popup-actions {
     flex-direction: row;
-    gap: 6px;
-    padding: 6px 12px 10px;
+    gap: 8px;
+    padding: 10px 14px 12px;
   }
 
   .pin-popup-btn {
-    min-height: 36px;
-    padding: 6px 10px;
+    min-height: 38px;
+    padding: 7px 11px;
     font-size: 11px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-weight: 600;
   }
 
   .mapboxgl-popup-close-button {
-    width: 32px !important;
-    height: 32px !important;
-    font-size: 16px !important;
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 18px !important;
     padding: 0 !important;
-    line-height: 32px !important;
-    color: rgba(255,255,255,0.8) !important;
-    right: 2px !important;
-    top: 2px !important;
+    line-height: 36px !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    right: 4px !important;
+    top: 4px !important;
   }
 }
 

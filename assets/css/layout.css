@@ -71,6 +71,35 @@ body {
   }
 }
 
+/* Botón Volver a Home (GIS FTTH / GIS Corporativo) */
+.btn-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  color: var(--accent-cyan);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-home:hover {
+  background: rgba(0, 180, 216, 0.15);
+  color: var(--accent-cyan);
+}
+.btn-home span {
+  display: none;
+}
+@media (min-width: 480px) {
+  .btn-home span {
+    display: inline;
+  }
+}
+
 .header-actions button {
   background: transparent;
   border: 1px solid var(--border-soft);

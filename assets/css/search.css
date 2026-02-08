@@ -290,12 +290,20 @@
 /* Responsive */
 @media (max-width: 768px) {
   .search-container {
-    max-width: 100%;
-    margin: 0 10px;
-    order: 3;
-    width: 100%;
+    max-width: none;
+    margin: 0 0 0 6px;
+    order: 0;
+    width: auto;
+    flex: 1;
+    min-width: 0;
   }
   
+  .search-box {
+    padding: 6px 10px;
+  }
+  .search-input {
+    font-size: 13px;
+  }
   .search-results {
     max-height: 300px;
   }

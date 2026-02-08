@@ -36,6 +36,20 @@ body {
   gap: 0.5rem;
 }
 
+/* Celular: una sola fila arriba, botón sidebar + Home + buscador alineados */
+@media (max-width: 767px) {
+  .header {
+    flex-wrap: nowrap;
+    padding: 0.5rem 8px;
+    gap: 6px;
+    min-height: 48px;
+  }
+  .header .btn-header-icon,
+  .header .btn-home {
+    flex-shrink: 0;
+  }
+}
+
 .logo {
   display: flex;
   align-items: center;

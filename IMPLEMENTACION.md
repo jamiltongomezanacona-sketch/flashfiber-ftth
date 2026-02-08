@@ -58,6 +58,7 @@ window.__FTTH_SECRETS__ = {
 - `assets/js/services/firebase.storage.js`
 - `assets/js/services/firebase.eventos.js`
 - `assets/js/services/firebase.cierres.js`
+- `assets/js/services/firebase.rutas.js`
 
 ### Paso 4: Implementar Error Handler
 

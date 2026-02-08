@@ -73,6 +73,7 @@
       <section class="menu-section">
         <div class="menu-title">OPERACION</div>
         <button class="menu-item" data-action="eventos">📝 Reportar Evento Corp</button>
+        <button class="menu-item" data-action="ruta">🛣️ Montar Ruta</button>
       </section>
 
       <section class="menu-section">
@@ -140,6 +141,40 @@
       </button>
     </div>
 
+  </div>
+
+  <!-- 🛣️ MODAL RUTA (Montar Ruta + opción Guardar en Firebase) -->
+  <div id="routeModal" class="route-modal hidden">
+    <div class="route-card">
+      <div class="route-header">
+        <span>🛣️ Nueva Ruta</span>
+        <button id="closeRouteModal">✕</button>
+      </div>
+      <div class="route-body">
+        <label>📛 Nombre</label>
+        <input id="routeName" placeholder="Ej: Troncal BA01 Norte">
+        <label>🧱 Tipo</label>
+        <select id="routeType">
+          <option value="troncal">Troncal</option>
+          <option value="distribucion">Distribución</option>
+          <option value="acometida">Acometida</option>
+          <option value="mantenimiento">Mantenimiento</option>
+        </select>
+        <label>🏢 Central</label>
+        <input id="routeCentral" placeholder="Ej: BACHUE">
+        <label>📝 Observaciones</label>
+        <textarea id="routeNotes" placeholder="Notas técnicas..."></textarea>
+        <p id="routeDistance">Distancia: 0 m</p>
+        <label class="route-option-firebase">
+          <input type="checkbox" id="routeSaveFirebase" checked />
+          <span>☁️ Guardar en Firebase</span>
+        </label>
+      </div>
+      <div class="route-actions">
+        <button class="route-btn primary" id="btnSaveRoute">💾 Guardar</button>
+        <button class="route-btn danger" id="btnCancelRoute">Cancelar</button>
+      </div>
+    </div>
   </div>
 
   <!-- ================= MODAL EVENTO (igual que GIS FTTH) ================= -->
@@ -224,12 +259,14 @@
 <script type="module" src="/assets/js/services/firebase.db.js"></script>
 <script type="module" src="/assets/js/services/firebase.eventos.js"></script>
 <script type="module" src="/assets/js/services/firebase.eventosCorp.js"></script>
+<script type="module" src="/assets/js/services/firebase.rutas.js"></script>
 
 <!-- Auth Guard - Protección de rutas -->
 <script type="module" src="/assets/js/core/auth.guard.js"></script>
 
 <!-- APP CORE -->
 <script src="/assets/js/app.js" defer></script>
+<script src="/assets/js/storage.js" defer></script>
 <script src="/assets/js/ui/ui.menu.js" defer></script>
 
 <!-- MAPA -->
@@ -243,6 +280,7 @@
 <script src="/assets/js/tools/tool.navegacion.js?v=2026" defer></script>
 <script src="/assets/js/tools/tool.capas.js" defer></script>
 <script src="/assets/js/tools/tool.eventos.js" defer></script>
+<script src="/assets/js/tools/tool.rutas.js" defer></script>
 
 <!-- UI -->
 <script src="/assets/js/ui/ui.panel.js" defer></script>

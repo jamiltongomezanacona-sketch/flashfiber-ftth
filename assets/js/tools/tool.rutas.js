@@ -347,16 +347,17 @@ document.addEventListener("DOMContentLoaded", () => {
       geometry: { type: "LineString", coordinates: [...pts] }
     };
 
-    // ✅ Guardado local
-    window.__FTTH_DB__?.saveRuta(feature);
+    // ✅ Guardado local (localStorage vía __FTTH_STORAGE__)
+    window.__FTTH_STORAGE__?.saveRuta?.(feature);
 
     // ✅ Dibujar ruta en el mapa inmediatamente
     if (window.drawSavedRoute) {
       window.drawSavedRoute(feature);
     }
 
-    // ☁️ Guardado en Firebase (payload plano)
-    if (window.FTTH_FIREBASE?.guardarRuta) {
+    // ☁️ Guardado en Firebase solo si la opción está habilitada
+    const saveToFirebase = document.getElementById("routeSaveFirebase")?.checked !== false;
+    if (saveToFirebase && window.FTTH_FIREBASE?.guardarRuta) {
       const payloadCloud = {
         nombre: feature.properties.nombre,
         tipo: feature.properties.tipo,

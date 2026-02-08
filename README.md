@@ -49,6 +49,7 @@ node scripts/build-cables-index.js
 | Documento | Contenido |
 |-----------|------------|
 | [README_CREDENCIALES.md](README_CREDENCIALES.md) | Configuración de Mapbox y Firebase |
+| [FIREBASE_COLECCIONES.md](FIREBASE_COLECCIONES.md) | Colecciones Firestore (cierres, eventos, rutas) y reglas |
 | [GUIA_RAPIDA.md](GUIA_RAPIDA.md) | Procesar datos GeoJSON en un paso |
 | [README_PROCESAR_DATOS.md](README_PROCESAR_DATOS.md) | Procesamiento de datos GeoJSON (Santa Inés) |
 | [IMPLEMENTACION.md](IMPLEMENTACION.md) | Guía de implementación y soluciones |

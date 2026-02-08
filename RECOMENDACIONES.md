@@ -20,7 +20,7 @@
 ## 2. Seguridad
 
 - **Credenciales**: Mantener `config.local.js` en `.gitignore` y no subir tokens (Mapbox, Firebase) al repo. En producción usar variables de entorno o un backend que inyecte config.
-- **Firebase**: Revisar reglas de Firestore para `eventos` y `eventos_corporativo` (solo usuarios autenticados si aplica). Ver `FIREBASE_EVENTOS_CORPORATIVO.md`.
+- **Firebase**: Revisar reglas de Firestore para `eventos`, `eventos_corporativo`, `cierres` y `rutas` (solo usuarios autenticados si aplica). Ver `FIREBASE_COLECCIONES.md`.
 - **Código de eliminación**: El código para eliminar pines (`DELETE_PIN`) no debería ser el mismo en todos los entornos; en producción considerar rol/admin o backend.
 - **Auth**: Si usas Auth Guard, asegurar que las rutas sensibles (mapa, configuración) exijan sesión válida.
 
@@ -39,7 +39,7 @@
 ## 4. Código y mantenimiento
 
 - **Un solo punto de “es Corporativo”**: Usar `window.__GEOJSON_INDEX__` o una variable tipo `window.__FTTH_IS_CORPORATIVO__` de forma consistente para no repetir `!!window.__GEOJSON_INDEX__` en muchos archivos.
-- **Nombres de colección Firebase**: Mantener `eventos` (FTTH) y `eventos_corporativo` (Corporativo) documentados en un solo sitio (ej. `FIREBASE_EVENTOS_CORPORATIVO.md` o README).
+- **Nombres de colección Firebase**: Todas las colecciones (`cierres`, `eventos`, `eventos_corporativo`, `rutas`) están documentadas en `FIREBASE_COLECCIONES.md`.
 - **Capas**: Centralizar IDs de capas en `config.js` (ya está en parte); evitar strings mágicos como `"eventos-layer"` o `"CABLES_KML"` repartidos por el código.
 - **Tests**: Añadir al menos tests básicos para: construcción del índice del buscador, filtros de capas (Corporativo vs FTTH), y reglas de Firebase si usas emuladores.
 
@@ -48,7 +48,7 @@
 ## 5. Operación y despliegue
 
 - **Variables de entorno**: En Vercel/Netlify (o similar), configurar `MAPBOX_TOKEN` y, si aplica, URLs de Firebase/API. No dejar tokens en el código.
-- **Reglas Firestore**: Revisar y publicar las reglas de `eventos_corporativo` en la consola de Firebase tras cualquier cambio.
+- **Reglas Firestore**: Revisar y publicar las reglas de todas las colecciones (`cierres`, `eventos`, `eventos_corporativo`, `rutas`) en la consola de Firebase tras cualquier cambio. Ver `FIREBASE_COLECCIONES.md`.
 - **Backup**: Si los GeoJSON (CABLES, FTTH) son fuente de verdad, considerar backup automático o repo aparte; el backup de planos (p. ej. DWG) ya lo manejas por tu lado.
 - **Monitoreo**: En producción, tener un mínimo de registro de errores (ej. consola o servicio tipo Sentry) para fallos de mapa o de Firebase.
 
@@ -58,7 +58,7 @@
 
 | Prioridad | Acción |
 |-----------|--------|
-| Alta | Documentar y publicar reglas Firestore para `eventos_corporativo` (si no está ya). |
+| Alta | Documentar y publicar reglas Firestore para `cierres`, `eventos`, `eventos_corporativo` y `rutas` (ver `FIREBASE_COLECCIONES.md`). |
 | Alta | Revisar que en producción no queden tokens en el front (config.local / env). |
 | Media | Crear índice plano o estrategia de carga diferida para GIS FTTH si la lentitud molesta. |
 | Media | Añadir mensaje de éxito al guardar evento (FTTH y Corporativo). |

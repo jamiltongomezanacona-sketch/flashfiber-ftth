@@ -637,6 +637,20 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.route-option-firebase {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.route-option-firebase input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary, #2563eb);
+}
+
 /* Tablet y Desktop - un poco más ancho pero sigue compacto */
 @media (min-width: 768px) {
   .route-modal {

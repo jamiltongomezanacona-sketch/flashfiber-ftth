@@ -849,20 +849,21 @@
   max-height: 120px;
 }
 /* ======================================================
-   MODAL EVENTO - Estilo Profesional
-   Mobile First: Bottom sheet en móvil, centrado en tablet+
+   MODAL EVENTO - Mismo estilo compacto y elegante que Cierre/Ruta
+   Centrado, no ocupa toda la pantalla
 ====================================================== */
 
 #eventoModal {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(4px);
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
-  align-items: flex-end; /* En móvil desde abajo */
+  align-items: center;
   justify-content: center;
-  padding: 0;
+  padding: 16px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -871,132 +872,188 @@
   display: none;
 }
 
-/* MOBILE FIRST - Bottom sheet */
+/* Modal compacto: no ocupa toda la pantalla, centrado con margen */
 #eventoModal .modal-content {
   width: 100%;
-  max-width: 100%;
-  max-height: 90vh;
-  background: #111827;
-  color: #e5e7eb;
-  border-radius: 20px 20px 0 0; /* Redondeado solo arriba */
-  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin: 0;
-  will-change: transform, opacity; /* Optimización de rendimiento */
+  max-width: 320px;
+  max-height: 75vh;
+  background: linear-gradient(180deg, #0f172a 0%, #0c1222 100%);
+  color: #e2e8f0;
+  border-radius: 18px;
+  box-shadow:
+    0 25px 50px -12px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 0 0 1px rgba(0, 229, 255, 0.06);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: routePop 0.28s cubic-bezier(0.34, 1.2, 0.64, 1);
+  margin: auto;
+  will-change: transform, opacity;
 }
 
-/* Tablet y Desktop - Centrado */
+#eventoModal .modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* Tablet y Desktop: un poco más ancho pero sigue sin ocupar toda la pantalla */
 @media (min-width: 768px) {
   #eventoModal {
-    align-items: center;
-    padding: 2rem;
+    padding: 24px;
   }
   
   #eventoModal .modal-content {
-    width: 92%;
-    max-width: 500px;
-    border-radius: 14px;
-    animation: modalIn 0.25s ease-out;
+    max-width: 400px;
+    max-height: 82vh;
+    border-radius: 20px;
   }
 }
 
-
-/* Header */
+/* Header - estilo elegante como route-header */
 #eventoModal .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px;
-  background: linear-gradient(135deg, #b91c1c, #7f1d1d);
-  color: #fff;
+  padding: 12px 16px;
+  background: linear-gradient(145deg, #0e3a5f 0%, #0c2d4a 100%);
+  color: #f0f4f8;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
 }
 
 #eventoModal .modal-header h3 {
   font-size: 15px;
   margin: 0;
+  letter-spacing: -0.02em;
 }
 
 #eventoModal .modal-header button {
-  background: transparent;
+  background: rgba(255,255,255,0.1);
   border: none;
-  color: white;
-  font-size: 18px;
+  color: #e2e8f0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 16px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
 }
 
-/* Body */
-/* MOBILE FIRST - 1 columna en móvil */
+#eventoModal .modal-header button:hover {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+}
+
+/* Body - mismos inputs que route-body */
 #eventoModal .modal-body {
-  padding: 12px 14px;
+  padding: 14px 16px 12px;
   display: grid;
-  grid-template-columns: 1fr; /* 1 columna en móvil */
-  gap: 12px; /* Más espacio en móvil */
+  grid-template-columns: 1fr;
+  gap: 10px;
 }
 
-#eventoModal label {
-  font-size: 12px;
-  opacity: 0.85;
+#eventoModal .modal-body label {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.6);
+  margin: 0 0 4px 0;
+  display: block;
+  letter-spacing: 0.02em;
 }
 
 #eventoModal select,
 #eventoModal input,
 #eventoModal textarea {
-  padding: 12px; /* Aumentar para mejor touch */
-  border-radius: 6px;
-  border: none;
-  background: #1f2933;
-  color: #fff;
-  font-size: 16px; /* Prevenir zoom iOS */
-  min-height: 44px; /* Touch target */
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(15, 23, 42, 0.8);
+  color: #e5e7eb;
+  font-size: 14px;
+  min-height: 40px;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-/* Tablet y Desktop - 2 columnas */
+#eventoModal select:hover,
+#eventoModal input:hover,
+#eventoModal textarea:hover {
+  border-color: rgba(255,255,255,0.12);
+}
+
+#eventoModal select:focus,
+#eventoModal input:focus,
+#eventoModal textarea:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.15);
+}
+
+/* Opciones en formato legible (capitalize) */
+#eventoModal select {
+  text-transform: capitalize;
+}
+
+#eventoModal input::placeholder,
+#eventoModal textarea::placeholder {
+  color: rgba(255,255,255,0.35);
+}
+
+#eventoModal textarea {
+  resize: vertical;
+  min-height: 56px;
+  max-height: 120px;
+}
+
 @media (min-width: 768px) {
   #eventoModal .modal-body {
     grid-template-columns: 1fr 1fr;
     gap: 8px;
   }
-  
-  #eventoModal label {
+  #eventoModal .modal-body label {
     grid-column: span 2;
   }
-  
   #eventoModal select,
   #eventoModal input,
   #eventoModal textarea {
     grid-column: span 2;
-    padding: 7px 8px;
-    font-size: 13px;
+    padding: 8px 12px;
+    font-size: 14px;
     min-height: auto;
   }
 }
 
-#eventoModal textarea {
-  resize: vertical;
-  min-height: 60px;
-}
-
-/* Footer */
+/* Footer - mismo estilo que route-actions */
 #eventoModal .modal-footer {
   display: flex;
-  gap: 10px;
-  padding: 12px 14px;
-  background: #020617;
+  gap: 8px;
+  padding: 12px 16px 14px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  background: rgba(0,0,0,0.15);
+  flex-shrink: 0;
 }
 
 #eventoModal .modal-footer button {
   flex: 1;
-  padding: 8px;
+  min-width: 80px;
+  padding: 8px 12px;
+  border-radius: 10px;
   border: none;
-  border-radius: 8px;
   font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.1s ease;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
   outline: none;
-  min-height: 44px; /* Touch target */
+  min-height: 40px;
 }
 
 #eventoModal .modal-footer button:active {
@@ -1009,13 +1066,22 @@
 }
 
 #btnSaveEvento {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: white;
+  background: linear-gradient(145deg, #2563eb, #1d4ed8);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35);
+}
+
+#btnSaveEvento:hover {
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
 }
 
 #btnDeleteEvento {
-  background: linear-gradient(135deg, #dc2626, #991b1b);
-  color: white;
+  background: linear-gradient(145deg, #dc2626, #b91c1c);
+  color: #fff;
+}
+
+#btnDeleteEvento:hover {
+  filter: brightness(1.08);
 }
 
 /* Animación */

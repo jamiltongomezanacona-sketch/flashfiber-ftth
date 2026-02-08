@@ -310,7 +310,7 @@
           <option>PROVISIONAL</option>
           <option>RESUELTO</option>
         </select>
-        <label>🏢 Central</label>
+        <label>Central</label>
         <select id="eventoCentral">
           <option value="">Seleccione Central</option>
           <option value="BACHUE">Bachué</option>
@@ -325,13 +325,13 @@
           <option value="TOBERIN">Toberín</option>
         </select>
 
-        <label>🧬 Molécula</label>
+        <label>Molécula</label>
         <select id="eventoMolecula" disabled>
           <option value="">Seleccione Molécula</option>
         </select>
 
         <label>Técnico</label>
-        <input id="eventoTecnico" placeholder="Nombre técnico">
+        <input id="eventoTecnico" placeholder="Ej. Juan Pérez" aria-label="Nombre del técnico">
 
         <!-- 📸 FOTOS DEL EVENTO -->
         <label>📷 Fotos</label>
@@ -344,8 +344,8 @@
       </div>
 
       <div class="modal-footer">
-        <button id="btnSaveEvento">💾 Guardar</button>
-        <button id="btnDeleteEvento">🗑️ Eliminar</button>
+        <button id="btnSaveEvento" aria-label="Guardar evento">💾 Guardar</button>
+        <button id="btnDeleteEvento" aria-label="Eliminar evento">🗑️ Eliminar</button>
       </div>
 
     </div>

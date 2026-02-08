@@ -100,6 +100,42 @@ body {
   }
 }
 
+/* Botón menú sidebar (al lado de Home en el header) */
+.btn-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  color: var(--accent-cyan);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.btn-header-icon:hover {
+  background: rgba(0, 180, 216, 0.15);
+  color: var(--accent-cyan);
+}
+.btn-header-icon:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+@media (max-width: 767px) {
+  .btn-header-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
+
 .header-actions button {
   background: transparent;
   border: 1px solid var(--border-soft);

@@ -177,61 +177,15 @@
   cursor: pointer;
 }
 /* ===========================
-   BOTÓN FLOTANTE
-   Mobile First: Más grande en móvil
+   BOTÓN SIDEBAR (en header, al lado de Home)
+   Estilos base en layout.css .btn-header-icon
 =========================== */
 #btnSidebar {
-  position: fixed;
-  top: 60px;
-  left: 14px;
-  z-index: 2000;
-
-  width: 52px; /* Más grande en móvil para mejor touch */
-  height: 52px;
-  min-width: 52px;
-  min-height: 52px;
-  border-radius: 14px;
-
-  background: rgba(15, 18, 30, 0.95);
-  color: #00e5ff;
-  font-size: 20px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-  backdrop-filter: blur(8px);
   touch-action: manipulation;
   -webkit-tap-highlight-color: rgba(0, 180, 216, 0.2);
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
-  outline: none;
-  will-change: transform; /* Optimización */
 }
-
-#btnSidebar:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-}
-
 #btnSidebar:active {
-  transform: scale(0.95);
-}
-
-#btnSidebar:focus-visible {
-  outline: 2px solid var(--accent-cyan);
-  outline-offset: 2px;
-}
-
-/* Tablet y Desktop */
-@media (min-width: 768px) {
-  #btnSidebar {
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    min-height: 48px;
-  }
+  transform: scale(0.96);
 }
 
 /* ===========================

@@ -397,27 +397,27 @@ main.map-wrapper {
   word-break: break-word;
 }
 
-/* Acciones: Editar y Eliminar siempre visibles */
+/* Acciones: Editar y Eliminar más pequeños */
 .pin-popup-actions {
   display: flex;
-  gap: 10px;
-  padding: 12px 16px 16px;
+  gap: 8px;
+  padding: 8px 12px 12px;
   background: rgba(0,0,0,0.2);
   border-top: 1px solid rgba(255,255,255,0.06);
 }
 
 .pin-popup-btn {
   flex: 1;
-  padding: 10px 14px;
+  padding: 6px 10px;
   border: none;
-  border-radius: 10px;
-  font-size: 13px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   transition: transform 0.12s ease, box-shadow 0.2s ease;
 }
 

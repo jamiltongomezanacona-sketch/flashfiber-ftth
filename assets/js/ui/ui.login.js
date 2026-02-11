@@ -28,7 +28,7 @@
     // Verificar si ya está autenticado
     checkAuthState();
 
-    // Botón Instalar app (PWA): solo si el navegador lo permite y no está ya instalada
+    // Botón Instalar app (PWA): visible en login; si ya está instalada, ocultar
     if (installAppBtn) {
       if (isStandalone) {
         installAppBtn.classList.add("hidden");
@@ -41,11 +41,19 @@
         });
         installAppBtn.addEventListener("click", async () => {
           const deferred = window.__ftthDeferredInstall;
-          if (!deferred) return;
-          deferred.prompt();
-          const { outcome } = await deferred.userChoice;
-          if (outcome === "accepted") installAppBtn.classList.add("hidden");
-          window.__ftthDeferredInstall = null;
+          if (deferred) {
+            deferred.prompt();
+            const { outcome } = await deferred.userChoice;
+            if (outcome === "accepted") installAppBtn.classList.add("hidden");
+            window.__ftthDeferredInstall = null;
+          } else if (isIos && installIosHint) {
+            installIosHint.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          } else {
+            try {
+              const msg = "Para instalar: en Chrome/Edge usa el menú (⋮) → \"Instalar Flash Fiber\" o \"Instalar aplicación\".";
+              if (typeof alert === "function") alert(msg);
+            } catch (_) {}
+          }
         });
       }
     }

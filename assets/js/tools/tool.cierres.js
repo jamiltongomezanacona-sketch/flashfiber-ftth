@@ -130,14 +130,13 @@
         const selectSufijo = document.getElementById("cierreSufijoE1");
         selectSufijo?.addEventListener("change", generarCodigo);
       } else if (tipo === "E2") {
-        // E2: Submolécula (A, B, C) + Número
+        // E2: Submolécula (A hasta P) + Número
+        const letrasSubmolecula = Array.from({ length: 16 }, (_, i) => String.fromCharCode(65 + i)); // A..P
         camposDinamicos.innerHTML = `
           <label>🔤 Submolécula</label>
           <select id="cierreSubmolecula">
             <option value="">Seleccione Submolécula</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
+            ${letrasSubmolecula.map(l => `<option value="${l}">${l}</option>`).join("")}
           </select>
           <label>🔢 Número</label>
           <select id="cierreNumeroE2">
@@ -779,8 +778,8 @@
             if (selectSufijo) selectSufijo.value = sufijo;
           }
         } else if (codigo && cierre.tipo === "E2") {
-          // E2SI03-A1 -> extraer submolecula "A" y número "1"
-          const match = codigo.match(/-([A-C])(\d+)$/);
+          // E2SI03-A1 -> extraer submolecula "A".."P" y número
+          const match = codigo.match(/-([A-P])(\d+)$/);
           if (match) {
             const submolecula = match[1];
             const numero = match[2];

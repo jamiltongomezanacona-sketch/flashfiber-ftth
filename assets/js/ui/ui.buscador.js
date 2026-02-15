@@ -50,6 +50,9 @@
   const SEARCH_MAX_RETRIES = CONFIG.SEARCH?.MAX_RETRIES ?? 3;
   const SEARCH_MAX_RESULTS = CONFIG.SEARCH?.MAX_RESULTS ?? 20;
   const MAP_FLYTO_DURATION_MS = CONFIG.MAP_FLYTO_DURATION_MS ?? 1500;
+  const GEOCODE_BOGOTA_BBOX = CONFIG.SEARCH?.GEOCODE_BOGOTA_BBOX ?? [-74.35, 4.46, -73.99, 4.83];
+  const GEOCODE_LIMIT = CONFIG.SEARCH?.GEOCODE_LIMIT ?? 5;
+  const MAPBOX_TOKEN = CONFIG.MAPBOX_TOKEN || "";
 
   /* =========================
      Coordenadas (decimal y DMS)
@@ -103,6 +106,43 @@
       if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) return [lng, lat];
     }
     return null;
+  }
+
+  /* =========================
+     Geocodificación: direcciones en Bogotá (Mapbox)
+  ========================= */
+  /**
+   * Busca direcciones en Bogotá con Mapbox Geocoding API.
+   * @param {string} query - Texto de búsqueda (ej. "Cra 7 con 26", "Chapinero")
+   * @returns {Promise<Array>} Lista de resultados { type, id, name, subtitle, coordinates, icon }
+   */
+  async function geocodeBogota(query) {
+    const q = (query || "").trim();
+    if (q.length < 2 || !MAPBOX_TOKEN) return [];
+    const bbox = GEOCODE_BOGOTA_BBOX;
+    const bboxStr = bbox.join(",");
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?access_token=${MAPBOX_TOKEN}&country=co&bbox=${bboxStr}&limit=${GEOCODE_LIMIT}&types=address,place,poi`;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return [];
+      const data = await res.json();
+      if (!data.features || !Array.isArray(data.features)) return [];
+      return data.features.map((f, i) => {
+        const center = f.center && f.center.length >= 2 ? f.center : null;
+        if (!center) return null;
+        return {
+          type: "direccion",
+          id: "dir-" + i + "-" + center[0].toFixed(5) + "-" + center[1].toFixed(5),
+          name: f.place_name || f.text || "Dirección",
+          subtitle: f.context ? f.context.map(c => c.text).join(", ") : (f.place_type ? f.place_type[0] : ""),
+          coordinates: center,
+          icon: "<i class=\"fas fa-map-marker-alt\"></i>"
+        };
+      }).filter(Boolean);
+    } catch (err) {
+      console.warn("⚠️ Geocodificación Bogotá:", err.message);
+      return [];
+    }
   }
 
   /* =========================
@@ -872,7 +912,7 @@
   /* =========================
      Realizar búsqueda
   ========================= */
-  function performSearch(query, retryCount) {
+  async function performSearch(query, retryCount) {
     if (!query || query.trim().length === 0) {
       hideResults();
       return;
@@ -896,6 +936,12 @@
       return;
     }
 
+    // ✅ Búsqueda de direcciones en Bogotá (Mapbox Geocoding)
+    let addressResults = [];
+    if (query.trim().length >= 2) {
+      addressResults = await geocodeBogota(query);
+    }
+
     // ✅ Si el índice está vacío, mostrar "Cargando..." y reintentar cuando haya datos
     const totalItems = searchIndex.centrales.length + searchIndex.cables.length + searchIndex.cierres.length + searchIndex.eventos.length;
     if (totalItems === 0) {
@@ -905,22 +951,22 @@
         if (isCorporativo) loadCablesCorporativo(); else { loadCentrales(); loadCables(); }
         setTimeout(() => performSearch(query, retryCount + 1), SEARCH_RETRY_DELAY_MS);
       } else {
-        searchResults.innerHTML = `<div class="search-no-results"><i class="fas fa-search"></i><div>No se encontraron resultados</div></div>`;
-        searchResults.classList.remove("hidden");
+        allResults = addressResults.slice(0, SEARCH_MAX_RESULTS);
+        renderResults();
       }
       return;
     }
+
     const lowerQuery = query.toLowerCase();
-    
     allResults = [];
-    
+
     // Buscar en centrales
     searchIndex.centrales.forEach(central => {
       if (central.name.toLowerCase().includes(lowerQuery)) {
         allResults.push(central);
       }
     });
-    
+
     // Buscar en cables
     searchIndex.cables.forEach(cable => {
       const searchText = `${cable.name} ${cable.central || ""} ${cable.molecula || ""} ${cable.tipo || ""}`.toLowerCase();
@@ -928,7 +974,7 @@
         allResults.push(cable);
       }
     });
-    
+
     // Buscar en cierres (Firebase)
     searchIndex.cierres.forEach(cierre => {
       const searchText = `${cierre.name} ${cierre.codigo || ""} ${cierre.central || ""} ${cierre.molecula || ""} ${cierre.tipo || ""}`.toLowerCase();
@@ -945,7 +991,7 @@
       }
     });
 
-    // Añadir cables de la misma molécula (relacionados): ej. buscar SI17FH144 → mostrar también SI17FH48, etc.
+    // Añadir cables de la misma molécula (relacionados)
     const cableResults = allResults.filter(function (r) { return r.type === "cable"; });
     let maxResults = SEARCH_MAX_RESULTS;
     if (cableResults.length > 0) {
@@ -968,7 +1014,8 @@
       maxResults = Math.max(SEARCH_MAX_RESULTS, allResults.length);
     }
 
-    allResults = allResults.slice(0, maxResults);
+    // Direcciones de Bogotá primero, luego el resto (hasta GEOCODE_LIMIT direcciones + SEARCH_MAX_RESULTS del índice)
+    allResults = addressResults.concat(allResults).slice(0, addressResults.length + SEARCH_MAX_RESULTS);
 
     renderResults();
   }
@@ -995,6 +1042,7 @@
       <div class="search-results-list">
         ${allResults.map(result => {
           const displayName = result.type === "cable" ? cableNameForDisplay(result.layerId, result.name) : result.name;
+          const badge = result.type === "direccion" ? "dirección" : result.type;
           return `
           <div class="search-result-item" data-type="${result.type}" data-id="${result.id}">
             <div class="search-result-icon ${result.type}">
@@ -1002,8 +1050,8 @@
             </div>
             <div class="search-result-content">
               <div class="search-result-title">
-                ${highlightMatch(displayName, currentSearch)}
-                <span class="search-result-badge">${result.type}</span>
+                ${result.type === "direccion" ? displayName : highlightMatch(displayName, currentSearch)}
+                <span class="search-result-badge">${badge}</span>
               </div>
               <div class="search-result-subtitle">${result.subtitle || ""}</div>
             </div>
@@ -1076,8 +1124,8 @@
       window.dispatchEvent(new CustomEvent("ftth-refresh-eventos"));
     }
 
-    // Pin de ubicación para búsqueda por coordenadas (capa del mapa, no Marker DOM)
-    if (result.type === "coordenadas") {
+    // Pin de ubicación para búsqueda por coordenadas o dirección (capa del mapa)
+    if (result.type === "coordenadas" || result.type === "direccion") {
       try {
         if (App.map.getLayer(PIN_COORDS_LAYER_ID)) App.map.removeLayer(PIN_COORDS_LAYER_ID);
         if (App.map.getSource(PIN_COORDS_SOURCE_ID)) App.map.removeSource(PIN_COORDS_SOURCE_ID);
@@ -1087,12 +1135,12 @@
     // Hacer zoom al resultado
     App.map.flyTo({
       center: result.coordinates,
-      zoom: result.type === "central" ? 15 : 17,
+      zoom: result.type === "central" ? 15 : (result.type === "direccion" ? 17 : 17),
       duration: MAP_FLYTO_DURATION_MS
     });
 
     // Añadir pin como capa (círculo visible) cuando termine el movimiento
-    if (result.type === "coordenadas") {
+    if (result.type === "coordenadas" || result.type === "direccion") {
       App.map.once("moveend", function () {
         try {
           if (App.map.getLayer(PIN_COORDS_LAYER_ID)) App.map.removeLayer(PIN_COORDS_LAYER_ID);

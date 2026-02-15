@@ -211,6 +211,11 @@
   color: #ef5350;
 }
 
+.search-result-icon.direccion {
+  background: rgba(255, 167, 38, 0.2);
+  color: #ffa726;
+}
+
 .search-result-content {
   flex: 1;
   min-width: 0;

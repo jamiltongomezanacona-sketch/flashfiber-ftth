@@ -332,6 +332,9 @@
         const creadoPor = escapeHtml(String(p.createdBy || p.creadoPor || "—"));
         const nombrePin = escapeHtml(p.tipo || p.nombre || "Evento");
         const notasFull = p.notas ? escapeHtml(String(p.notas)) : "—";
+        const lat = lngLat.lat != null ? Number(lngLat.lat) : (p.lat != null ? Number(p.lat) : null);
+        const lng = lngLat.lng != null ? Number(lngLat.lng) : (p.lng != null ? Number(p.lng) : null);
+        const coordsText = (lat != null && lng != null) ? `${lat.toFixed(6)}, ${lng.toFixed(6)}` : "—";
 
         const html = `
   <div class="popup pin-popup pin-popup-card" role="dialog" aria-label="Propiedades del evento">
@@ -340,11 +343,13 @@
       <h3 class="pin-popup-title">${nombrePin}</h3>
     </div>
     <div class="pin-popup-body">
+      <div class="pin-popup-row"><span class="pin-popup-label">Coordenadas</span><span class="pin-popup-value pin-popup-coords">${coordsText}</span></div>
       <div class="pin-popup-row"><span class="pin-popup-label">Fecha de creación</span><span class="pin-popup-value">${escapeHtml(fecha)}</span></div>
       <div class="pin-popup-row"><span class="pin-popup-label">Creado por</span><span class="pin-popup-value">${creadoPor}</span></div>
       <div class="pin-popup-row pin-popup-row-notes"><span class="pin-popup-label">Notas</span><div class="pin-popup-notes-scroll"><span class="pin-popup-value">${notasFull}</span></div></div>
     </div>
     <div class="pin-popup-actions">
+      <button type="button" data-pin-action="copy-coords" class="pin-popup-btn pin-popup-btn-copy" aria-label="Copiar coordenadas">📋 Copiar coordenadas</button>
       <button type="button" data-pin-action="edit" class="pin-popup-btn pin-popup-btn-edit" aria-label="Editar evento">✏️ Editar</button>
       <button type="button" data-pin-action="delete" class="pin-popup-btn pin-popup-btn-delete" aria-label="Eliminar evento">🗑️ Eliminar</button>
     </div>
@@ -360,8 +365,40 @@
           .setDOMContent(content)
           .addTo(App.map);
 
+        const btnCopyCoords = content.querySelector('[data-pin-action="copy-coords"]');
         const btnEdit = content.querySelector('[data-pin-action="edit"]');
         const btnDelete = content.querySelector('[data-pin-action="delete"]');
+        if (btnCopyCoords && coordsText !== "—") {
+          btnCopyCoords.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const text = coordsText;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(() => {
+                btnCopyCoords.textContent = "✓ Copiado";
+                setTimeout(() => { btnCopyCoords.textContent = "📋 Copiar coordenadas"; }, 1500);
+              }).catch(() => { fallbackCopy(text, btnCopyCoords); });
+            } else {
+              fallbackCopy(text, btnCopyCoords);
+            }
+          });
+        }
+        function fallbackCopy(text, btn) {
+          try {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+            btn.textContent = "✓ Copiado";
+            setTimeout(() => { btn.textContent = "📋 Copiar coordenadas"; }, 1500);
+          } catch (err) {
+            alert("Coordenadas: " + text);
+          }
+        }
         if (btnEdit) {
           btnEdit.addEventListener("click", function (e) {
             e.preventDefault();

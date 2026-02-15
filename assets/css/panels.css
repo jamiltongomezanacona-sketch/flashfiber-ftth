@@ -1028,6 +1028,16 @@
   max-height: 120px;
 }
 
+/* Cuadro de Notas grande para ver todo el texto */
+#eventoModal textarea.evento-notas-box {
+  min-height: 180px;
+  max-height: 50vh;
+  width: 100%;
+  padding: 12px 14px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
 @media (min-width: 768px) {
   #eventoModal .modal-body {
     grid-template-columns: 1fr 1fr;
@@ -1043,6 +1053,10 @@
     padding: 8px 12px;
     font-size: 14px;
     min-height: auto;
+  }
+  #eventoModal textarea.evento-notas-box {
+    min-height: 180px;
+    max-height: 50vh;
   }
 }
 

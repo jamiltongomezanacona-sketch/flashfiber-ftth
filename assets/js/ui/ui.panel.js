@@ -62,7 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
   navegar: document.querySelector('[data-action="navegar"]'),
   ruta: document.querySelector('[data-action="ruta"]'),
   cierres: document.querySelector('[data-action="cierres"]'),
-  eventos: document.querySelector('[data-action="eventos"]')   // 🚨 NUEVO
+  eventos: document.querySelector('[data-action="eventos"]'),
+  posteria: document.querySelector('[data-action="posteria"]')
 };
 
   // ✅ Debug: Verificar que el botón de eventos se encontró
@@ -79,7 +80,8 @@ document.addEventListener("DOMContentLoaded", () => {
   navegar: false,
   ruta: false,
   cierres: false,
-  eventos: false   // 🚨 NUEVO
+  eventos: false,
+  posteria: false
 };
 
 
@@ -95,7 +97,8 @@ if (tool === "medir") App.tools.medicion?.stop();
 if (tool === "navegar") App.tools.navegacion?.stop();
 if (tool === "ruta") App.tools.rutas?.stop();
 if (tool === "cierres") App.tools.cierres?.stop();
-if (tool === "eventos") App.tools.eventos?.stop();   // 🚨
+if (tool === "eventos") App.tools.eventos?.stop();
+if (tool === "posteria") App.tools.posteria?.stop();
     } catch (e) {
       console.warn("⚠️ Error apagando tool:", tool);
     }
@@ -154,6 +157,21 @@ if (tool === "eventos") App.tools.eventos?.stop();   // 🚨
       }, 100);
     }
 
+    // Montar posteria: si existe tool, encenderlo; si no, solo aviso (sin activar botón)
+    if (tool === "posteria") {
+      if (App.tools.posteria?.start) {
+        App.tools.posteria.start();
+      } else {
+        toolState.posteria = false;
+        toolButtons.posteria?.classList.remove("active");
+        if (typeof App.ui?.notify === "function") {
+          App.ui.notify("Montar posteria – Próximamente");
+        } else {
+          console.log("🏗️ Montar posteria – herramienta en desarrollo");
+        }
+      }
+    }
+
   } catch (e) {
     console.warn("⚠️ Error encendiendo tool:", tool, e);
   }
@@ -181,13 +199,9 @@ toolButtons.navegar?.addEventListener("click", () => toggleTool("navegar"));
 toolButtons.ruta?.addEventListener("click", () => toggleTool("ruta"));
 toolButtons.cierres?.addEventListener("click", () => toggleTool("cierres"));
 if (toolButtons.eventos) {
-  toolButtons.eventos.addEventListener("click", () => {
-    console.log("🔘 Botón Eventos clickeado");
-    toggleTool("eventos");
-  });
-} else {
-  console.error("❌ No se pudo agregar listener al botón de eventos: botón no encontrado");
+  toolButtons.eventos.addEventListener("click", () => toggleTool("eventos"));
 }
+toolButtons.posteria?.addEventListener("click", () => toggleTool("posteria"));
   /* ===============================
      BOTONES FLOTANTES (MAP HUD)
   =============================== */

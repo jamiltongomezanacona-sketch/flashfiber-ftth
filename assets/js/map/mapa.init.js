@@ -100,6 +100,116 @@
     if (window.initMapControls) {
       window.initMapControls();
     }
+
+    // 📋 MANTENER PRESIONADO / CLIC DERECHO: copiar coordenadas del punto en el mapa
+    (function initLongPressCopyCoords() {
+      const LONG_PRESS_MS = 550;
+      let longPressTimer = null;
+      let touchStartPoint = null;
+
+      function showCopyCoordsPopup(lngLat) {
+        const lat = lngLat.lat != null ? Number(lngLat.lat) : 0;
+        const lng = lngLat.lng != null ? Number(lngLat.lng) : 0;
+        const coordsText = lat.toFixed(6) + ", " + lng.toFixed(6);
+
+        const popup = new mapboxgl.Popup({ closeButton: true, closeOnClick: true })
+          .setLngLat(lngLat)
+          .setHTML(
+            '<div class="pin-popup pin-popup-card" style="min-width:200px">' +
+            '<div class="pin-popup-header" style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.08)">' +
+            '<span style="font-size:13px;font-weight:600;color:#e2e8f0">📍 Coordenadas</span></div>' +
+            '<div class="pin-popup-body" style="padding:12px">' +
+            '<div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:6px">' + coordsText + '</div>' +
+            '<button type="button" class="pin-popup-btn pin-popup-btn-copy" data-copy-coords style="width:100%;padding:8px 12px;border-radius:8px;border:none;background:rgba(0,180,216,0.25);color:#00e5ff;font-size:12px;font-weight:600;cursor:pointer">📋 Copiar coordenadas</button>' +
+            '</div></div>'
+          )
+          .addTo(map);
+
+        const btn = popup.getElement().querySelector("[data-copy-coords]");
+        if (btn) {
+          btn.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const text = coordsText;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function () {
+                btn.textContent = "✓ Copiado";
+                setTimeout(function () { btn.textContent = "📋 Copiar coordenadas"; }, 1500);
+              }).catch(function () { fallbackCopy(text, btn); });
+            } else {
+              fallbackCopy(text, btn);
+            }
+          });
+        }
+        function fallbackCopy(text, button) {
+          try {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+            button.textContent = "✓ Copiado";
+            setTimeout(function () { button.textContent = "📋 Copiar coordenadas"; }, 1500);
+          } catch (err) {
+            alert("Coordenadas: " + text);
+          }
+        }
+      }
+
+      // Clic derecho (escritorio): mostrar opción copiar coordenadas
+      map.on("contextmenu", function (e) {
+        e.preventDefault();
+        showCopyCoordsPopup(e.lngLat);
+      });
+
+      // Móvil: mantener presionado el dedo
+      const canvas = map.getCanvas();
+      if (!canvas) return;
+
+      function clearLongPress() {
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+        touchStartPoint = null;
+      }
+
+      canvas.addEventListener("touchstart", function (e) {
+        if (e.touches.length !== 1) return;
+        clearLongPress();
+        touchStartPoint = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        longPressTimer = setTimeout(function () {
+          longPressTimer = null;
+          if (!touchStartPoint) return;
+          const rect = canvas.getBoundingClientRect();
+          const x = touchStartPoint.x - rect.left;
+          const y = touchStartPoint.y - rect.top;
+          try {
+            const lngLat = map.unproject([x, y]);
+            showCopyCoordsPopup(lngLat);
+          } catch (err) {
+            console.warn("Long-press coords:", err);
+          }
+          touchStartPoint = null;
+          e.preventDefault();
+        }, LONG_PRESS_MS);
+      }, { passive: true });
+
+      canvas.addEventListener("touchmove", function () {
+        clearLongPress();
+      }, { passive: true });
+
+      canvas.addEventListener("touchend", function () {
+        clearLongPress();
+      }, { passive: true });
+
+      canvas.addEventListener("touchcancel", function () {
+        clearLongPress();
+      }, { passive: true });
+    })();
   });
 
 })();

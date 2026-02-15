@@ -385,6 +385,10 @@ main.map-wrapper {
 
 .pin-popup-body {
   padding: 14px 18px 16px;
+  max-height: 50vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
 .pin-popup-row {
@@ -399,6 +403,30 @@ main.map-wrapper {
 
 .pin-popup-row:last-child {
   border-bottom: none;
+}
+
+.pin-popup-row-notes {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pin-popup-notes-scroll {
+  width: 100%;
+  max-height: 180px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pin-popup-notes-scroll .pin-popup-value {
+  display: block;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .pin-popup-label {

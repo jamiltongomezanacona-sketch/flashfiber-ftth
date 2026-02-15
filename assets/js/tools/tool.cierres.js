@@ -440,7 +440,7 @@
         const fecha = p.createdAt ? new Date(p.createdAt).toLocaleString() : "Sin fecha";
         const creadoPor = escapeHtml(String(p.createdBy || p.creadoPor || "—"));
         const nombrePin = escapeHtml(p.codigo || "Cierre");
-        const notas = p.notas ? escapeHtml(String(p.notas).slice(0, 120)) + (String(p.notas).length > 120 ? "…" : "") : "—";
+        const notasFull = p.notas ? escapeHtml(String(p.notas)) : "—";
 
         const html = `
   <div class="popup pin-popup pin-popup-card" role="dialog" aria-label="Propiedades del cierre">
@@ -451,7 +451,7 @@
     <div class="pin-popup-body">
       <div class="pin-popup-row"><span class="pin-popup-label">Fecha de creación</span><span class="pin-popup-value">${escapeHtml(fecha)}</span></div>
       <div class="pin-popup-row"><span class="pin-popup-label">Creado por</span><span class="pin-popup-value">${creadoPor}</span></div>
-      <div class="pin-popup-row"><span class="pin-popup-label">Notas</span><span class="pin-popup-value">${notas}</span></div>
+      <div class="pin-popup-row pin-popup-row-notes"><span class="pin-popup-label">Notas</span><div class="pin-popup-notes-scroll"><span class="pin-popup-value">${notasFull}</span></div></div>
     </div>
     <div class="pin-popup-actions">
       <button type="button" data-pin-action="edit" class="pin-popup-btn pin-popup-btn-edit" aria-label="Editar cierre">✏️ Editar</button>

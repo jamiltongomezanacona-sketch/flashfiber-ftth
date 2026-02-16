@@ -69,11 +69,13 @@
         
         // Agregar capas consolidadas como hijos
         App.__ftthLayerIds.forEach(layerId => {
-          if (layerId.startsWith("geojson-") || layerId.startsWith("ftth-")) {
+          if (layerId.startsWith("geojson-") || layerId.startsWith("ftth-") || layerId.startsWith("muzu-")) {
             const layerName = layerId === "geojson-lines" ? "🧵 Cables (Consolidado)" :
                              layerId === "ftth-cables" ? "🧵 Cables FTTH" :
                              layerId === "ftth-puntos" ? "📍 Puntos FTTH" :
                              layerId === "geojson-points" ? "📍 Puntos (Consolidado)" :
+                             layerId === "muzu-lines" ? "🧵 MUZU (cables)" :
+                             layerId === "muzu-points" ? "📍 MUZU (puntos)" :
                              layerId;
             
             consolidatedNode.children.push({
@@ -556,7 +558,8 @@
             console.log("🧵 geojson-lines: todos los cables visibles");
           } catch (e) {}
         }
-        if (isCable) showPinsWhenCableActivated(layerId);
+        // Solo aplicar filtro de pines a cables del consolidado FTTH, no a MUZU
+        if (isCable && !layerId.startsWith("muzu-")) showPinsWhenCableActivated(layerId);
       }
     } else if (!window.__GEOJSON_INDEX__ && map.getLayer("geojson-lines")) {
       // GIS FTTH: solo aplicar filtro de cable si el id es de cables (no _cierres / _eventos que son puntos)

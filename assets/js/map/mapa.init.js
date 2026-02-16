@@ -83,6 +83,11 @@
     // 🌍 Capas FTTH
     App.layers?.loadIndex();
 
+    // 🗺️ MUZU (KML convertido a GeoJSON)
+    if (App.loadMuzuLayer) {
+      setTimeout(() => App.loadMuzuLayer(), 900);
+    }
+
     // 💾 Rutas guardadas
     try {
       const rutas = window.__FTTH_STORAGE__?.getRutas() || [];

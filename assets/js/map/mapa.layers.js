@@ -1529,12 +1529,80 @@
   });
 
   /* ===============================
+     MUZU – capa desde KML convertido a GeoJSON
+  =============================== */
+  async function loadMuzuLayer() {
+    const map = App.map;
+    if (!map || !map.getStyle()) return;
+    const url = "../geojson/MUZU/muzu.geojson";
+    try {
+      const res = await fetch(url, { cache: "default" });
+      if (!res.ok) {
+        console.warn("⚠️ MUZU: no se pudo cargar " + url);
+        return;
+      }
+      const geojson = await res.json();
+      if (!geojson.features || geojson.features.length === 0) {
+        console.warn("⚠️ MUZU: GeoJSON sin features");
+        return;
+      }
+      if (map.getSource("muzu-src")) {
+        map.getSource("muzu-src").setData(geojson);
+        if (map.getLayer("muzu-lines")) map.setLayoutProperty("muzu-lines", "visibility", "visible");
+        if (map.getLayer("muzu-points")) map.setLayoutProperty("muzu-points", "visibility", "visible");
+        console.log("✅ MUZU actualizado: " + geojson.features.length + " features");
+        return;
+      }
+      map.addSource("muzu-src", { type: "geojson", data: geojson });
+      const hasLines = geojson.features.some(f => f.geometry && f.geometry.type === "LineString");
+      const hasPoints = geojson.features.some(f => f.geometry && f.geometry.type === "Point");
+      if (hasLines) {
+        map.addLayer({
+          id: "muzu-lines",
+          type: "line",
+          source: "muzu-src",
+          filter: ["==", ["geometry-type"], "LineString"],
+          layout: { visibility: "visible" },
+          paint: {
+            "line-color": "#009c38",
+            "line-width": 4,
+            "line-opacity": 0.9
+          }
+        });
+      }
+      if (hasPoints) {
+        map.addLayer({
+          id: "muzu-points",
+          type: "circle",
+          source: "muzu-src",
+          filter: ["==", ["geometry-type"], "Point"],
+          layout: { visibility: "visible" },
+          paint: {
+            "circle-radius": 7,
+            "circle-color": "#00e5ff",
+            "circle-stroke-width": 2,
+            "circle-stroke-color": "#fff",
+            "circle-opacity": 0.95
+          }
+        });
+      }
+      if (!App.__ftthLayerIds) App.__ftthLayerIds = [];
+      if (hasLines && !App.__ftthLayerIds.includes("muzu-lines")) App.__ftthLayerIds.push("muzu-lines");
+      if (hasPoints && !App.__ftthLayerIds.includes("muzu-points")) App.__ftthLayerIds.push("muzu-points");
+      console.log("✅ MUZU cargado: " + geojson.features.length + " features (líneas + puntos)");
+    } catch (err) {
+      console.warn("⚠️ MUZU:", err.message || err);
+    }
+  }
+
+  /* ===============================
      API pública
   =============================== */
   App.loadFTTHTree = loadFTTHTree;
   App.consolidateAllGeoJSON = consolidateAllGeoJSON;
   App.loadConsolidatedGeoJSONToBaseMap = loadConsolidatedGeoJSONToBaseMap;
   App.loadCentralesFijas = loadCentralesFijas;
+  App.loadMuzuLayer = loadMuzuLayer;
   App.enforceOnlyCentralesVisible = enforceOnlyCentralesVisible; // 🔒 Solo centrales visibles por defecto
 
 })();

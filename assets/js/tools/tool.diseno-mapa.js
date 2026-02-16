@@ -45,19 +45,36 @@
 
     function getMapDataURL(callback) {
       var map = App.map;
-      if (!map || !map.getCanvas()) {
-        if (callback) callback(null);
+      var canvas = map && map.getCanvas();
+      if (!map || !canvas) {
+        if (callback) callback(null, null);
         return;
       }
       function doCapture() {
-        try {
-          map.repaint();
-          var dataUrl = map.getCanvas().toDataURL("image/png");
-          if (callback) callback(dataUrl);
-        } catch (e) {
-          console.warn("Export mapa:", e);
-          if (callback) callback(null);
-        }
+        map.repaint();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            var dataUrl = null;
+            var blob = null;
+            try {
+              dataUrl = canvas.toDataURL("image/png");
+            } catch (e) {
+              console.warn("toDataURL falló (canvas tainted?):", e.message || e);
+            }
+            if (dataUrl && dataUrl.length > 100) {
+              if (callback) callback(dataUrl, null);
+              return;
+            }
+            if (canvas.toBlob) {
+              canvas.toBlob(function (b) {
+                if (b && callback) callback(null, b);
+                else if (callback) callback(null, null);
+              }, "image/png");
+            } else {
+              if (callback) callback(null, null);
+            }
+          });
+        });
       }
       if (map.isStyleLoaded()) {
         doCapture();
@@ -67,20 +84,64 @@
       }
     }
 
+    function getMapImageForDownload(callback) {
+      getMapDataURL(function (dataUrl, blob) {
+        if (dataUrl) return callback({ type: "dataurl", data: dataUrl });
+        if (blob) return callback({ type: "blob", data: blob });
+        tryStaticMapFallback(callback);
+      });
+    }
+
+    function tryStaticMapFallback(callback) {
+      var map = App.map;
+      var CONFIG = window.__FTTH_CONFIG__;
+      var token = CONFIG && CONFIG.MAPBOX_TOKEN;
+      if (!token || !map) {
+        if (callback) callback(null);
+        return;
+      }
+      var center = map.getCenter();
+      var zoom = Math.round(map.getZoom());
+      var bearing = Math.round(map.getBearing());
+      var pitch = Math.round(map.getPitch());
+      var canvas = map.getCanvas();
+      var w = Math.min(canvas.width, 1280);
+      var h = Math.min(canvas.height, 1280);
+      var style = "mapbox/streets-v12";
+      var url = "https://api.mapbox.com/styles/v1/" + style + "/static/" +
+        center.lng + "," + center.lat + "," + zoom + "," + bearing + "," + pitch + "/" + w + "x" + h + "@2x?access_token=" + encodeURIComponent(token);
+      fetch(url).then(function (r) { return r.blob(); }).then(function (blob) {
+        if (callback) callback({ type: "blob", data: blob, fallback: true });
+      }).catch(function (err) {
+        console.warn("Static map fallback:", err);
+        if (callback) callback(null);
+      });
+    }
+
     function downloadImage() {
       btnDescargarImagen.disabled = true;
       btnDescargarImagen.textContent = " Generando...";
-      getMapDataURL(function (dataUrl) {
+      getMapImageForDownload(function (result) {
         btnDescargarImagen.disabled = false;
         btnDescargarImagen.innerHTML = "<i class=\"fas fa-image\"></i> Descargar imagen (PNG)";
-        if (!dataUrl) {
+        if (!result) {
           alert("No se pudo generar la imagen. Recarga la página e inténtalo de nuevo.");
           return;
         }
         var a = document.createElement("a");
-        a.href = dataUrl;
-        a.download = "mapa-flashfiber-" + new Date().toISOString().slice(0, 10) + ".png";
+        var filename = "mapa-flashfiber-" + new Date().toISOString().slice(0, 10) + ".png";
+        if (result.type === "dataurl") {
+          a.href = result.data;
+          a.download = filename;
+        } else if (result.type === "blob") {
+          a.href = URL.createObjectURL(result.data);
+          a.download = filename;
+          setTimeout(function () { URL.revokeObjectURL(a.href); }, 200);
+        }
         a.click();
+        if (result.fallback) {
+          console.log("Se usó mapa estático (solo base). Capas propias no incluidas.");
+        }
       });
     }
 
@@ -92,14 +153,14 @@
       }
       btnDescargarPdf.disabled = true;
       btnDescargarPdf.textContent = " Generando PDF...";
-      getMapDataURL(function (dataUrl) {
+      getMapImageForDownload(function (result) {
         btnDescargarPdf.disabled = false;
         btnDescargarPdf.innerHTML = "<i class=\"fas fa-file-pdf\"></i> Descargar PDF";
-        if (!dataUrl) {
+        if (!result) {
           alert("No se pudo generar el mapa para PDF. Recarga la página e inténtalo de nuevo.");
           return;
         }
-        try {
+        function addPdfImage(imgData) {
           var canvas = App.map.getCanvas();
           var w = canvas.width;
           var h = canvas.height;
@@ -113,11 +174,30 @@
           var ratio = Math.min(pdfW / w, pdfH / h) * 0.95;
           var imgW = w * ratio;
           var imgH = h * ratio;
-          pdf.addImage(dataUrl, "PNG", (pdfW - imgW) / 2, (pdfH - imgH) / 2, imgW, imgH);
+          pdf.addImage(imgData, "PNG", (pdfW - imgW) / 2, (pdfH - imgH) / 2, imgW, imgH);
           pdf.save("mapa-flashfiber-" + new Date().toISOString().slice(0, 10) + ".pdf");
-        } catch (err) {
-          console.error("PDF:", err);
-          alert("Error al generar el PDF: " + (err.message || err));
+        }
+        if (result.type === "dataurl") {
+          try {
+            addPdfImage(result.data);
+          } catch (err) {
+            console.error("PDF:", err);
+            alert("Error al generar el PDF: " + (err.message || err));
+          }
+          return;
+        }
+        if (result.type === "blob") {
+          var fr = new FileReader();
+          fr.onload = function () {
+            try {
+              addPdfImage(fr.result);
+            } catch (err) {
+              console.error("PDF:", err);
+              alert("Error al generar el PDF: " + (err.message || err));
+            }
+          };
+          fr.onerror = function () { alert("Error al leer la imagen para PDF."); };
+          fr.readAsDataURL(result.data);
         }
       });
     }

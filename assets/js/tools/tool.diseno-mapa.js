@@ -7,12 +7,12 @@
   "use strict";
 
   var MARGIN_PX = 40;
-  var TOP_AREA_PX = 52;
-  var BOTTOM_AREA_PX = 72;
+  var TOP_AREA_PX = 68;
+  var BOTTOM_AREA_PX = 92;
   var MARGIN_MM = 15;
-  var TITLE_FONT_PX = 18;
-  var NOTES_FONT_PX = 12;
-  var DATE_FONT_PX = 11;
+  var TITLE_FONT_PX = 24;
+  var NOTES_FONT_PX = 16;
+  var DATE_FONT_PX = 13;
 
   function init() {
     var App = window.__FTTH_APP__;
@@ -99,25 +99,27 @@
         ctx.fillStyle = "#e0e0e0";
         ctx.font = "bold " + TITLE_FONT_PX + "px sans-serif";
         ctx.textBaseline = "top";
-        var titleY = 14;
+        var titleY = 16;
         var maxTitleW = totalW - 2 * MARGIN_PX;
         var titleLines = wrapText(ctx, titulo, maxTitleW);
-        for (var t = 0; t < titleLines.length && t < 2; t++) {
-          ctx.fillText(titleLines[t], MARGIN_PX, titleY + t * (TITLE_FONT_PX + 4));
+        var titleLineHeight = TITLE_FONT_PX + 6;
+        for (var t = 0; t < titleLines.length && t < 3; t++) {
+          ctx.fillText(titleLines[t], MARGIN_PX, titleY + t * titleLineHeight);
         }
-        var nextY = titleY + titleLines.length * (TITLE_FONT_PX + 4);
+        var nextY = titleY + titleLines.length * titleLineHeight;
         if (incluirFecha) {
           ctx.font = DATE_FONT_PX + "px sans-serif";
           ctx.fillStyle = "#9ca3af";
-          ctx.fillText("Fecha: " + fechaStr, MARGIN_PX, nextY + 4);
+          ctx.fillText("Fecha: " + fechaStr, MARGIN_PX, nextY + 6);
         }
         if (notas) {
           ctx.font = NOTES_FONT_PX + "px sans-serif";
           ctx.fillStyle = "#b0b0b0";
           var notesLines = wrapText(ctx, notas, maxTitleW);
-          var notesStartY = TOP_AREA_PX + mapH + 14;
-          for (var n = 0; n < notesLines.length && n < 6; n++) {
-            ctx.fillText(notesLines[n], MARGIN_PX, notesStartY + n * (NOTES_FONT_PX + 3));
+          var notesStartY = TOP_AREA_PX + mapH + 18;
+          var notesLineHeight = NOTES_FONT_PX + 5;
+          for (var n = 0; n < notesLines.length && n < 7; n++) {
+            ctx.fillText(notesLines[n], MARGIN_PX, notesStartY + n * notesLineHeight);
           }
         }
         try {

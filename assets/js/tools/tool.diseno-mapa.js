@@ -51,7 +51,7 @@
         return;
       }
       function doCapture() {
-        map.repaint();
+        if (typeof map.triggerRepaint === "function") map.triggerRepaint();
         requestAnimationFrame(function () {
           requestAnimationFrame(function () {
             var dataUrl = null;

@@ -148,6 +148,48 @@
   display: none;
 }
 
+/* Panel Crear diseño de mapa */
+.panel-diseno-map {
+  padding: 16px;
+}
+.panel-diseno-desc {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 16px;
+}
+.panel-diseno-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.btn-diseno-download {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s, transform 0.15s;
+  background: rgba(0, 180, 216, 0.2);
+  color: #00e5ff;
+  border: 1px solid rgba(0, 229, 255, 0.35);
+}
+.btn-diseno-download:hover {
+  background: rgba(0, 180, 216, 0.35);
+  transform: translateY(-1px);
+}
+.btn-diseno-download:active {
+  transform: translateY(0);
+}
+.btn-diseno-download i {
+  font-size: 16px;
+}
+
 /* Tablet */
 @media (min-width: 768px) {
   .panel-capas {

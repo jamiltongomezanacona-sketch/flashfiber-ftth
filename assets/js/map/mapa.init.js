@@ -25,13 +25,15 @@
   mapboxgl.accessToken = CONFIG.MAPBOX_TOKEN;
 
   // 🗺️ MAPA BASE – calles (estilo desde config)
+  // preserveDrawingBuffer: true permite exportar el mapa a imagen/PDF (Crear diseño de mapa)
   const map = new mapboxgl.Map({
     container: "map",
     style: CONFIG.MAP.STYLES?.streets || CONFIG.MAP.STYLE_DEFAULT || "mapbox://styles/mapbox/streets-v12",
     center: [-74.088195, 4.562537], // Central Santa Inés
-    zoom: 14, // Zoom más cercano para ver el sector de Santa Inés
+    zoom: 14,
     bearing: 0,
-    pitch: 30
+    pitch: 30,
+    preserveDrawingBuffer: true
   });
 
   /* ===============================

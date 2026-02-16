@@ -85,6 +85,11 @@
       </section>
 
       <section class="menu-section">
+        <div class="menu-title">DISEÑO</div>
+        <button class="menu-item" id="btnDisenoMapa" type="button">🖼️ Crear diseño de mapa</button>
+      </section>
+
+      <section class="menu-section">
         <div class="menu-title">RED FTTH</div>
         <button class="menu-item" id="btnOpenLayers">🧱 Capas</button>
       </section>
@@ -150,6 +155,25 @@
       <!-- Árbol dinámico -->
     </div>
 
+  </div>
+
+  <!-- 🖼️ PANEL CREAR DISEÑO DE MAPA (exportar imagen y PDF) -->
+  <div id="disenoMapaPanel" class="panel panel-capas hidden">
+    <div class="panel-header">
+      <span class="panel-title">🖼️ Crear diseño de mapa</span>
+      <button id="btnCloseDisenoMapa" type="button" aria-label="Cerrar">✖</button>
+    </div>
+    <div class="panel-content panel-diseno-map">
+      <p class="panel-diseno-desc">Exporta la vista actual del mapa.</p>
+      <div class="panel-diseno-buttons">
+        <button type="button" id="btnDescargarImagenMapa" class="btn-diseno-download">
+          <i class="fas fa-image"></i> Descargar imagen (PNG)
+        </button>
+        <button type="button" id="btnDescargarPdfMapa" class="btn-diseno-download">
+          <i class="fas fa-file-pdf"></i> Descargar PDF
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- 🚗 MODAL NAVEGACIÓN -->
@@ -410,6 +434,8 @@
 <script src="/assets/js/tools/tool.rutas.js" defer></script>
 <script src="/assets/js/tools/tool.cierres.js" defer></script>
 <script src="/assets/js/tools/tool.eventos.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="/assets/js/tools/tool.diseno-mapa.js" defer></script>
 
 <!-- UI -->
 <script src="/assets/js/ui/ui.panel.js" defer></script>

@@ -42,10 +42,21 @@
       var tituloEl = document.getElementById("disenoMapaTitulo");
       var notasEl = document.getElementById("disenoMapaNotas");
       var fechaEl = document.getElementById("disenoMapaIncluirFecha");
+      var medidaReal = "";
+      var medidaReserva = "";
+      var panelMedicion = document.getElementById("medicionPanel");
+      if (panelMedicion && panelMedicion.style.display !== "none") {
+        var mReal = document.getElementById("mReal");
+        var mReserve = document.getElementById("mReserve");
+        if (mReal && mReal.textContent && mReal.textContent !== "0 m") medidaReal = String(mReal.textContent).trim();
+        if (mReserve && mReserve.textContent && mReserve.textContent !== "R 0 m") medidaReserva = String(mReserve.textContent).trim();
+      }
       return {
         titulo: (tituloEl && tituloEl.value) ? String(tituloEl.value).trim() : "",
         notas: (notasEl && notasEl.value) ? String(notasEl.value).trim() : "",
-        incluirFecha: fechaEl ? !!fechaEl.checked : true
+        incluirFecha: fechaEl ? !!fechaEl.checked : true,
+        medidaReal: medidaReal,
+        medidaReserva: medidaReserva
       };
     }
 
@@ -76,6 +87,8 @@
       var titulo = options.titulo || "Mapa FlashFiber FTTH";
       var notas = options.notas || "";
       var incluirFecha = options.incluirFecha;
+      var medidaReal = options.medidaReal || "";
+      var medidaReserva = options.medidaReserva || "";
       var fechaStr = formatDate();
 
       var totalW = mapW + 2 * MARGIN_PX;
@@ -112,12 +125,22 @@
           ctx.fillStyle = "#9ca3af";
           ctx.fillText("Fecha: " + fechaStr, MARGIN_PX, nextY + 6);
         }
+        var notesStartY = TOP_AREA_PX + mapH + 18;
+        var notesLineHeight = NOTES_FONT_PX + 5;
+        if (medidaReal || medidaReserva) {
+          ctx.font = "600 " + NOTES_FONT_PX + "px sans-serif";
+          ctx.fillStyle = "#00e5ff";
+          var medidasStr = "Medidas: " + (medidaReal || "—") + (medidaReserva ? "  |  " + medidaReserva : "");
+          var medidasLines = wrapText(ctx, medidasStr, maxTitleW);
+          for (var ml = 0; ml < medidasLines.length && ml < 2; ml++) {
+            ctx.fillText(medidasLines[ml], MARGIN_PX, notesStartY + ml * notesLineHeight);
+          }
+          notesStartY += medidasLines.length * notesLineHeight + 6;
+        }
         if (notas) {
           ctx.font = NOTES_FONT_PX + "px sans-serif";
           ctx.fillStyle = "#b0b0b0";
           var notesLines = wrapText(ctx, notas, maxTitleW);
-          var notesStartY = TOP_AREA_PX + mapH + 18;
-          var notesLineHeight = NOTES_FONT_PX + 5;
           for (var n = 0; n < notesLines.length && n < 7; n++) {
             ctx.fillText(notesLines[n], MARGIN_PX, notesStartY + n * notesLineHeight);
           }

@@ -1,10 +1,18 @@
 /* =========================================================
    FlashFiber FTTH | Crear diseño de mapa
-   Exportar vista actual del mapa como imagen PNG y PDF
+   Exportar vista actual con márgenes, título y notas (diseño profesional)
 ========================================================= */
 
 (function () {
   "use strict";
+
+  var MARGIN_PX = 40;
+  var TOP_AREA_PX = 52;
+  var BOTTOM_AREA_PX = 72;
+  var MARGIN_MM = 15;
+  var TITLE_FONT_PX = 18;
+  var NOTES_FONT_PX = 12;
+  var DATE_FONT_PX = 11;
 
   function init() {
     var App = window.__FTTH_APP__;
@@ -30,6 +38,100 @@
       return;
     }
 
+    function getDesignOptions() {
+      var tituloEl = document.getElementById("disenoMapaTitulo");
+      var notasEl = document.getElementById("disenoMapaNotas");
+      var fechaEl = document.getElementById("disenoMapaIncluirFecha");
+      return {
+        titulo: (tituloEl && tituloEl.value) ? String(tituloEl.value).trim() : "",
+        notas: (notasEl && notasEl.value) ? String(notasEl.value).trim() : "",
+        incluirFecha: fechaEl ? !!fechaEl.checked : true
+      };
+    }
+
+    function formatDate() {
+      var d = new Date();
+      return d.toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    }
+
+    function wrapText(ctx, text, maxWidth) {
+      var words = text.split(/\s+/);
+      var lines = [];
+      var line = "";
+      for (var i = 0; i < words.length; i++) {
+        var test = line ? line + " " + words[i] : words[i];
+        var m = ctx.measureText(test);
+        if (m.width > maxWidth && line) {
+          lines.push(line);
+          line = words[i];
+        } else {
+          line = test;
+        }
+      }
+      if (line) lines.push(line);
+      return lines;
+    }
+
+    function buildCompositeCanvas(mapDataURL, mapW, mapH, options, callback) {
+      var titulo = options.titulo || "Mapa FlashFiber FTTH";
+      var notas = options.notas || "";
+      var incluirFecha = options.incluirFecha;
+      var fechaStr = formatDate();
+
+      var totalW = mapW + 2 * MARGIN_PX;
+      var totalH = TOP_AREA_PX + mapH + BOTTOM_AREA_PX;
+
+      var canvas = document.createElement("canvas");
+      canvas.width = totalW;
+      canvas.height = totalH;
+      var ctx = canvas.getContext("2d");
+      if (!ctx) {
+        if (callback) callback(null);
+        return;
+      }
+      ctx.fillStyle = "#1a1a2e";
+      ctx.fillRect(0, 0, totalW, totalH);
+
+      var img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = function () {
+        ctx.drawImage(img, MARGIN_PX, TOP_AREA_PX, mapW, mapH);
+        ctx.fillStyle = "#e0e0e0";
+        ctx.font = "bold " + TITLE_FONT_PX + "px sans-serif";
+        ctx.textBaseline = "top";
+        var titleY = 14;
+        var maxTitleW = totalW - 2 * MARGIN_PX;
+        var titleLines = wrapText(ctx, titulo, maxTitleW);
+        for (var t = 0; t < titleLines.length && t < 2; t++) {
+          ctx.fillText(titleLines[t], MARGIN_PX, titleY + t * (TITLE_FONT_PX + 4));
+        }
+        var nextY = titleY + titleLines.length * (TITLE_FONT_PX + 4);
+        if (incluirFecha) {
+          ctx.font = DATE_FONT_PX + "px sans-serif";
+          ctx.fillStyle = "#9ca3af";
+          ctx.fillText("Fecha: " + fechaStr, MARGIN_PX, nextY + 4);
+        }
+        if (notas) {
+          ctx.font = NOTES_FONT_PX + "px sans-serif";
+          ctx.fillStyle = "#b0b0b0";
+          var notesLines = wrapText(ctx, notas, maxTitleW);
+          var notesStartY = TOP_AREA_PX + mapH + 14;
+          for (var n = 0; n < notesLines.length && n < 6; n++) {
+            ctx.fillText(notesLines[n], MARGIN_PX, notesStartY + n * (NOTES_FONT_PX + 3));
+          }
+        }
+        try {
+          if (callback) callback(canvas.toDataURL("image/png"));
+        } catch (e) {
+          if (callback) callback(null);
+        }
+      };
+      img.onerror = function () {
+        if (callback) callback(null);
+      };
+      img.src = mapDataURL;
+    }
+
     function openPanel() {
       if (sidebar && !sidebar.classList.contains("hidden")) {
         sidebar.classList.add("hidden");
@@ -51,7 +153,9 @@
         return;
       }
       function doCapture() {
-        if (typeof map.triggerRepaint === "function") map.triggerRepaint();
+        try {
+          if (map.triggerRepaint) map.triggerRepaint();
+        } catch (e) {}
         requestAnimationFrame(function () {
           requestAnimationFrame(function () {
             var dataUrl = null;
@@ -118,30 +222,56 @@
       });
     }
 
+    function ensureDataURL(result, callback) {
+      if (!result) return callback(null);
+      if (result.type === "dataurl") return callback(result.data);
+      if (result.type === "blob") {
+        var fr = new FileReader();
+        fr.onload = function () { callback(fr.result || null); };
+        fr.onerror = function () { callback(null); };
+        fr.readAsDataURL(result.data);
+        return;
+      }
+      callback(null);
+    }
+
     function downloadImage() {
       btnDescargarImagen.disabled = true;
       btnDescargarImagen.textContent = " Generando...";
+      var canvas = App.map.getCanvas();
+      var mapW = canvas ? canvas.width : 800;
+      var mapH = canvas ? canvas.height : 600;
       getMapImageForDownload(function (result) {
-        btnDescargarImagen.disabled = false;
-        btnDescargarImagen.innerHTML = "<i class=\"fas fa-image\"></i> Descargar imagen (PNG)";
         if (!result) {
+          btnDescargarImagen.disabled = false;
+          btnDescargarImagen.innerHTML = "<i class=\"fas fa-image\"></i> Descargar imagen (PNG)";
           alert("No se pudo generar la imagen. Recarga la página e inténtalo de nuevo.");
           return;
         }
-        var a = document.createElement("a");
-        var filename = "mapa-flashfiber-" + new Date().toISOString().slice(0, 10) + ".png";
-        if (result.type === "dataurl") {
-          a.href = result.data;
-          a.download = filename;
-        } else if (result.type === "blob") {
-          a.href = URL.createObjectURL(result.data);
-          a.download = filename;
-          setTimeout(function () { URL.revokeObjectURL(a.href); }, 200);
-        }
-        a.click();
-        if (result.fallback) {
-          console.log("Se usó mapa estático (solo base). Capas propias no incluidas.");
-        }
+        ensureDataURL(result, function (dataURL) {
+          if (!dataURL) {
+            btnDescargarImagen.disabled = false;
+            btnDescargarImagen.innerHTML = "<i class=\"fas fa-image\"></i> Descargar imagen (PNG)";
+            alert("No se pudo procesar la imagen.");
+            return;
+          }
+          var opts = getDesignOptions();
+          buildCompositeCanvas(dataURL, mapW, mapH, opts, function (compositeDataURL) {
+            btnDescargarImagen.disabled = false;
+            btnDescargarImagen.innerHTML = "<i class=\"fas fa-image\"></i> Descargar imagen (PNG)";
+            if (!compositeDataURL) {
+              alert("No se pudo generar el diseño.");
+              return;
+            }
+            var a = document.createElement("a");
+            a.href = compositeDataURL;
+            a.download = "mapa-flashfiber-" + new Date().toISOString().slice(0, 10) + ".png";
+            a.click();
+            if (result.fallback) {
+              console.log("Se usó mapa estático (solo base). Capas propias no incluidas.");
+            }
+          });
+        });
       });
     }
 
@@ -153,52 +283,52 @@
       }
       btnDescargarPdf.disabled = true;
       btnDescargarPdf.textContent = " Generando PDF...";
+      var canvas = App.map.getCanvas();
+      var mapW = canvas ? canvas.width : 800;
+      var mapH = canvas ? canvas.height : 600;
       getMapImageForDownload(function (result) {
-        btnDescargarPdf.disabled = false;
-        btnDescargarPdf.innerHTML = "<i class=\"fas fa-file-pdf\"></i> Descargar PDF";
         if (!result) {
+          btnDescargarPdf.disabled = false;
+          btnDescargarPdf.innerHTML = "<i class=\"fas fa-file-pdf\"></i> Descargar PDF";
           alert("No se pudo generar el mapa para PDF. Recarga la página e inténtalo de nuevo.");
           return;
         }
-        function addPdfImage(imgData) {
-          var canvas = App.map.getCanvas();
-          var w = canvas.width;
-          var h = canvas.height;
-          var pdf = new JsPDFClass({
-            orientation: w > h ? "landscape" : "portrait",
-            unit: "mm",
-            format: "a4"
-          });
-          var pdfW = pdf.internal.pageSize.getWidth();
-          var pdfH = pdf.internal.pageSize.getHeight();
-          var ratio = Math.min(pdfW / w, pdfH / h) * 0.95;
-          var imgW = w * ratio;
-          var imgH = h * ratio;
-          pdf.addImage(imgData, "PNG", (pdfW - imgW) / 2, (pdfH - imgH) / 2, imgW, imgH);
-          pdf.save("mapa-flashfiber-" + new Date().toISOString().slice(0, 10) + ".pdf");
-        }
-        if (result.type === "dataurl") {
-          try {
-            addPdfImage(result.data);
-          } catch (err) {
-            console.error("PDF:", err);
-            alert("Error al generar el PDF: " + (err.message || err));
+        ensureDataURL(result, function (dataURL) {
+          if (!dataURL) {
+            btnDescargarPdf.disabled = false;
+            btnDescargarPdf.innerHTML = "<i class=\"fas fa-file-pdf\"></i> Descargar PDF";
+            alert("No se pudo procesar la imagen.");
+            return;
           }
-          return;
-        }
-        if (result.type === "blob") {
-          var fr = new FileReader();
-          fr.onload = function () {
+          var opts = getDesignOptions();
+          buildCompositeCanvas(dataURL, mapW, mapH, opts, function (compositeDataURL) {
+            btnDescargarPdf.disabled = false;
+            btnDescargarPdf.innerHTML = "<i class=\"fas fa-file-pdf\"></i> Descargar PDF";
+            if (!compositeDataURL) {
+              alert("No se pudo generar el diseño para PDF.");
+              return;
+            }
             try {
-              addPdfImage(fr.result);
+              var totalW = mapW + 2 * MARGIN_PX;
+              var totalH = TOP_AREA_PX + mapH + BOTTOM_AREA_PX;
+              var pdf = new JsPDFClass({
+                orientation: totalW > totalH ? "landscape" : "portrait",
+                unit: "mm",
+                format: "a4"
+              });
+              var pdfW = pdf.internal.pageSize.getWidth();
+              var pdfH = pdf.internal.pageSize.getHeight();
+              var ratio = Math.min((pdfW - 2 * MARGIN_MM) / totalW, (pdfH - 2 * MARGIN_MM) / totalH);
+              var imgW = totalW * ratio;
+              var imgH = totalH * ratio;
+              pdf.addImage(compositeDataURL, "PNG", (pdfW - imgW) / 2, (pdfH - imgH) / 2, imgW, imgH);
+              pdf.save("mapa-flashfiber-" + new Date().toISOString().slice(0, 10) + ".pdf");
             } catch (err) {
               console.error("PDF:", err);
               alert("Error al generar el PDF: " + (err.message || err));
             }
-          };
-          fr.onerror = function () { alert("Error al leer la imagen para PDF."); };
-          fr.readAsDataURL(result.data);
-        }
+          });
+        });
       });
     }
 

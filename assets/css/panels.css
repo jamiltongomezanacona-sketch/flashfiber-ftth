@@ -157,6 +157,54 @@
   color: rgba(255, 255, 255, 0.7);
   margin-bottom: 16px;
 }
+.panel-diseno-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 6px;
+  margin-top: 12px;
+}
+.panel-diseno-label:first-of-type { margin-top: 0; }
+.panel-diseno-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+.panel-diseno-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+.panel-diseno-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 72px;
+  box-sizing: border-box;
+}
+.panel-diseno-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+.panel-diseno-check-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 12px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+.panel-diseno-check-wrap input { cursor: pointer; }
 .panel-diseno-buttons {
   display: flex;
   flex-direction: column;

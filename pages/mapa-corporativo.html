@@ -131,14 +131,22 @@
 
   </div>
 
-  <!-- 🖼️ PANEL CREAR DISEÑO DE MAPA (exportar imagen y PDF) -->
+  <!-- 🖼️ PANEL CREAR DISEÑO DE MAPA (exportar con márgenes y notas) -->
   <div id="disenoMapaPanel" class="panel panel-capas hidden">
     <div class="panel-header">
       <span class="panel-title">🖼️ Crear diseño de mapa</span>
       <button id="btnCloseDisenoMapa" type="button" aria-label="Cerrar">✖</button>
     </div>
     <div class="panel-content panel-diseno-map">
-      <p class="panel-diseno-desc">Exporta la vista actual del mapa.</p>
+      <p class="panel-diseno-desc">Exporta la vista actual con márgenes, título y notas (diseño profesional).</p>
+      <label class="panel-diseno-label">Título del mapa</label>
+      <input type="text" id="disenoMapaTitulo" class="panel-diseno-input" placeholder="Ej: Sector Santa Inés - Red FTTH" maxlength="120" />
+      <label class="panel-diseno-label">Notas / Especificaciones</label>
+      <textarea id="disenoMapaNotas" class="panel-diseno-textarea" rows="3" placeholder="Observaciones, escala, referencia..."></textarea>
+      <label class="panel-diseno-check-wrap">
+        <input type="checkbox" id="disenoMapaIncluirFecha" checked />
+        <span>Incluir fecha en el diseño</span>
+      </label>
       <div class="panel-diseno-buttons">
         <button type="button" id="btnDescargarImagenMapa" class="btn-diseno-download">
           <i class="fas fa-image"></i> Descargar imagen (PNG)

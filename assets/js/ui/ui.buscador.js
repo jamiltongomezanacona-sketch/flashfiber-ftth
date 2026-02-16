@@ -1139,6 +1139,15 @@
       duration: MAP_FLYTO_DURATION_MS
     });
 
+    // Si el usuario mueve el mapa durante el flyTo, cancelar la animación para que no se bloquee
+    App.map.once("movestart", function () {
+      try {
+        var c = App.map.getCenter();
+        var z = App.map.getZoom();
+        App.map.jumpTo({ center: c, zoom: z });
+      } catch (e) {}
+    });
+
     // Añadir pin como capa (círculo visible) cuando termine el movimiento
     if (result.type === "coordenadas" || result.type === "direccion") {
       App.map.once("moveend", function () {

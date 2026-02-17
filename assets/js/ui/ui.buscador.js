@@ -1218,9 +1218,12 @@
       });
     }
 
-    // Ocultar puntos MUZU si no se ha seleccionado un cable MUZU (solo se muestran con cable desde buscador)
-    if (!result.isMuzu && App.map.getLayer("muzu-points")) {
-      App.map.setLayoutProperty("muzu-points", "visibility", "none");
+    // Puntos MUZU: solo visibles con cable seleccionado desde buscador (igual que pines de otras moléculas)
+    if (!result.isMuzu) {
+      if (window.__FTTH_APP__) window.__FTTH_APP__.__muzuCableSelectedFromSearch = null;
+      if (App.map.getLayer("muzu-points")) App.map.setLayoutProperty("muzu-points", "visibility", "none");
+    } else {
+      if (window.__FTTH_APP__) window.__FTTH_APP__.__muzuCableSelectedFromSearch = result.name || true;
     }
     // Mostrar capas del cable seleccionado
     if (result.type === "cable") {

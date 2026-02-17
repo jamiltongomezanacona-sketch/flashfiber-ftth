@@ -546,8 +546,9 @@
         console.log("📍 MUZU puntos: solo se muestran al seleccionar un cable desde el buscador");
         return;
       }
-      if (layerId === "muzu-lines" && !visible && map.getLayer("muzu-points")) {
-        map.setLayoutProperty("muzu-points", "visibility", "none");
+      if (layerId === "muzu-lines" && !visible) {
+        if (map.getLayer("muzu-points")) map.setLayoutProperty("muzu-points", "visibility", "none");
+        if (App.__muzuCableSelectedFromSearch !== undefined) App.__muzuCableSelectedFromSearch = null;
       }
       const current = map.getLayoutProperty(layerId, "visibility");
       const desired = visible ? "visible" : "none";

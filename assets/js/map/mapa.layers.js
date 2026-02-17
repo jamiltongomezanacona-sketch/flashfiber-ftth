@@ -1263,6 +1263,13 @@
     if (!map || !map.isStyleLoaded()) return;
     const ids = App.__ftthLayerIds || [];
     let enforced = 0;
+    // Puntos MUZU: solo visibles cuando hay un cable MUZU seleccionado desde el buscador (como otras moléculas)
+    if (map.getLayer("muzu-points") && !App.__muzuCableSelectedFromSearch) {
+      try {
+        map.setLayoutProperty("muzu-points", "visibility", "none");
+        enforced++;
+      } catch (e) {}
+    }
     const isCorporativo = !!window.__GEOJSON_INDEX__;
     const filterCentrales = typeof document !== "undefined" ? document.getElementById("filterCentrales") : null;
     const centralesVisible = !filterCentrales || filterCentrales.checked;
@@ -1572,6 +1579,9 @@
       addMuzuColors(geojson);
       if (map.getSource("muzu-src")) {
         map.getSource("muzu-src").setData(geojson);
+        if (!App.__muzuCableSelectedFromSearch && map.getLayer("muzu-points")) {
+          map.setLayoutProperty("muzu-points", "visibility", "none");
+        }
         console.log("✅ MUZU actualizado: " + geojson.features.length + " features");
         return;
       }

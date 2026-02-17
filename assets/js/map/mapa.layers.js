@@ -1572,8 +1572,6 @@
       addMuzuColors(geojson);
       if (map.getSource("muzu-src")) {
         map.getSource("muzu-src").setData(geojson);
-        if (map.getLayer("muzu-lines")) map.setLayoutProperty("muzu-lines", "visibility", "visible");
-        if (map.getLayer("muzu-points")) map.setLayoutProperty("muzu-points", "visibility", "visible");
         console.log("✅ MUZU actualizado: " + geojson.features.length + " features");
         return;
       }
@@ -1586,7 +1584,7 @@
           type: "line",
           source: "muzu-src",
           filter: ["==", ["geometry-type"], "LineString"],
-          layout: { visibility: "visible" },
+          layout: { visibility: "none" },
           paint: {
             "line-color": ["get", "color"],
             "line-width": 4,
@@ -1600,7 +1598,7 @@
           type: "circle",
           source: "muzu-src",
           filter: ["==", ["geometry-type"], "Point"],
-          layout: { visibility: "visible" },
+          layout: { visibility: "none" },
           paint: {
             "circle-radius": 7,
             "circle-color": "#00e5ff",

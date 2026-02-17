@@ -1280,6 +1280,7 @@
     const cablesExplicitlyVisible = !!App.__cablesExplicitlyVisible;
     ids.forEach(id => {
       if (!id || !map.getLayer(id)) return;
+      if (id.startsWith("muzu-")) return; // MUZU siempre respeta su visibilidad, no ocultar
       const isCentral = id.includes("CENTRALES") || id.includes("CORPORATIVO");
       if (isCentral) {
         const current = map.getLayoutProperty(id, "visibility");
@@ -1529,8 +1530,30 @@
   });
 
   /* ===============================
-     MUZU – capa desde KML convertido a GeoJSON
+     MUZU – capa desde KML convertido a GeoJSON (cada cable con color distinto)
   =============================== */
+  var MUZU_LINE_PALETTE = [
+    "#009c38", "#e63946", "#0066cc", "#f4a261", "#2a9d8f", "#9b59b6",
+    "#e9c46a", "#e76f51", "#264653", "#00e5ff", "#ff6b6b", "#4ecdc4",
+    "#d62828", "#06d6a0", "#ffd166", "#118ab2", "#ef476f", "#073b4c"
+  ];
+  function addMuzuColors(geojson) {
+    if (!geojson || !geojson.features) return geojson;
+    var lineIndex = 0;
+    var nameToColor = {};
+    geojson.features.forEach(function (f) {
+      if (!f.properties) f.properties = {};
+      if (f.geometry && f.geometry.type === "LineString") {
+        var name = (f.properties.name || "cable") + "";
+        if (nameToColor[name] === undefined) {
+          nameToColor[name] = MUZU_LINE_PALETTE[lineIndex % MUZU_LINE_PALETTE.length];
+          lineIndex++;
+        }
+        f.properties.color = nameToColor[name];
+      }
+    });
+    return geojson;
+  }
   async function loadMuzuLayer() {
     const map = App.map;
     if (!map || !map.getStyle()) return;
@@ -1546,6 +1569,7 @@
         console.warn("⚠️ MUZU: GeoJSON sin features");
         return;
       }
+      addMuzuColors(geojson);
       if (map.getSource("muzu-src")) {
         map.getSource("muzu-src").setData(geojson);
         if (map.getLayer("muzu-lines")) map.setLayoutProperty("muzu-lines", "visibility", "visible");
@@ -1564,7 +1588,7 @@
           filter: ["==", ["geometry-type"], "LineString"],
           layout: { visibility: "visible" },
           paint: {
-            "line-color": "#009c38",
+            "line-color": ["get", "color"],
             "line-width": 4,
             "line-opacity": 0.9
           }

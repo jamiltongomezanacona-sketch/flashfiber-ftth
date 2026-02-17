@@ -9,6 +9,7 @@
   box-shadow: var(--shadow);
   border: 1px solid var(--border-soft);
   backdrop-filter: blur(10px);
+  transform: translateZ(0); /* composición GPU (recomendación renderizado) */
 }
 
 .panel-header {
@@ -126,12 +127,12 @@
    Mobile First: Full width en móvil
 =============================== */
 
-/* MOBILE FIRST - Centrado en pantalla */
+/* MOBILE FIRST - Centrado en pantalla; translate3d para composición GPU */
 .panel-capas {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate3d(-50%, -50%, 0);
   width: 90vw;
   max-width: 340px;
   max-height: 80vh;
@@ -142,6 +143,7 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  will-change: transform;
 }
 
 .panel-capas.hidden {

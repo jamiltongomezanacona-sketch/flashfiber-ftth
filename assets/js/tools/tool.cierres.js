@@ -360,7 +360,8 @@
       try {
         App.map.addSource(SOURCE_ID, {
           type: "geojson",
-          data: { type: "FeatureCollection", features: [] }
+          data: { type: "FeatureCollection", features: [] },
+          promoteId: "id"
         });
       } catch (err) {
         console.warn("⚠️ tool.cierres: addSource falló (¿estilo no cargado?), reintentando en load:", err.message);
@@ -372,6 +373,7 @@
       loadCierreIconSync("E1", "");
 
       try {
+        const beforeId = (typeof App.getBeforeIdForDataLayers === "function" && App.getBeforeIdForDataLayers(App.map)) || undefined;
         App.map.addLayer({
           id: LAYER_ID,
           type: "symbol",
@@ -396,7 +398,7 @@
             "icon-anchor": "bottom",
             "icon-pitch-alignment": "viewport"
           }
-        });
+        }, beforeId);
       } catch (err) {
         console.warn("⚠️ tool.cierres: addLayer falló, reintentando en load:", err.message);
         App.map.once("load", () => initLayer());
@@ -587,26 +589,24 @@
       console.log("✅ Capa cierres creada (estilo Google Maps)");
     }
 
+    var _refreshCierresTimeout = null;
+    var SETDATA_THROTTLE_MS = 400;
     function refreshLayer() {
       if (!App || !App.map) return;
-      const source = App.map.getSource(SOURCE_ID);
-      if (!source) {
-        // Si el source no existe, inicializar la capa
-        console.log("⚠️ Source no existe, inicializando capa...");
-        initLayer();
-        return;
-      }
-
-      console.log("🔄 Refrescando capa cierres con", App.data.cierres.length, "cierres");
-      source.setData({
-        type: "FeatureCollection",
-        features: App.data.cierres
-      });
-      
-      if (!App.map.getLayer(LAYER_ID)) {
-        console.warn("⚠️ Capa cierres no existe, inicializando...");
-        initLayer();
-      }
+      if (_refreshCierresTimeout) return;
+      _refreshCierresTimeout = setTimeout(function () {
+        _refreshCierresTimeout = null;
+        const source = App.map.getSource(SOURCE_ID);
+        if (!source) {
+          initLayer();
+          return;
+        }
+        source.setData({
+          type: "FeatureCollection",
+          features: App.data.cierres || []
+        });
+        if (!App.map.getLayer(LAYER_ID)) initLayer();
+      }, SETDATA_THROTTLE_MS);
     }
 
     function addCierreToMap(cierre) {

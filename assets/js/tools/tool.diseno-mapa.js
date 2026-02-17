@@ -300,14 +300,45 @@
       });
     }
 
-    function downloadPdf() {
+    var JSPDF_SCRIPT_URL = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+
+    function ensureJsPDF(callback) {
       var JsPDFClass = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jspdf || window.jsPDF);
-      if (!JsPDFClass) {
-        alert("Librería PDF no cargada. Recarga la página.");
+      if (JsPDFClass) {
+        callback();
         return;
       }
-      btnDescargarPdf.disabled = true;
-      btnDescargarPdf.textContent = " Generando PDF...";
+      if (window.__jspdfLoading) {
+        var t = setInterval(function () {
+          if ((window.jspdf && window.jspdf.jsPDF) || window.jsPDF) {
+            clearInterval(t);
+            callback();
+          }
+        }, 100);
+        return;
+      }
+      window.__jspdfLoading = true;
+      var s = document.createElement("script");
+      s.src = JSPDF_SCRIPT_URL;
+      s.onload = function () {
+        window.__jspdfLoading = false;
+        callback();
+      };
+      s.onerror = function () {
+        window.__jspdfLoading = false;
+        alert("No se pudo cargar la librería PDF. Comprueba la conexión.");
+      };
+      document.head.appendChild(s);
+    }
+
+    function doDownloadPdf() {
+      var JsPDFClass = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jspdf || window.jsPDF);
+      if (!JsPDFClass) {
+        btnDescargarPdf.disabled = false;
+        btnDescargarPdf.innerHTML = "<i class=\"fas fa-file-pdf\"></i> Descargar PDF";
+        alert("Librería PDF no cargada.");
+        return;
+      }
       var canvas = App.map.getCanvas();
       var mapW = canvas ? canvas.width : 800;
       var mapH = canvas ? canvas.height : 600;
@@ -354,6 +385,14 @@
             }
           });
         });
+      });
+    }
+
+    function downloadPdf() {
+      ensureJsPDF(function () {
+        btnDescargarPdf.disabled = true;
+        btnDescargarPdf.textContent = " Generando PDF...";
+        doDownloadPdf();
       });
     }
 

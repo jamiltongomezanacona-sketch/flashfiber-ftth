@@ -65,28 +65,19 @@
     if (App.reloadCierres) App.reloadCierres();
     if (App.reloadEventos) App.reloadEventos();
 
-    // ✅ CARGAR CENTRALES DE FORMA FIJA (PRIMERO - SIEMPRE VISIBLES)
-    // Esperar un poco para asegurar que el estilo esté completamente cargado
-    if (App.loadCentralesFijas) {
-      setTimeout(() => {
-        App.loadCentralesFijas();
-      }, 500);
-    }
-
-    // ✅ GIS FTTH: carga del consolidado (cables + cierres); 600ms para que los cables estén pronto
-    if (!window.__GEOJSON_INDEX__ && App.loadConsolidatedGeoJSONToBaseMap) {
-      setTimeout(() => {
-        App.loadConsolidatedGeoJSONToBaseMap();
-      }, 600);
-    }
-
-    // 🌍 Capas FTTH
+    // 🌍 Capas FTTH (índice)
     App.layers?.loadIndex();
 
-    // 🗺️ MUZU (KML convertido a GeoJSON)
-    if (App.loadMuzuLayer) {
-      setTimeout(() => App.loadMuzuLayer(), 900);
-    }
+    // ✅ Cola de carga con map idle (evita setTimeout 500/600/900 ms arbitrarios)
+    map.once("idle", () => {
+      if (App.loadCentralesFijas) App.loadCentralesFijas();
+      if (!window.__GEOJSON_INDEX__ && App.loadConsolidatedGeoJSONToBaseMap) {
+        App.loadConsolidatedGeoJSONToBaseMap();
+      }
+      map.once("idle", () => {
+        if (App.loadMuzuLayer) App.loadMuzuLayer();
+      });
+    });
 
     // 💾 Rutas guardadas
     try {

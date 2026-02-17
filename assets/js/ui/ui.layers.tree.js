@@ -7,6 +7,21 @@
 
   const TREE_CONTAINER_ID = "layersTree";
   const ROOT_INDEX = (typeof window !== "undefined" && window.__GEOJSON_INDEX__) || "../geojson/index.json";
+  const GEOJSON_BASE = "../geojson/";
+
+  /** Cache de index.json por path (lazy load): evita re-fetch al expandir/colapsar */
+  const indexCache = new Map();
+
+  function getIndex(pathKey) {
+    if (indexCache.has(pathKey)) return Promise.resolve(indexCache.get(pathKey));
+    const url = GEOJSON_BASE + pathKey;
+    return fetch(url, { cache: "default" })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("" + res.status))))
+      .then((json) => {
+        indexCache.set(pathKey, json);
+        return json;
+      });
+  }
 
   // ✅ Sistema de inicialización mejorado
   async function init() {
@@ -48,12 +63,17 @@
   init();
 
   /* =========================
-     Cargar índice raíz
+     Cargar índice raíz (usa cache si ruta por defecto)
   ========================= */
   async function loadRoot() {
     try {
-      const res = await fetch(ROOT_INDEX, { cache: "default" });
-      const root = await res.json();
+      let root;
+      if (window.__GEOJSON_INDEX__) {
+        const res = await fetch(ROOT_INDEX, { cache: "default" });
+        root = await res.json();
+      } else {
+        root = await getIndex("index.json");
+      }
       const container = document.getElementById(TREE_CONTAINER_ID);
       container.innerHTML = "";
       
@@ -98,6 +118,58 @@
     } catch (err) {
       console.error("❌ Error cargando árbol raíz", err);
     }
+  }
+
+  /* =========================
+     Carpeta que carga hijos al expandir (lazy) + cache
+  ========================= */
+  function renderFolderStub(parentEl, child, basePath) {
+    const pathKey = basePath + (child.index || "");
+    const row = document.createElement("div");
+    row.className = "tree-row";
+    const toggle = document.createElement("span");
+    toggle.className = "tree-toggle";
+    toggle.textContent = "▶";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    const label = document.createElement("span");
+    label.className = "tree-label";
+    label.textContent = child.label || "Carpeta";
+    const childrenBox = document.createElement("div");
+    childrenBox.className = "tree-children";
+    childrenBox.style.display = "none";
+
+    row.appendChild(toggle);
+    row.appendChild(checkbox);
+    row.appendChild(label);
+    parentEl.appendChild(row);
+    parentEl.appendChild(childrenBox);
+
+    toggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = childrenBox.style.display === "block";
+      if (!isOpen && !childrenBox.dataset.loaded) {
+        childrenBox.dataset.loaded = "1";
+        getIndex(pathKey).then((json) => {
+          const nextBase = basePath + (child.index || "").replace("index.json", "");
+          const childNode = { label: json.label || child.label, children: json.children || [] };
+          (childNode.children || []).forEach((c) => {
+            if (c.type === "layer") {
+              renderNode(c, childrenBox, nextBase, false);
+            } else if (c.index) {
+              renderFolderStub(childrenBox, c, nextBase);
+            }
+          });
+        }).catch(() => { childrenBox.dataset.loaded = ""; });
+      }
+      childrenBox.style.display = isOpen ? "none" : "block";
+      toggle.textContent = isOpen ? "▶" : "▼";
+    });
+
+    checkbox.addEventListener("change", () => {
+      toggleChildren(childrenBox, checkbox.checked);
+      toggleLayers(label.textContent.trim(), checkbox.checked);
+    });
   }
 
   /* =========================
@@ -275,57 +347,24 @@
     });
 
     /* =========================
-       Cargar hijos (OPTIMIZADO: en paralelo)
+       Cargar hijos: layers ya; carpetas (index) lazy al expandir + cache
     ========================= */
     if (node.children?.length) {
-      // ✅ Cargar todos los hijos en paralelo para mejor rendimiento
-      const childPromises = node.children.map(async (child) => {
+      for (const child of node.children) {
         try {
-          // ✅ Si el child es una capa directa (type: "layer"), renderizarla
           if (child.type === "layer") {
             await renderNode(child, childrenBox, basePath, false);
-            return;
+            continue;
           }
-
-          // ✅ Si tiene index.json, cargar como carpeta
           if (child.index) {
-            const nextPath = basePath + child.index;
-            const url = "../geojson/" + nextPath;
-
-            const res = await fetch(url, { cache: "default" });
-            if (!res.ok) {
-              // 404 u otro error: no parsear (evitar "Unexpected token" al parsear HTML como JSON)
-              return;
-            }
-            let json;
-            try {
-              json = await res.json();
-            } catch (e) {
-              return;
-            }
-
-            const childNode = {
-              label: child.label || json.label || "Carpeta",
-              children: json.children || []
-            };
-
-            await renderNode(
-              childNode,
-              childrenBox,
-              basePath + child.index.replace("index.json", ""),
-              true // 👈 todos los hijos cerrados
-            );
+            renderFolderStub(childrenBox, child, basePath);
           }
         } catch (err) {
-          // No saturar consola con 404 de índices opcionales
           if (err.message && !err.message.includes("JSON") && !err.message.includes("404")) {
             console.warn("⚠️ No se pudo cargar:", basePath + (child.index || child.path || ""), err.message);
           }
         }
-      });
-      
-      // ✅ Esperar a que todos los hijos se carguen en paralelo
-      await Promise.allSettled(childPromises);
+      }
     } else {
       // Si no tiene hijos, ocultar flecha
       toggle.style.visibility = "hidden";

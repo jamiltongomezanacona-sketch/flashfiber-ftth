@@ -30,6 +30,14 @@
   const PIN_COORDS_SOURCE_ID = "search-coordenadas-pin";
   const PIN_COORDS_LAYER_ID = "search-coordenadas-pin-layer";
 
+  /** Caché de resultados por texto (2.3 recomendación): evita re-filtrar en cada tecleo cuando se repite la misma búsqueda */
+  const SEARCH_CACHE_MAX = 50;
+  const searchResultCache = new Map();
+
+  function clearSearchCache() {
+    searchResultCache.clear();
+  }
+
   // GIS Corporativo: solo buscar los 235 cables de CABLES (no FTTH)
   const isCorporativo = typeof window !== "undefined" && !!window.__GEOJSON_INDEX__;
 
@@ -454,6 +462,7 @@
       const geojson = await res.json();
       
       if (geojson.features) {
+        clearSearchCache();
         searchIndex.centrales = geojson.features.map(feature => ({
           id: feature.properties.name || "Sin nombre",
           name: feature.properties.name || "Sin nombre",
@@ -513,6 +522,7 @@
     if (isCorporativo) return;
     try {
       console.log("🔍 Iniciando carga de cables para buscador...");
+      clearSearchCache();
       const res = await fetch(CABLES_INDEX_URL, { cache: "default" });
       if (res.ok) {
         const data = await res.json();
@@ -806,6 +816,7 @@
 
       // Escuchar cambios en cierres
       window.FTTH_FIREBASE.escucharCierres((cierre) => {
+        clearSearchCache();
         if (cierre._deleted) {
           // Eliminar del índice
           searchIndex.cierres = searchIndex.cierres.filter(c => c.id !== cierre.id);
@@ -860,6 +871,7 @@
         return;
       }
       window.FTTH_FIREBASE.escucharEventos((evento) => {
+        clearSearchCache();
         if (evento._deleted) {
           searchIndex.eventos = searchIndex.eventos.filter(e => e.id !== evento.id);
         } else {
@@ -964,6 +976,7 @@
 
     currentSearch = query;
     if (typeof retryCount !== "number") retryCount = 0;
+    const cacheKey = query.trim().toLowerCase();
 
     // ✅ Búsqueda por coordenadas (decimal o DMS): ir directo a resultado único
     const coords = parseCoordinates(query);
@@ -984,6 +997,13 @@
     let addressResults = [];
     if (query.trim().length >= 2) {
       addressResults = await geocodeBogota(query);
+    }
+
+    // ✅ Cache: misma búsqueda ya ejecutada → reutilizar resultados (no bloquear hilo con filtrado)
+    if (cacheKey && searchResultCache.has(cacheKey)) {
+      allResults = searchResultCache.get(cacheKey).slice();
+      renderResults();
+      return;
     }
 
     // ✅ Si el índice está vacío, mostrar "Cargando..." y reintentar cuando haya datos
@@ -1060,6 +1080,14 @@
 
     // Direcciones de Bogotá primero, luego el resto (hasta GEOCODE_LIMIT direcciones + SEARCH_MAX_RESULTS del índice)
     allResults = addressResults.concat(allResults).slice(0, addressResults.length + SEARCH_MAX_RESULTS);
+
+    if (cacheKey) {
+      if (searchResultCache.size >= SEARCH_CACHE_MAX) {
+        const firstKey = searchResultCache.keys().next().value;
+        if (firstKey !== undefined) searchResultCache.delete(firstKey);
+      }
+      searchResultCache.set(cacheKey, allResults.slice());
+    }
 
     renderResults();
   }

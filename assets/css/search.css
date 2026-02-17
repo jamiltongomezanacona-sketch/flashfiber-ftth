@@ -125,7 +125,7 @@
   border-color: var(--accent-cyan);
 }
 
-/* Resultados de búsqueda */
+/* Resultados de búsqueda (translateZ(0) para composición GPU) */
 .search-results {
   position: absolute;
   top: calc(100% + 8px);
@@ -140,6 +140,7 @@
   overflow-y: auto;
   z-index: 10000;
   margin-top: 4px;
+  transform: translateZ(0);
 }
 
 .search-results.hidden {

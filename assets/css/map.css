@@ -19,6 +19,8 @@
   height: 100%;
   z-index: 1; /* ✅ Asegurar que el mapa esté debajo de los controles */
   pointer-events: auto; /* ✅ Permitir interacción con el mapa */
+  contain: layout style paint; /* ✅ Aislar repintado (recomendación renderizado) */
+  will-change: transform;       /* ✅ Optimizar pan/zoom en GPU */
 }
 
 /* ✅ Forzar z-index bajo en el canvas de Mapbox */

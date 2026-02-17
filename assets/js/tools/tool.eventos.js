@@ -241,7 +241,8 @@
       try {
         App.map.addSource(SOURCE_ID, {
           type: "geojson",
-          data: { type: "FeatureCollection", features: [] }
+          data: { type: "FeatureCollection", features: [] },
+          promoteId: "id"
         });
       } catch (err) {
         console.warn("⚠️ tool.eventos: addSource falló (¿estilo no cargado?), reintentando en load:", err.message);
@@ -255,6 +256,7 @@
       loadEventoIconSync("");
 
       try {
+        const beforeId = (typeof App.getBeforeIdForDataLayers === "function" && App.getBeforeIdForDataLayers(App.map)) || undefined;
         App.map.addLayer({
           id: LAYER_ID,
           type: "symbol",
@@ -282,7 +284,7 @@
             "icon-anchor": "bottom",
             "icon-pitch-alignment": "viewport"
           }
-        });
+        }, beforeId);
       } catch (err) {
         console.warn("⚠️ tool.eventos: addLayer falló, reintentando en load:", err.message);
         App.map.once("load", () => initLayer());
@@ -478,30 +480,30 @@
     }
 
     /* ===============================
-       Render eventos
+       Render eventos (throttle setData para mejor render)
     =============================== */
+    var _refreshEventosTimeout = null;
+    var SETDATA_THROTTLE_MS = 400;
     function refreshLayer() {
       if (!App?.map) return;
-      let source = null;
-      try {
-        source = App.map.getSource(SOURCE_ID);
-      } catch (_) {
-        source = null;
-      }
-      if (!source) {
-        initLayer();
+      if (_refreshEventosTimeout) return;
+      _refreshEventosTimeout = setTimeout(function () {
+        _refreshEventosTimeout = null;
+        let source = null;
         try {
           source = App.map.getSource(SOURCE_ID);
-        } catch (_) {
-          return;
+        } catch (_) {}
+        if (!source) {
+          initLayer();
+          try { source = App.map.getSource(SOURCE_ID); } catch (_) { return; }
         }
-      }
-      if (source) {
-        source.setData({
-          type: "FeatureCollection",
-          features: App.data.eventos || []
-        });
-      }
+        if (source) {
+          source.setData({
+            type: "FeatureCollection",
+            features: App.data.eventos || []
+          });
+        }
+      }, SETDATA_THROTTLE_MS);
     }
 
     function addEventoToMap(evt) {

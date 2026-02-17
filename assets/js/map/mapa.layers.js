@@ -15,7 +15,23 @@
   }
 
   const ROOT_INDEX = (typeof window !== "undefined" && window.__GEOJSON_INDEX__) || "../geojson/index.json";
+  const CONSOLIDADO_PREGENERADO = (typeof window !== "undefined" && window.__GEOJSON_CONSOLIDADO__) ||
+    (ROOT_INDEX.replace(/index\.json$/i, "consolidado-ftth.geojson"));
   let restoring = false;
+
+  /** Obtiene un layer id del estilo para insertar capas de datos debajo de etiquetas (beforeId) */
+  function getBeforeIdForDataLayers(map) {
+    try {
+      const style = map.getStyle();
+      if (!style || !Array.isArray(style.layers)) return undefined;
+      const labelLayer = style.layers.find(function (l) {
+        return l.type === "symbol" && l.id && /label/i.test(l.id);
+      });
+      return labelLayer ? labelLayer.id : undefined;
+    } catch (_) {
+      return undefined;
+    }
+  }
   let loadingTree = false; // ✅ Bloqueo para evitar cargas duplicadas
 
   App.__ftthLayerIds = App.__ftthLayerIds || [];
@@ -528,14 +544,15 @@
                   return;
                 }
                 
-                // Agregar metadata de la capa a cada feature
-                cierreFeatures.forEach(feature => {
+                // Agregar metadata de la capa a cada feature (y id único para promoteId / render)
+                cierreFeatures.forEach((feature, idx) => {
                   if (!feature.properties) feature.properties = {};
                   feature.properties._layerId = node.id;
                   feature.properties._layerLabel = node.label;
                   feature.properties._layerType = node.typeLayer || "symbol";
                   const moleculaMatch = (node.id || "").match(/([A-Z]{2}\d+)/);
                   if (moleculaMatch) feature.properties._molecula = moleculaMatch[1];
+                  feature.properties.__id = feature.properties.id != null ? String(feature.properties.id) : node.id + "-c-" + idx;
                 });
                 
                 allFeatures.push(...cierreFeatures);
@@ -544,12 +561,13 @@
                 // Es cable, incluir todos los features (y _molecula para filtrar como en Corporativo)
                 const moleculaMatch = (node.id || "").match(/([A-Z]{2}\d+)/);
                 const _molecula = moleculaMatch ? moleculaMatch[1] : "";
-                geojson.features.forEach(feature => {
+                geojson.features.forEach((feature, idx) => {
                   if (!feature.properties) feature.properties = {};
                   feature.properties._layerId = node.id;
                   feature.properties._layerLabel = node.label;
                   feature.properties._layerType = node.typeLayer || "line";
                   if (_molecula) feature.properties._molecula = _molecula;
+                  feature.properties.__id = node.id + "-l-" + idx;
                 });
                 
                 allFeatures.push(...geojson.features);
@@ -635,8 +653,20 @@
     }
     
     try {
-      const consolidated = await consolidateAllGeoJSON();
-      
+      let consolidated = null;
+      try {
+        const res = await fetch(CONSOLIDADO_PREGENERADO, { cache: "default" });
+        if (res.ok) {
+          const pre = await res.json();
+          if (pre && pre.type === "FeatureCollection" && Array.isArray(pre.features) && pre.features.length > 0) {
+            consolidated = pre;
+            console.log("✅ Consolidado cargado desde archivo pre-generado:", pre.features.length, "features");
+          }
+        }
+      } catch (_) { /* fallback a consolidar en runtime */ }
+      if (!consolidated) {
+        consolidated = await consolidateAllGeoJSON();
+      }
       if (!consolidated.features || consolidated.features.length === 0) {
         console.warn("⚠️ No hay features para cargar en mapa base");
         return;
@@ -650,7 +680,8 @@
         // Crear source consolidado
         map.addSource("geojson-consolidado", {
           type: "geojson",
-          data: consolidated
+          data: consolidated,
+          promoteId: "__id"
         });
         console.log("✅ Source consolidado creado");
       }
@@ -666,7 +697,8 @@
         f.geometry && (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon")
       );
       
-      // Capa de líneas (cables, rutas, etc.)
+      // Capa de líneas (cables, rutas, etc.) — debajo de etiquetas del estilo
+      const beforeId = getBeforeIdForDataLayers(map);
       if (lineFeatures.length > 0 && !map.getLayer("geojson-lines")) {
         map.addLayer({
           id: "geojson-lines",
@@ -681,7 +713,7 @@
             "line-width": 4,
             "line-opacity": 0.8
           }
-        });
+        }, beforeId);
         console.log(`✅ Capa de líneas creada: ${lineFeatures.length} features`);
         
         // ✅ Registrar en el sistema de capas FTTH
@@ -709,7 +741,7 @@
             "circle-stroke-color": "#000",
             "circle-opacity": 0.9
           }
-        });
+        }, beforeId);
         if (!App.__ftthLayerIds.includes("geojson-points")) App.__ftthLayerIds.push("geojson-points");
         console.log(`✅ Capa de puntos creada: ${pointFeatures.length} features (oculta por defecto)`);
       }
@@ -726,7 +758,7 @@
             "fill-color": "#00e5ff",
             "fill-opacity": 0.3
           }
-        });
+        }, beforeId);
         if (!App.__ftthLayerIds.includes("geojson-polygons")) App.__ftthLayerIds.push("geojson-polygons");
         
         map.addLayer({
@@ -739,7 +771,7 @@
             "line-color": "#00e5ff",
             "line-width": 2
           }
-        });
+        }, beforeId);
         if (!App.__ftthLayerIds.includes("geojson-polygons-outline")) App.__ftthLayerIds.push("geojson-polygons-outline");
         console.log(`✅ Capa de polígonos creada: ${polygonFeatures.length} features (oculta por defecto)`);
       }
@@ -1144,13 +1176,13 @@
           }
         };
 
-        // Agregar la capa directamente - el mapa está garantizado que está listo
+        // Agregar la capa directamente - el mapa está garantizado que está listo (debajo de etiquetas)
         try {
           // Verificar que la capa no exista ya
           if (map.getLayer(id)) {
             console.log(`⚠️ Capa ${id} ya existe, omitiendo`);
           } else {
-            map.addLayer(layerConfig);
+            map.addLayer(layerConfig, getBeforeIdForDataLayers(map));
             console.log(`✅ Capa symbol agregada: ${id} con ${geojson.features.length} features`);
           }
           
@@ -1223,9 +1255,9 @@
           layerConfig.filter = ["==", ["get", "name"], "__none__"];
         }
 
-        // ✅ Verificar nuevamente antes de agregar layer (evitar duplicados)
+        // ✅ Verificar nuevamente antes de agregar layer (evitar duplicados); debajo de etiquetas
         if (!map.getLayer(id)) {
-          map.addLayer(layerConfig);
+          map.addLayer(layerConfig, getBeforeIdForDataLayers(map));
         } else {
           console.log(`⚠️ Layer ${id} ya existe, omitiendo agregar`);
         }
@@ -1417,7 +1449,7 @@
         console.log("✅ Source actualizado:", CENTRALES_SOURCE);
       }
       
-      // Crear layer si no existe (solo texto, sin iconos)
+      // Crear layer si no existe (solo texto, sin iconos); debajo de etiquetas del estilo
       if (!map.getLayer(CENTRALES_ID)) {
         try {
           map.addLayer({
@@ -1440,7 +1472,7 @@
               "text-halo-width": 2,
               "text-halo-blur": 1
             }
-          });
+          }, getBeforeIdForDataLayers(map));
           
           console.log("✅ Layer creado:", CENTRALES_ID);
           
@@ -1575,7 +1607,7 @@
         console.log("✅ MUZU actualizado: " + geojson.features.length + " features");
         return;
       }
-      map.addSource("muzu-src", { type: "geojson", data: geojson });
+      map.addSource("muzu-src", { type: "geojson", data: geojson, promoteId: "name" });
       const hasLines = geojson.features.some(f => f.geometry && f.geometry.type === "LineString");
       if (hasLines) {
         map.addLayer({
@@ -1589,7 +1621,7 @@
             "line-width": 4,
             "line-opacity": 0.9
           }
-        });
+        }, getBeforeIdForDataLayers(map));
       }
       if (!App.__ftthLayerIds) App.__ftthLayerIds = [];
       if (hasLines && !App.__ftthLayerIds.includes("muzu-lines")) App.__ftthLayerIds.push("muzu-lines");
@@ -1608,5 +1640,6 @@
   App.loadCentralesFijas = loadCentralesFijas;
   App.loadMuzuLayer = loadMuzuLayer;
   App.enforceOnlyCentralesVisible = enforceOnlyCentralesVisible; // 🔒 Solo centrales visibles por defecto
+  App.getBeforeIdForDataLayers = getBeforeIdForDataLayers; // para insertar capas debajo de etiquetas (cierres, eventos, etc.)
 
 })();

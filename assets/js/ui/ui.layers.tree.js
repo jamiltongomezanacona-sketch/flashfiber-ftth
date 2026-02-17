@@ -519,7 +519,7 @@
   ========================= */
   function extractMoleculaFromCableLayerId(layerId) {
     if (!layerId || typeof layerId !== "string") return null;
-    if (layerId === "geojson-lines" || layerId === "ftth-cables") return null;
+    if (layerId === "geojson-lines" || layerId === "ftth-cables" || layerId === "muzu-lines") return null;
     const parts = layerId.split("_");
     const match = parts.find(function (p) { return /^[A-Z]{2}\d+$/.test(p); });
     return match || null;
@@ -595,8 +595,10 @@
             console.log("🧵 geojson-lines: todos los cables visibles");
           } catch (e) {}
         }
-        // Solo aplicar filtro de pines a cables del consolidado FTTH, no a MUZU
-        if (isCable && !layerId.startsWith("muzu-")) showPinsWhenCableActivated(layerId);
+        // Al activar cable (FTTH o MUZU): mostrar pines y filtros como el resto de moléculas
+        if (isCable) {
+          showPinsWhenCableActivated(layerId, layerId === "muzu-lines" ? null : undefined);
+        }
       }
     } else if (!window.__GEOJSON_INDEX__ && map.getLayer("geojson-lines")) {
       // GIS FTTH: solo aplicar filtro de cable si el id es de cables (no _cierres / _eventos que son puntos)

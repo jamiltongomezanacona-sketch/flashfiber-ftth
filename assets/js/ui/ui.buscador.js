@@ -1249,7 +1249,7 @@
     // Mostrar capas del cable seleccionado
     if (result.type === "cable") {
       if (result.isMuzu) {
-        // MUZU: filtrar por nombre del cable y mostrar capa (comportamiento como otras moléculas)
+        // MUZU: filtrar por nombre del cable y mostrar capa; misma lógica que otras moléculas (pines + filtro)
         function applyMuzuFilter() {
           if (App.map.getLayer("muzu-lines")) {
             App.map.setFilter("muzu-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "name"], result.name]]);
@@ -1257,9 +1257,25 @@
           }
         }
         if (!App.map.getLayer("muzu-lines") && typeof App.loadMuzuLayer === "function") {
-          App.loadMuzuLayer().then(function () { setTimeout(applyMuzuFilter, 100); });
+          App.loadMuzuLayer().then(function () {
+            setTimeout(function () {
+              applyMuzuFilter();
+              if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
+                App.setSelectedMoleculaForPins(result.molecula);
+              }
+              if (typeof App.showPinsWhenCableActivated === "function") {
+                App.showPinsWhenCableActivated("muzu-lines", result.molecula);
+              }
+            }, 100);
+          });
         } else {
           applyMuzuFilter();
+          if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
+            App.setSelectedMoleculaForPins(result.molecula);
+          }
+          if (typeof App.showPinsWhenCableActivated === "function") {
+            App.showPinsWhenCableActivated("muzu-lines", result.molecula);
+          }
         }
       } else if (isCorporativo) {
         // GIS Corporativo: solo un cable a la vez (filter por nombre)

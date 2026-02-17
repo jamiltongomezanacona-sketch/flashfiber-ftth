@@ -1312,7 +1312,6 @@
     const cablesExplicitlyVisible = !!App.__cablesExplicitlyVisible;
     ids.forEach(id => {
       if (!id || !map.getLayer(id)) return;
-      if (id.startsWith("muzu-")) return; // MUZU siempre respeta su visibilidad, no ocultar
       const isCentral = id.includes("CENTRALES") || id.includes("CORPORATIVO");
       if (isCentral) {
         const current = map.getLayoutProperty(id, "visibility");

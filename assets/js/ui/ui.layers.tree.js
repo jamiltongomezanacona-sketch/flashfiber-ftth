@@ -69,15 +69,14 @@
         
         // Agregar capas consolidadas como hijos
         App.__ftthLayerIds.forEach(layerId => {
+          if (layerId === "muzu-points") return; // Puntos MUZU solo se activan desde buscador al seleccionar cable
           if (layerId.startsWith("geojson-") || layerId.startsWith("ftth-") || layerId.startsWith("muzu-")) {
             const layerName = layerId === "geojson-lines" ? "🧵 Cables (Consolidado)" :
                              layerId === "ftth-cables" ? "🧵 Cables FTTH" :
                              layerId === "ftth-puntos" ? "📍 Puntos FTTH" :
                              layerId === "geojson-points" ? "📍 Puntos (Consolidado)" :
                              layerId === "muzu-lines" ? "🧵 MUZU (cables)" :
-                             layerId === "muzu-points" ? "📍 MUZU (puntos)" :
                              layerId;
-            
             consolidatedNode.children.push({
               type: "layer",
               id: layerId,

@@ -1218,6 +1218,10 @@
       });
     }
 
+    // Ocultar puntos MUZU si no se ha seleccionado un cable MUZU (solo se muestran con cable desde buscador)
+    if (!result.isMuzu && App.map.getLayer("muzu-points")) {
+      App.map.setLayoutProperty("muzu-points", "visibility", "none");
+    }
     // Mostrar capas del cable seleccionado
     if (result.type === "cable") {
       if (result.isMuzu) {

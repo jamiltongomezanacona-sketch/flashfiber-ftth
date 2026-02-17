@@ -161,7 +161,7 @@
       loadCentrales().then(() => {
         console.log(`✅ Centrales cargadas: ${searchIndex.centrales.length}`);
       });
-      loadCables().then(() => {
+      loadCables().then(() => loadCablesMuzu()).then(() => {
         console.log(`✅ Cables cargados: ${searchIndex.cables.length}`);
       });
       waitForFirebaseAndLoadCierres();
@@ -548,6 +548,44 @@
     }
   }
 
+  /** Cargar cables MUZU (geojson/MUZU) y añadirlos al índice del buscador. */
+  async function loadCablesMuzu() {
+    if (isCorporativo) return;
+    try {
+      const res = await fetch("../geojson/MUZU/muzu.geojson", { cache: "default" });
+      if (!res.ok) return;
+      const geojson = await res.json();
+      if (!geojson.features || !geojson.features.length) return;
+      let count = 0;
+      geojson.features.forEach(function (f) {
+        if (f.geometry && f.geometry.type !== "LineString") return;
+        const name = (f.properties && f.properties.name) ? String(f.properties.name).trim() : "";
+        if (!name) return;
+        const coords = f.geometry.coordinates;
+        if (!coords || coords.length < 2) return;
+        const mid = Math.floor(coords.length / 2);
+        const coordinates = coords[mid];
+        const moleculaMatch = name.match(/(MU\d+)/i);
+        const molecula = moleculaMatch ? moleculaMatch[1].toUpperCase() : "";
+        searchIndex.cables.push({
+          id: "muzu-" + name,
+          name: name,
+          type: "cable",
+          layerId: name,
+          coordinates: coordinates,
+          icon: "🧵",
+          subtitle: "MUZU " + (molecula || ""),
+          molecula: molecula,
+          isMuzu: true
+        });
+        count++;
+      });
+      if (count > 0) console.log("✅ Cables MUZU en buscador: " + count);
+    } catch (e) {
+      console.warn("⚠️ Cables MUZU para buscador:", e.message || e);
+    }
+  }
+
   /** Normalizar nombre cable CUNI: CUO6FH144 → CU06FH144 (O a 0). */
   function normalizeCuniCableName(s) {
     if (!s || typeof s !== "string") return s;
@@ -585,6 +623,9 @@
     // Guaymaral: GU01FH144 (central GUAYMARAL, moléculas GUxx)
     const matchGu = normalized.match(/(GU\d+FH\d+(?:_\d+)?)/i);
     if (matchGu) return matchGu[1];
+    // MUZU: MU05FH144 (moléculas MUxx)
+    const matchMu = normalized.match(/(MU\d+FH\d+(?:_\d+)?)/i);
+    if (matchMu) return matchMu[1];
     if (from.startsWith("FTTH_") && from.includes("_")) {
       const parts = from.split("_");
       if (parts.length >= 2) return normalizeCuniCableName(parts.slice(-2).join("_"));
@@ -597,7 +638,7 @@
     return shortCableDisplayName(layerId, fallbackName).replace(/_(\d+)$/, "-$1");
   }
 
-  /** Obtener molécula de un cable (ej. SI22): del índice o extraída de layerId/nombre. */
+  /** Obtener molécula de un cable (ej. SI22, MU05): del índice o extraída de layerId/nombre. */
   function getMoleculaFromCable(cable) {
     if (cable.molecula && /^[A-Z]{2}\d+$/i.test(cable.molecula)) return cable.molecula;
     if (cable.layerId && typeof cable.layerId === "string") {
@@ -607,7 +648,10 @@
     }
     const from = (cable.name || "").toString();
     const molMatch = from.match(/(SI\d+)/i);
-    return molMatch ? molMatch[1].toUpperCase() : null;
+    if (molMatch) return molMatch[1].toUpperCase();
+    const muMatch = from.match(/(MU\d+)/i);
+    if (muMatch) return muMatch[1].toUpperCase();
+    return null;
   }
 
   async function walkTreeForCables(node, basePath) {
@@ -1176,7 +1220,21 @@
 
     // Mostrar capas del cable seleccionado
     if (result.type === "cable") {
-      if (isCorporativo) {
+      if (result.isMuzu) {
+        // MUZU: filtrar por nombre del cable y mostrar capa (comportamiento como otras moléculas)
+        function applyMuzuFilter() {
+          if (App.map.getLayer("muzu-lines")) {
+            App.map.setFilter("muzu-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "name"], result.name]]);
+            App.map.setLayoutProperty("muzu-lines", "visibility", "visible");
+          }
+          if (App.map.getLayer("muzu-points")) App.map.setLayoutProperty("muzu-points", "visibility", "visible");
+        }
+        if (!App.map.getLayer("muzu-lines") && typeof App.loadMuzuLayer === "function") {
+          App.loadMuzuLayer().then(function () { setTimeout(applyMuzuFilter, 100); });
+        } else {
+          applyMuzuFilter();
+        }
+      } else if (isCorporativo) {
         // GIS Corporativo: solo un cable a la vez (filter por nombre)
         if (App.map.getLayer("CABLES_KML")) {
           App.map.setFilter("CABLES_KML", ["==", ["get", "name"], result.name]);

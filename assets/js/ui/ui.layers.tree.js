@@ -541,10 +541,22 @@
     }
 
     if (map.getLayer(layerId)) {
+      // MUZU puntos (cierres): solo se activan cuando se activa un cable desde el buscador, no desde el árbol
+      if (layerId === "muzu-points" && visible) {
+        map.setLayoutProperty("muzu-points", "visibility", "none");
+        console.log("📍 MUZU puntos: solo se muestran al seleccionar un cable desde el buscador");
+        return;
+      }
+      if (layerId === "muzu-lines" && !visible && map.getLayer("muzu-points")) {
+        map.setLayoutProperty("muzu-points", "visibility", "none");
+      }
       const current = map.getLayoutProperty(layerId, "visibility");
       const desired = visible ? "visible" : "none";
       if (current === desired) return;
       map.setLayoutProperty(layerId, "visibility", desired);
+      if (layerId === "muzu-lines" && visible && map.getLayer("muzu-points")) {
+        map.setLayoutProperty("muzu-points", "visibility", "none");
+      }
       if (layerId === "geojson-lines" && App) App.__cablesExplicitlyVisible = visible;
       console.log(`${visible ? "✅" : "❌"} Capa ${layerId} ${visible ? "habilitada" : "deshabilitada"}`);
       if (visible) {

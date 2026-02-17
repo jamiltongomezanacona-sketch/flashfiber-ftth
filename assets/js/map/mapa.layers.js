@@ -1263,13 +1263,6 @@
     if (!map || !map.isStyleLoaded()) return;
     const ids = App.__ftthLayerIds || [];
     let enforced = 0;
-    // Puntos MUZU: solo visibles cuando hay un cable MUZU seleccionado desde el buscador (como otras moléculas)
-    if (map.getLayer("muzu-points") && !App.__muzuCableSelectedFromSearch) {
-      try {
-        map.setLayoutProperty("muzu-points", "visibility", "none");
-        enforced++;
-      } catch (e) {}
-    }
     const isCorporativo = !!window.__GEOJSON_INDEX__;
     const filterCentrales = typeof document !== "undefined" ? document.getElementById("filterCentrales") : null;
     const centralesVisible = !filterCentrales || filterCentrales.checked;
@@ -1579,15 +1572,11 @@
       addMuzuColors(geojson);
       if (map.getSource("muzu-src")) {
         map.getSource("muzu-src").setData(geojson);
-        if (!App.__muzuCableSelectedFromSearch && map.getLayer("muzu-points")) {
-          map.setLayoutProperty("muzu-points", "visibility", "none");
-        }
         console.log("✅ MUZU actualizado: " + geojson.features.length + " features");
         return;
       }
       map.addSource("muzu-src", { type: "geojson", data: geojson });
       const hasLines = geojson.features.some(f => f.geometry && f.geometry.type === "LineString");
-      const hasPoints = geojson.features.some(f => f.geometry && f.geometry.type === "Point");
       if (hasLines) {
         map.addLayer({
           id: "muzu-lines",
@@ -1602,26 +1591,9 @@
           }
         });
       }
-      if (hasPoints) {
-        map.addLayer({
-          id: "muzu-points",
-          type: "circle",
-          source: "muzu-src",
-          filter: ["==", ["geometry-type"], "Point"],
-          layout: { visibility: "none" },
-          paint: {
-            "circle-radius": 7,
-            "circle-color": "#00e5ff",
-            "circle-stroke-width": 2,
-            "circle-stroke-color": "#fff",
-            "circle-opacity": 0.95
-          }
-        });
-      }
       if (!App.__ftthLayerIds) App.__ftthLayerIds = [];
       if (hasLines && !App.__ftthLayerIds.includes("muzu-lines")) App.__ftthLayerIds.push("muzu-lines");
-      if (hasPoints && !App.__ftthLayerIds.includes("muzu-points")) App.__ftthLayerIds.push("muzu-points");
-      console.log("✅ MUZU cargado: " + geojson.features.length + " features (líneas + puntos)");
+      console.log("✅ MUZU cargado: " + geojson.features.length + " features (solo cables)");
     } catch (err) {
       console.warn("⚠️ MUZU:", err.message || err);
     }

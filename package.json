@@ -1,0 +1,7 @@
+{
+  "name": "flashfiber-ftth",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/write-config-production.js"
+  }
+}

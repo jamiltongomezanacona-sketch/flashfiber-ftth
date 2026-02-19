@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node scripts/write-config-production.js",
+  "buildCommand": "npm run build",
   "outputDirectory": ".",
   "rewrites": [
     {"source": "/", "destination": "/index.html"},

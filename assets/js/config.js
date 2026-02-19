@@ -12,8 +12,8 @@ window.__FTTH_CONFIG__ = {
   APP_NAME: "Flash Fiber FTTH",
   VERSION: "1.0.0",
 
-  // Token de Mapbox: config.local.js (dev) o config.production.js / __FTTH_MAPBOX_TOKEN__ (producción)
-  MAPBOX_TOKEN: SECRETS.MAPBOX_TOKEN || window.__FTTH_MAPBOX_TOKEN__ || "",
+  // Token de Mapbox: configurar en config.local.js (__FTTH_SECRETS__.MAPBOX_TOKEN)
+  MAPBOX_TOKEN: SECRETS.MAPBOX_TOKEN || "",
 
   DEBUG: !!SECRETS.DEBUG,
 
@@ -56,8 +56,8 @@ window.__FTTH_CONFIG__ = {
   DELETE_PIN: SECRETS.DELETE_PIN || "7431"
 };
 
-// Aviso solo si no hay token (en producción el mensaje se muestra en la zona del mapa)
-if (!window.__FTTH_CONFIG__.MAPBOX_TOKEN && typeof location !== "undefined" && (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "file:")) {
+// Aviso solo si no hay token
+if (!window.__FTTH_CONFIG__.MAPBOX_TOKEN) {
   console.warn("⚠️ MAPBOX_TOKEN no configurado. Crea config.local.js desde config.local.example.js.");
 }
 

@@ -102,3 +102,5 @@ flashfiber-ftth/
 ## Despliegue
 
 El proyecto incluye `vercel.json` para despliegue en Vercel. Configura las variables de entorno (Mapbox, Firebase) en el panel de Vercel y no subas `config.local.js`.
+
+**Token Mapbox en producción:** En el servidor el mapa necesita el token. Opciones: (1) Subir `config.production.js` (creado desde `config.production.example.js`) con `window.__FTTH_MAPBOX_TOKEN__ = "pk.eyJ...";` o (2) Editar `config.public.js` en el repo, asignar el token y desplegar (restringe el token por URL en [Mapbox](https://account.mapbox.com/access-tokens/)). Si falta el token, la consola mostrará un único mensaje claro y no se creará el mapa (sin errores en cascada).

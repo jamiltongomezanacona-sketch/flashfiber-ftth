@@ -21,8 +21,16 @@
     return;
   }
 
-  // ✅ TOKEN
-  mapboxgl.accessToken = CONFIG.MAPBOX_TOKEN;
+  // ✅ TOKEN: salida temprana para no provocar error de Mapbox ni cascada de dependencias
+  var token = (CONFIG.MAPBOX_TOKEN && String(CONFIG.MAPBOX_TOKEN).trim()) || "";
+  if (!token) {
+    console.error(
+      "❌ MAPBOX_TOKEN no configurado. Dev: crea config.local.js (ver config.local.example.js). " +
+      "Producción: sube config.production.js con window.__FTTH_MAPBOX_TOKEN__ o edita config.public.js."
+    );
+    return;
+  }
+  mapboxgl.accessToken = token;
 
   // 🗺️ MAPA BASE – calles (estilo desde config)
   // preserveDrawingBuffer: true permite exportar el mapa a imagen/PDF (Crear diseño de mapa)

@@ -12,8 +12,8 @@ window.__FTTH_CONFIG__ = {
   APP_NAME: "Flash Fiber FTTH",
   VERSION: "1.0.0",
 
-  // Token de Mapbox: desde config.local.js; fallback para desarrollo (en producción usar config.local.js)
-  MAPBOX_TOKEN: SECRETS.MAPBOX_TOKEN || "pk.eyJ1IjoiamFtaWx0b244NCIsImEiOiJjbWpxMjB4eDkydWdmM2RwdTVib3htb284In0.5gk_bRtcnXLshXE9eMeryg",
+  // Token de Mapbox: configurar en config.local.js (__FTTH_SECRETS__.MAPBOX_TOKEN)
+  MAPBOX_TOKEN: SECRETS.MAPBOX_TOKEN || "",
 
   DEBUG: !!SECRETS.DEBUG,
 
@@ -38,16 +38,19 @@ window.__FTTH_CONFIG__ = {
     EVENTOS: "eventos-layer"
   },
 
-  // Buscador: debounce, reintentos, resultados máximos
+  // Buscador: debounce, reintentos, resultados máximos, geocodificación Bogotá
   SEARCH: {
     DEBOUNCE_MS: 300,
     RETRY_DELAY_MS: 600,
     MAX_RETRIES: 3,
-    MAX_RESULTS: 20
+    MAX_RESULTS: 20,
+    // Búsqueda de direcciones en Bogotá (Mapbox Geocoding)
+    GEOCODE_BOGOTA_BBOX: [-74.35, 4.46, -73.99, 4.83],
+    GEOCODE_LIMIT: 5
   },
 
-  // Duración del flyTo al seleccionar resultado (ms)
-  MAP_FLYTO_DURATION_MS: 1500,
+  // Duración del flyTo al seleccionar resultado (ms). Corta para no bloquear el mapa al mover.
+  MAP_FLYTO_DURATION_MS: 800,
 
   // Código para permitir eliminar pines (cierres/eventos). Override en config.local.js con __FTTH_SECRETS__.DELETE_PIN
   DELETE_PIN: SECRETS.DELETE_PIN || "7431"

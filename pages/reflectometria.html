@@ -136,6 +136,20 @@
       gap: 0.35rem;
     }
     .refl-mis-archivos .file-item .btn-download:hover { background: rgba(0, 180, 216, 0.35); }
+    .refl-mis-archivos .file-item .btn-delete {
+      padding: 0.35rem 0.75rem;
+      background: rgba(255, 82, 82, 0.2);
+      border: 1px solid rgba(255, 82, 82, 0.4);
+      border-radius: 8px;
+      color: #ff5252;
+      font-size: 0.8125rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .refl-mis-archivos .file-item .btn-delete:hover { background: rgba(255, 82, 82, 0.35); }
+    .refl-mis-archivos .file-item .file-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
     .refl-mis-archivos .btn-download-all {
       display: inline-flex;
       align-items: center;
@@ -366,9 +380,30 @@
         div.innerHTML =
           "<span class=\"name\" title=\"" + escapeHtml(f.name) + "\">" + escapeHtml(f.name) + "</span>" +
           "<span class=\"meta\">" + formatSize(f.size) + (dateStr ? " · " + dateStr : "") + "</span>" +
-          "<a href=\"" + escapeHtml(f.url) + "\" download=\"" + escapeHtml(f.name) + "\" class=\"btn-download\" target=\"_blank\" rel=\"noopener\"><i class=\"fas fa-download\"></i> Descargar</a>";
+          "<span class=\"file-actions\">" +
+          "<a href=\"" + escapeHtml(f.url) + "\" download=\"" + escapeHtml(f.name) + "\" class=\"btn-download\" target=\"_blank\" rel=\"noopener\"><i class=\"fas fa-download\"></i> Descargar</a>" +
+          "<button type=\"button\" class=\"btn-delete\" data-filename=\"" + escapeHtml(f.name) + "\" title=\"Eliminar archivo\"><i class=\"fas fa-trash-alt\"></i> Eliminar</button>" +
+          "</span>";
         container.appendChild(div);
       });
+    }
+
+    async function onMisArchivosClick(e) {
+      const btn = e.target.closest(".btn-delete");
+      if (!btn) return;
+      e.preventDefault();
+      const filename = btn.getAttribute("data-filename");
+      if (!filename) return;
+      if (!confirm("¿Eliminar el archivo \"" + filename + "\"? Esta acción no se puede deshacer.")) return;
+      const uid = window.__USER__?.uid;
+      if (!uid) return;
+      const storage = window.FTTH_STORAGE;
+      if (!storage?.eliminarArchivoSOR) return;
+      btn.disabled = true;
+      const ok = await storage.eliminarArchivoSOR(uid, filename);
+      btn.disabled = false;
+      if (ok) loadMisArchivos(true);
+      else alert("No se pudo eliminar el archivo.");
     }
 
     function descargarTodo() {
@@ -428,6 +463,9 @@
 
     const btnDescargarTodo = document.getElementById("btnDescargarTodo");
     if (btnDescargarTodo) btnDescargarTodo.addEventListener("click", descargarTodo);
+
+    const misArchivosList = document.getElementById("misArchivosList");
+    if (misArchivosList) misArchivosList.addEventListener("click", onMisArchivosClick);
 
     document.getElementById("btnVerArchivos").addEventListener("click", function() {
       this.disabled = true;

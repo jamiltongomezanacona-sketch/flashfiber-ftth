@@ -2,7 +2,7 @@
    FlashFiber FTTH | Firebase Storage Service
 ========================================================= */
 
-import { getStorage, ref, uploadBytes, getDownloadURL, listAll, getMetadata }
+import { getStorage, ref, uploadBytes, getDownloadURL, listAll, getMetadata, deleteObject }
 from "https://www.gstatic.com/firebasejs/12.8.0/firebase-storage.js";
 
 import { getApp }
@@ -90,11 +90,26 @@ async function listarArchivosSOR(userId) {
   }, "listarArchivosSOR", []);
 }
 
+/* ===============================
+   Eliminar archivo .SOR (reflectometría)
+=============================== */
+async function eliminarArchivoSOR(userId, filename) {
+  return await ErrorHandler.safeAsync(async () => {
+    if (!userId || !filename) throw new Error("userId y filename son requeridos");
+    const path = "reflectometria/" + userId + "/" + filename;
+    const fileRef = ref(storage, path);
+    await deleteObject(fileRef);
+    console.log("🗑️ Archivo .SOR eliminado:", filename);
+    return true;
+  }, "eliminarArchivoSOR", false);
+}
+
 /* 🌍 Exponer Storage */
 window.FTTH_STORAGE = {
   subirFotoEvento,
   subirArchivoSOR,
-  listarArchivosSOR
+  listarArchivosSOR,
+  eliminarArchivoSOR
 };
 
 console.log("✅ Firebase Storage listo");

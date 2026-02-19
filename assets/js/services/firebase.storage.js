@@ -46,9 +46,30 @@ async function subirFotoEvento(eventoId, tipo, file) {
   }, "subirFotoEvento", null);
 }
 
+/* ===============================
+   Subir archivo .SOR (reflectometría)
+=============================== */
+async function subirArchivoSOR(file, userId) {
+  return await ErrorHandler.safeAsync(async () => {
+    if (!file || !userId) throw new Error("file y userId son requeridos");
+    const name = (file.name || "").toLowerCase();
+    if (!name.endsWith(".sor")) throw new Error("Solo se permiten archivos .SOR");
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    if (file.size > maxSize) throw new Error("Archivo máximo 20 MB");
+    const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+    const path = `reflectometria/${userId}/${filename}`;
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(storageRef);
+    console.log("📁 Archivo .SOR subido:", filename);
+    return { url, path, filename, size: file.size };
+  }, "subirArchivoSOR", null);
+}
+
 /* 🌍 Exponer Storage */
 window.FTTH_STORAGE = {
-  subirFotoEvento
+  subirFotoEvento,
+  subirArchivoSOR
 };
 
 console.log("✅ Firebase Storage listo");

@@ -1,9 +1,1 @@
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": ".",
-  "rewrites": [
-    {"source": "/", "destination": "/index.html"},
-    {"source": "/home", "destination": "/pages/home.html"},
-    {"source": "/mapa-ftth", "destination": "/pages/mapa-ftth.html"}
-  ]
-}
+{"buildCommand":"npm run build","outputDirectory":".","rewrites":[{"source":"/","destination":"/index.html"},{"source":"/home","destination":"/pages/home.html"},{"source":"/mapa-ftth","destination":"/pages/mapa-ftth.html"},{"source":"/reflectometria","destination":"/pages/reflectometria.html"}]}

@@ -273,7 +273,11 @@
       <h2 style="color:inherit;margin-bottom:0.5rem;">Análisis de trazas</h2>
       <p style="font-size:0.9375rem;">Visualización de trazas OTDR, detección de eventos (pérdidas, reflexiones) y exportación de informes.</p>
       <div class="refl-analysis-demo">
-        <img src="/assets/images/demo-analisis-otdr-s105.png" alt="Demo: Análisis OTDR completo - Fibra óptica S105" />
+        <img id="demoOtdrImg" src="/assets/images/demo-analisis-otdr-s105.png" alt="Demo: Análisis OTDR completo - Fibra óptica S105"
+             onerror="this.style.display='none'; document.getElementById('demoOtdrFallback').style.display='block';" />
+        <p id="demoOtdrFallback" class="refl-analysis-demo-caption" style="display:none; padding:1.5rem; background:rgba(0,0,0,0.2); border-radius:8px;">
+          <i class="fas fa-image"></i> Imagen demo no cargada. Sustituye <code>assets/images/demo-analisis-otdr-s105.png</code> por tu gráfico OTDR para verlo aquí.
+        </p>
         <p class="refl-analysis-demo-caption"><strong>Demo — Solo demostración.</strong> Análisis OTDR completo - Fibra óptica S105 (996 mediciones).</p>
       </div>
     </section>

@@ -12,8 +12,8 @@ window.__FTTH_CONFIG__ = {
   APP_NAME: "Flash Fiber FTTH",
   VERSION: "1.0.0",
 
-  // Token de Mapbox: configurar en config.local.js (__FTTH_SECRETS__.MAPBOX_TOKEN)
-  MAPBOX_TOKEN: SECRETS.MAPBOX_TOKEN || "",
+  // Token: config.local.js (dev) o config.production.js / __FTTH_MAPBOX_TOKEN__ (Vercel build)
+  MAPBOX_TOKEN: SECRETS.MAPBOX_TOKEN || window.__FTTH_MAPBOX_TOKEN__ || "",
 
   DEBUG: !!SECRETS.DEBUG,
 

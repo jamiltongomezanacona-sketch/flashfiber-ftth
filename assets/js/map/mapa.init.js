@@ -21,8 +21,14 @@
     return;
   }
 
-  // ✅ TOKEN
-  mapboxgl.accessToken = CONFIG.MAPBOX_TOKEN;
+  var token = (CONFIG.MAPBOX_TOKEN && String(CONFIG.MAPBOX_TOKEN).trim()) || "";
+  if (!token) {
+    console.warn("❌ MAPBOX_TOKEN no configurado. En Vercel: Settings → Environment Variables → MAPBOX_TOKEN → Redeploy.");
+    var el = document.getElementById("map");
+    if (el) el.innerHTML = "<div style=\"padding:2rem;text-align:center;color:#a3d5ff;font-family:Inter,sans-serif;\"><p>⚠️ Mapa no disponible</p><p style=\"font-size:0.9rem;margin-top:0.5rem;\">En Vercel: Settings → Environment Variables → añade <strong>MAPBOX_TOKEN</strong> con tu token de Mapbox y haz Redeploy.</p></div>";
+    return;
+  }
+  mapboxgl.accessToken = token;
 
   // 🗺️ MAPA BASE – calles (estilo desde config)
   // preserveDrawingBuffer: true permite exportar el mapa a imagen/PDF (Crear diseño de mapa)

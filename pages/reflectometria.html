@@ -108,6 +108,34 @@
     .file-list .size { color: #7dd3fc; }
     .file-list .ok { color: #00c853; }
     .file-list .err { color: #ff5252; }
+    .refl-mis-archivos { margin-top: 0.5rem; }
+    .refl-mis-archivos .empty { color: #7dd3fc; font-size: 0.9375rem; padding: 1rem 0; }
+    .refl-mis-archivos .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.875rem;
+    }
+    .refl-mis-archivos .file-item:last-child { border-bottom: none; }
+    .refl-mis-archivos .file-item .name { color: #e6f7ff; word-break: break-all; }
+    .refl-mis-archivos .file-item .meta { color: #7dd3fc; }
+    .refl-mis-archivos .file-item .btn-download {
+      padding: 0.35rem 0.75rem;
+      background: rgba(0, 180, 216, 0.2);
+      border: 1px solid rgba(0, 180, 216, 0.4);
+      border-radius: 8px;
+      color: #00e5ff;
+      text-decoration: none;
+      font-size: 0.8125rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .refl-mis-archivos .file-item .btn-download:hover { background: rgba(0, 180, 216, 0.35); }
     .refl-analysis {
       background: rgba(123, 44, 191, 0.08);
       border: 1px solid rgba(123, 44, 191, 0.3);
@@ -147,6 +175,14 @@
         <p style="margin-top:0.25rem;font-size:0.8125rem;">Máximo 20 MB por archivo</p>
       </div>
       <ul class="file-list" id="fileList"></ul>
+    </section>
+
+    <section class="refl-card">
+      <h2><i class="fas fa-folder-open"></i> Mis archivos subidos</h2>
+      <p style="font-size:0.875rem;color:#a3d5ff;margin-bottom:1rem;">Archivos .SOR que has subido. Puedes descargarlos cuando quieras.</p>
+      <div id="misArchivosList" class="refl-mis-archivos">
+        <div class="empty" id="misArchivosEmpty">Cargando…</div>
+      </div>
     </section>
 
     <section class="refl-card refl-analysis">
@@ -200,6 +236,7 @@
           const result = await storage.subirArchivoSOR(file, uid);
           if (result) {
             updateLastRow(true, "Subido");
+            loadMisArchivos();
           } else {
             updateLastRow(false, "Error al subir");
           }
@@ -207,6 +244,41 @@
           updateLastRow(false, e.message || "Error");
         }
       }
+    }
+
+    async function loadMisArchivos() {
+      const container = document.getElementById("misArchivosList");
+      const emptyEl = document.getElementById("misArchivosEmpty");
+      if (!container || !emptyEl) return;
+      const uid = window.__USER__?.uid;
+      if (!uid) {
+        emptyEl.textContent = "Inicia sesión para ver tus archivos.";
+        emptyEl.style.display = "block";
+        return;
+      }
+      const storage = window.FTTH_STORAGE;
+      if (!storage?.listarArchivosSOR) {
+        emptyEl.textContent = "Servicio no disponible.";
+        emptyEl.style.display = "block";
+        return;
+      }
+      emptyEl.textContent = "Cargando…";
+      emptyEl.style.display = "block";
+      const list = await storage.listarArchivosSOR(uid);
+      emptyEl.style.display = list.length ? "none" : "block";
+      emptyEl.textContent = "Aún no has subido ningún archivo .SOR.";
+      const existing = container.querySelectorAll(".file-item");
+      existing.forEach((el) => el.remove());
+      list.forEach((f) => {
+        const div = document.createElement("div");
+        div.className = "file-item";
+        const dateStr = f.createdAt ? new Date(f.createdAt).toLocaleString("es") : "";
+        div.innerHTML =
+          "<span class=\"name\" title=\"" + escapeHtml(f.name) + "\">" + escapeHtml(f.name) + "</span>" +
+          "<span class=\"meta\">" + formatSize(f.size) + (dateStr ? " · " + dateStr : "") + "</span>" +
+          "<a href=\"" + escapeHtml(f.url) + "\" download=\"" + escapeHtml(f.name) + "\" class=\"btn-download\" target=\"_blank\" rel=\"noopener\"><i class=\"fas fa-download\"></i> Descargar</a>";
+        container.appendChild(div);
+      });
     }
 
     function addFileRow(name, size, ok, status) {
@@ -243,6 +315,7 @@
         clearInterval(waitUser);
         const el = document.getElementById("usernameDisplay");
         if (el) el.textContent = window.__USER__.nombre || window.__USER__.email || "Usuario";
+        loadMisArchivos();
       }
     }, 100);
   </script>

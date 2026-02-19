@@ -299,20 +299,32 @@
       background: var(--card-bg);
       border-radius: var(--radius-md);
       border: 1px solid var(--border-soft);
-      max-width: 480px;
+      max-width: 520px;
       width: 100%;
       padding: 1.5rem;
       box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+      max-height: 85vh;
+      overflow-y: auto;
     }
     .config-modal h3 {
-      margin: 0 0 0.75rem 0;
+      margin: 0 0 1rem 0;
       font-size: 1.125rem;
       color: var(--accent-cyan);
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
-    .config-modal p { margin: 0 0 1rem 0; font-size: 0.9375rem; color: var(--text-secondary); }
+    .config-modal p { margin: 0 0 0.75rem 0; font-size: 0.9375rem; color: var(--text-secondary); }
+    .config-modal-section { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-soft); }
+    .config-modal-section:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
+    .config-modal-section-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .config-modal-roles { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .config-modal-role { padding: 0.35rem 0.75rem; border-radius: 999px; font-size: 0.8125rem; background: rgba(0, 180, 216, 0.15); color: var(--accent-cyan); border: 1px solid rgba(0, 229, 255, 0.3); }
+    .config-modal-perfil { font-size: 0.9375rem; color: var(--text-primary); }
+    .config-modal-perfil strong { color: var(--accent-cyan); }
+    .config-modal-instructions { font-size: 0.8125rem; color: var(--text-secondary); background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: var(--radius-sm); margin-top: 0.5rem; }
+    .config-modal code { font-size: 0.8125rem; background: rgba(0,0,0,0.3); padding: 0.15rem 0.4rem; border-radius: 4px; }
+    .config-modal-desc { margin: 0 0 0.5rem 0; font-size: 0.875rem; color: var(--text-secondary); }
     .config-modal-close {
       margin-top: 1rem;
       padding: 0.5rem 1rem;
@@ -495,7 +507,29 @@
   <div class="config-modal-overlay" id="modalUsuariosPermisos" aria-hidden="true">
     <div class="config-modal">
       <h3><i class="fas fa-users-cog"></i> Usuarios y permisos</h3>
-      <p>Desde aquí podrás gestionar usuarios, roles (Admin, Operador FTTH, Operador Corp, Solo lectura) y acceso a GIS FTTH y Corporativo. La gestión completa se irá incorporando en próximas actualizaciones.</p>
+      <p>Gestión de usuarios, roles y acceso a GIS FTTH y Corporativo.</p>
+
+      <div class="config-modal-section">
+        <div class="config-modal-section-title">Roles disponibles</div>
+        <div class="config-modal-roles" id="modalRolesList">
+          <span class="config-modal-role">Admin</span>
+          <span class="config-modal-role">Operador FTTH</span>
+          <span class="config-modal-role">Operador Corp</span>
+          <span class="config-modal-role">Solo lectura</span>
+        </div>
+      </div>
+
+      <div class="config-modal-section" id="modalTuPerfilSection">
+        <div class="config-modal-section-title">Tu perfil</div>
+        <div class="config-modal-perfil" id="modalTuPerfil">Cargando…</div>
+      </div>
+
+      <div class="config-modal-section">
+        <div class="config-modal-section-title">Añadir usuarios</div>
+        <p class="config-modal-desc">Cada usuario debe existir en Firebase Authentication y tener un documento en Firestore (colección <code>usuarios</code>) con <code>activo: true</code>, <code>email</code> y <code>nombre</code>. Consulta la documentación del proyecto para los pasos detallados.</p>
+        <div class="config-modal-instructions">Firebase Console → Authentication (crear usuario) → Firestore → colección <strong>usuarios</strong> (documento con UID del usuario, campos: activo, email, nombre).</div>
+      </div>
+
       <button type="button" class="config-modal-close" id="btnCerrarModalUsuarios">Cerrar</button>
     </div>
   </div>
@@ -555,6 +589,15 @@
       var btnCerrarModal = document.getElementById("btnCerrarModalUsuarios");
       if (btnGestionar && modalUsuarios) {
         btnGestionar.addEventListener("click", function() {
+          var perfilEl = document.getElementById("modalTuPerfil");
+          if (perfilEl) {
+            var u = window.__USER__;
+            if (u && (u.nombre || u.email)) {
+              perfilEl.innerHTML = "<strong>" + (u.nombre || u.email || "Usuario") + "</strong>" + (u.email ? " · " + u.email : "");
+            } else {
+              perfilEl.textContent = "No se pudo cargar el perfil. Cierra sesión y vuelve a entrar.";
+            }
+          }
           modalUsuarios.classList.add("visible");
           modalUsuarios.setAttribute("aria-hidden", "false");
         });

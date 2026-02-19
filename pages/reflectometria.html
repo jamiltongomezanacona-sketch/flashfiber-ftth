@@ -136,6 +136,22 @@
       gap: 0.35rem;
     }
     .refl-mis-archivos .file-item .btn-download:hover { background: rgba(0, 180, 216, 0.35); }
+    .refl-mis-archivos .btn-download-all {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      margin-bottom: 1rem;
+      background: rgba(0, 200, 83, 0.2);
+      border: 1px solid rgba(0, 200, 83, 0.4);
+      border-radius: 8px;
+      color: #00c853;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .refl-mis-archivos .btn-download-all:hover { background: rgba(0, 200, 83, 0.3); }
+    .refl-mis-archivos .btn-download-all:disabled { opacity: 0.6; cursor: not-allowed; }
     .refl-analysis {
       background: rgba(123, 44, 191, 0.08);
       border: 1px solid rgba(123, 44, 191, 0.3);
@@ -180,6 +196,7 @@
     <section class="refl-card">
       <h2><i class="fas fa-folder-open"></i> Mis archivos subidos</h2>
       <p style="font-size:0.875rem;color:#a3d5ff;margin-bottom:1rem;">Archivos .SOR que has subido. Puedes descargarlos cuando quieras.</p>
+      <button type="button" id="btnDescargarTodo" class="btn-download-all" style="display:none;"><i class="fas fa-download"></i> Descargar todo</button>
       <div id="misArchivosList" class="refl-mis-archivos">
         <div class="empty" id="misArchivosEmpty">Cargando…</div>
       </div>
@@ -269,6 +286,9 @@
       emptyEl.textContent = "Aún no has subido ningún archivo .SOR.";
       const existing = container.querySelectorAll(".file-item");
       existing.forEach((el) => el.remove());
+      window.__REFL_LISTA_ARCHIVOS__ = list;
+      const btnTodo = document.getElementById("btnDescargarTodo");
+      if (btnTodo) btnTodo.style.display = list.length ? "inline-flex" : "none";
       list.forEach((f) => {
         const div = document.createElement("div");
         div.className = "file-item";
@@ -279,6 +299,32 @@
           "<a href=\"" + escapeHtml(f.url) + "\" download=\"" + escapeHtml(f.name) + "\" class=\"btn-download\" target=\"_blank\" rel=\"noopener\"><i class=\"fas fa-download\"></i> Descargar</a>";
         container.appendChild(div);
       });
+    }
+
+    function descargarTodo() {
+      const list = window.__REFL_LISTA_ARCHIVOS__;
+      if (!list || list.length === 0) return;
+      const btn = document.getElementById("btnDescargarTodo");
+      if (btn) btn.disabled = true;
+      let i = 0;
+      function siguiente() {
+        if (i >= list.length) {
+          if (btn) btn.disabled = false;
+          return;
+        }
+        const f = list[i];
+        const a = document.createElement("a");
+        a.href = f.url;
+        a.download = f.name;
+        a.rel = "noopener";
+        a.target = "_blank";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        i++;
+        setTimeout(siguiente, 500);
+      }
+      siguiente();
     }
 
     function addFileRow(name, size, ok, status) {
@@ -309,6 +355,9 @@
       if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
       return (bytes / (1024 * 1024)).toFixed(2) + " MB";
     }
+
+    const btnDescargarTodo = document.getElementById("btnDescargarTodo");
+    if (btnDescargarTodo) btnDescargarTodo.addEventListener("click", descargarTodo);
 
     const waitUser = setInterval(() => {
       if (window.__USER__) {

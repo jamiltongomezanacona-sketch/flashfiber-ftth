@@ -34,4 +34,5 @@ yarn-error.log*
 
 # Configuración local (NO versionar)
 config.local.js
+config.production.js
 secrets.js

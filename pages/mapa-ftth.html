@@ -398,8 +398,9 @@
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js" defer></script>
 
-<!-- CONFIG: config.local.js (token Mapbox, etc.) debe cargar antes que config.js -->
+<!-- CONFIG: local (dev, .gitignore) y producción (opcional en servidor) -->
 <script src="../config.local.js"></script>
+<script src="../config.production.js"></script>
 <script>
   window.__FTTH_SECRETS__ = window.__FTTH_SECRETS__ || {};
 </script>

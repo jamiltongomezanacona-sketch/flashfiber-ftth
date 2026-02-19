@@ -282,6 +282,48 @@
       border-top: 1px solid rgba(255,255,255,0.06);
       margin-top: 2rem;
     }
+    /* Modal Usuarios y permisos */
+    .config-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .config-modal-overlay.visible { display: flex; }
+    .config-modal {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-soft);
+      max-width: 480px;
+      width: 100%;
+      padding: 1.5rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    }
+    .config-modal h3 {
+      margin: 0 0 0.75rem 0;
+      font-size: 1.125rem;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .config-modal p { margin: 0 0 1rem 0; font-size: 0.9375rem; color: var(--text-secondary); }
+    .config-modal-close {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .config-modal-close:hover { background: rgba(0, 229, 255, 0.15); border-color: var(--accent-cyan); }
     @media (max-width: 767px) {
       .config-header { padding: 0.75rem 1rem; }
       .config-main { padding: 1.25rem 1rem; }
@@ -324,7 +366,7 @@
             <i class="fas fa-users"></i>
             Usuarios y permisos
           </h2>
-          <span class="config-card-badge proximamente">Próximamente</span>
+          <span class="config-card-badge">Activo</span>
         </div>
         <div class="config-card-body">
           <p class="config-card-desc">Gestión de usuarios, roles y acceso a GIS FTTH y Corporativo.</p>
@@ -334,7 +376,7 @@
               <div class="config-row-meta">Admin, Operador FTTH, Operador Corp, Solo lectura</div>
             </div>
             <div class="config-row-control">
-              <button type="button" class="config-btn config-btn-secondary proximamente" disabled>
+              <button type="button" class="config-btn config-btn-secondary" id="btnGestionarUsuarios" title="Abrir gestión de usuarios y permisos">
                 <i class="fas fa-user-cog"></i> Gestionar
               </button>
             </div>
@@ -449,6 +491,15 @@
     </footer>
   </main>
 
+  <!-- Modal Usuarios y permisos (habilitado) -->
+  <div class="config-modal-overlay" id="modalUsuariosPermisos" aria-hidden="true">
+    <div class="config-modal">
+      <h3><i class="fas fa-users-cog"></i> Usuarios y permisos</h3>
+      <p>Desde aquí podrás gestionar usuarios, roles (Admin, Operador FTTH, Operador Corp, Solo lectura) y acceso a GIS FTTH y Corporativo. La gestión completa se irá incorporando en próximas actualizaciones.</p>
+      <button type="button" class="config-modal-close" id="btnCerrarModalUsuarios">Cerrar</button>
+    </div>
+  </div>
+
   <script type="module" src="/assets/js/services/firebase.js"></script>
   <script type="module" src="/assets/js/services/firebase.db.js"></script>
   <script type="module" src="/assets/js/core/auth.guard.js"></script>
@@ -497,6 +548,31 @@
           alert("Código guardado (local). Puedes usarlo al eliminar cierres/eventos.");
         } catch (e) { alert("No se pudo guardar."); }
       });
+
+      // Usuarios y permisos: abrir modal (sección habilitada)
+      var modalUsuarios = document.getElementById("modalUsuariosPermisos");
+      var btnGestionar = document.getElementById("btnGestionarUsuarios");
+      var btnCerrarModal = document.getElementById("btnCerrarModalUsuarios");
+      if (btnGestionar && modalUsuarios) {
+        btnGestionar.addEventListener("click", function() {
+          modalUsuarios.classList.add("visible");
+          modalUsuarios.setAttribute("aria-hidden", "false");
+        });
+      }
+      if (btnCerrarModal && modalUsuarios) {
+        btnCerrarModal.addEventListener("click", function() {
+          modalUsuarios.classList.remove("visible");
+          modalUsuarios.setAttribute("aria-hidden", "true");
+        });
+      }
+      if (modalUsuarios) {
+        modalUsuarios.addEventListener("click", function(e) {
+          if (e.target === modalUsuarios) {
+            modalUsuarios.classList.remove("visible");
+            modalUsuarios.setAttribute("aria-hidden", "true");
+          }
+        });
+      }
 
       // Toggles solo visual
       ["toggleModulos", "toggleEventoCorp"].forEach(function(id) {

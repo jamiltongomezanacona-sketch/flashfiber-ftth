@@ -56,9 +56,9 @@ window.__FTTH_CONFIG__ = {
   DELETE_PIN: SECRETS.DELETE_PIN || "7431"
 };
 
-// Aviso solo si no hay token (dev: config.local.js; producción: config.production.js o __FTTH_MAPBOX_TOKEN__)
-if (!window.__FTTH_CONFIG__.MAPBOX_TOKEN) {
-  console.warn("⚠️ MAPBOX_TOKEN no configurado. Dev: config.local.js. Producción: config.production.js (ver config.production.example.js).");
+// Aviso solo si no hay token (en producción el mensaje se muestra en la zona del mapa)
+if (!window.__FTTH_CONFIG__.MAPBOX_TOKEN && typeof location !== "undefined" && (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "file:")) {
+  console.warn("⚠️ MAPBOX_TOKEN no configurado. Crea config.local.js desde config.local.example.js.");
 }
 
 // Helper de log: solo escribe en consola si CONFIG.DEBUG (útil para reducir ruido en producción)

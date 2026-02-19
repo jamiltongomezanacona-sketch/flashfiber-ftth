@@ -398,9 +398,14 @@
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js" defer></script>
 
-<!-- CONFIG: local/producción (opcionales, 404 en prod) y público (siempre desplegado) -->
-<script src="../config.local.js"></script>
-<script src="../config.production.js"></script>
+<!-- CONFIG: en local solo config.local.js; en producción solo config.production.js (evita 404) -->
+<script>
+(function(){
+  var base = '../';
+  var isDev = typeof location !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:');
+  document.write('<script src="' + base + (isDev ? 'config.local.js' : 'config.production.js') + '"><\/script>');
+})();
+</script>
 <script src="../config.public.js"></script>
 <script>
   window.__FTTH_SECRETS__ = window.__FTTH_SECRETS__ || {};

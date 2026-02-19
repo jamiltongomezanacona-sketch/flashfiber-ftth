@@ -368,30 +368,36 @@
         window.__REFL_LISTA_CARGADA__ = true;
         return;
       }
-      const list = await storage.listarArchivosSOR(uid);
-      if (loadingEl) loadingEl.style.display = "none";
-      container.style.display = "block";
-      emptyEl.style.display = list.length ? "none" : "block";
-      emptyEl.textContent = "Aún no has subido ningún archivo .SOR.";
-      const existing = container.querySelectorAll(".file-item");
-      existing.forEach((el) => el.remove());
-      window.__REFL_LISTA_ARCHIVOS__ = list;
-      window.__REFL_LISTA_CARGADA__ = true;
-      const btnTodo = document.getElementById("btnDescargarTodo");
-      if (btnTodo) btnTodo.style.display = list.length ? "inline-flex" : "none";
-      list.forEach((f) => {
-        const div = document.createElement("div");
-        div.className = "file-item";
-        const dateStr = f.createdAt ? new Date(f.createdAt).toLocaleString("es") : "";
-        div.innerHTML =
-          "<span class=\"name\" title=\"" + escapeHtml(f.name) + "\">" + escapeHtml(f.name) + "</span>" +
-          "<span class=\"meta\">" + formatSize(f.size) + (dateStr ? " · " + dateStr : "") + "</span>" +
-          "<span class=\"file-actions\">" +
-          "<a href=\"" + escapeHtml(f.url) + "\" download=\"" + escapeHtml(f.name) + "\" class=\"btn-download\" target=\"_blank\" rel=\"noopener\"><i class=\"fas fa-download\"></i> Descargar</a>" +
-          "<button type=\"button\" class=\"btn-delete\" data-filename=\"" + escapeHtml(f.name) + "\" title=\"Eliminar archivo\"><i class=\"fas fa-trash-alt\"></i> Eliminar</button>" +
-          "</span>";
-        container.appendChild(div);
-      });
+      try {
+        const list = await storage.listarArchivosSOR(uid);
+        if (loadingEl) loadingEl.style.display = "none";
+        container.style.display = "block";
+        emptyEl.style.display = list.length ? "none" : "block";
+        emptyEl.textContent = "Aún no has subido ningún archivo .SOR.";
+        const existing = container.querySelectorAll(".file-item");
+        existing.forEach((el) => el.remove());
+        window.__REFL_LISTA_ARCHIVOS__ = list;
+        window.__REFL_LISTA_CARGADA__ = true;
+        const btnTodo = document.getElementById("btnDescargarTodo");
+        if (btnTodo) btnTodo.style.display = list.length ? "inline-flex" : "none";
+        list.forEach((f) => {
+          const div = document.createElement("div");
+          div.className = "file-item";
+          const dateStr = f.createdAt ? new Date(f.createdAt).toLocaleString("es") : "";
+          div.innerHTML =
+            "<span class=\"name\" title=\"" + escapeHtml(f.name) + "\">" + escapeHtml(f.name) + "</span>" +
+            "<span class=\"meta\">" + formatSize(f.size) + (dateStr ? " · " + dateStr : "") + "</span>" +
+            "<span class=\"file-actions\">" +
+            "<a href=\"" + escapeHtml(f.url) + "\" download=\"" + escapeHtml(f.name) + "\" class=\"btn-download\" target=\"_blank\" rel=\"noopener\"><i class=\"fas fa-download\"></i> Descargar</a>" +
+            "<button type=\"button\" class=\"btn-delete\" data-filename=\"" + escapeHtml(f.name) + "\" title=\"Eliminar archivo\"><i class=\"fas fa-trash-alt\"></i> Eliminar</button>" +
+            "</span>";
+          container.appendChild(div);
+        });
+      } catch (err) {
+        if (loadingEl) loadingEl.style.display = "none";
+        container.style.display = "block";
+        console.warn("Error al actualizar lista:", err);
+      }
     }
 
     async function onMisArchivosClick(e) {

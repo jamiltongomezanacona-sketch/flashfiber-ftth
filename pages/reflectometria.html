@@ -268,6 +268,16 @@
       <p>Sube archivos .SOR de mediciones OTDR para almacenamiento y análisis. Podrás visualizar trazas y eventos en futuras actualizaciones.</p>
     </section>
 
+    <section id="analisis-trazas" class="refl-card refl-analysis">
+      <i class="fas fa-chart-area"></i>
+      <h2 style="color:inherit;margin-bottom:0.5rem;">Análisis de trazas</h2>
+      <p style="font-size:0.9375rem;">Visualización de trazas OTDR, detección de eventos (pérdidas, reflexiones) y exportación de informes.</p>
+      <div class="refl-analysis-demo">
+        <img src="/assets/images/demo-analisis-otdr-s105.png" alt="Demo: Análisis OTDR completo - Fibra óptica S105" />
+        <p class="refl-analysis-demo-caption"><strong>Demo — Solo demostración.</strong> Análisis OTDR completo - Fibra óptica S105 (996 mediciones).</p>
+      </div>
+    </section>
+
     <section class="refl-card">
       <h2><i class="fas fa-upload"></i> Subir archivos .SOR</h2>
       <div class="upload-zone" id="uploadZone">
@@ -293,15 +303,6 @@
       </div>
     </section>
 
-    <section class="refl-card refl-analysis">
-      <i class="fas fa-chart-area"></i>
-      <h2 style="color:inherit;margin-bottom:0.5rem;">Análisis de trazas</h2>
-      <p style="font-size:0.9375rem;">Visualización de trazas OTDR, detección de eventos (pérdidas, reflexiones) y exportación de informes.</p>
-      <div class="refl-analysis-demo">
-        <img src="/assets/images/demo-analisis-otdr-s105.png" alt="Demo: Análisis OTDR completo - Fibra óptica S105" />
-        <p class="refl-analysis-demo-caption"><strong>Demo — Solo demostración.</strong> Análisis OTDR completo - Fibra óptica S105 (996 mediciones).</p>
-      </div>
-    </section>
   </main>
 
   <script type="module" src="/assets/js/services/firebase.js"></script>
@@ -511,6 +512,12 @@
         if (el) el.textContent = window.__USER__.nombre || window.__USER__.email || "Usuario";
       }
     }, 100);
+
+    // Si se entra con #analisis-trazas, scroll a la sección
+    if (window.location.hash === "#analisis-trazas") {
+      const section = document.getElementById("analisis-trazas");
+      if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   </script>
 </body>
 

@@ -152,6 +152,40 @@
     }
     .refl-mis-archivos .btn-download-all:hover { background: rgba(0, 200, 83, 0.3); }
     .refl-mis-archivos .btn-download-all:disabled { opacity: 0.6; cursor: not-allowed; }
+    .refl-mis-archivos .btn-load-files {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      margin-bottom: 1rem;
+      background: rgba(0, 180, 216, 0.2);
+      border: 1px solid rgba(0, 180, 216, 0.4);
+      border-radius: 8px;
+      color: #00e5ff;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .refl-mis-archivos .btn-load-files:hover { background: rgba(0, 180, 216, 0.3); }
+    .refl-mis-archivos .btn-load-files:disabled { opacity: 0.7; cursor: wait; }
+    .refl-mis-archivos .loading-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1.5rem;
+      color: #7dd3fc;
+      font-size: 0.9375rem;
+    }
+    .refl-mis-archivos .loading-state .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(0, 180, 216, 0.3);
+      border-top-color: #00e5ff;
+      border-radius: 50%;
+      animation: refl-spin 0.8s linear infinite;
+    }
+    @keyframes refl-spin { to { transform: rotate(360deg); } }
     .refl-analysis {
       background: rgba(123, 44, 191, 0.08);
       border: 1px solid rgba(123, 44, 191, 0.3);
@@ -195,10 +229,15 @@
 
     <section class="refl-card">
       <h2><i class="fas fa-folder-open"></i> Mis archivos subidos</h2>
-      <p style="font-size:0.875rem;color:#a3d5ff;margin-bottom:1rem;">Archivos .SOR que has subido. Puedes descargarlos cuando quieras.</p>
-      <button type="button" id="btnDescargarTodo" class="btn-download-all" style="display:none;"><i class="fas fa-download"></i> Descargar todo</button>
-      <div id="misArchivosList" class="refl-mis-archivos">
-        <div class="empty" id="misArchivosEmpty">Cargando…</div>
+      <p style="font-size:0.875rem;color:#a3d5ff;margin-bottom:1rem;">Archivos .SOR que has subido. La lista se carga solo cuando la solicitas.</p>
+      <button type="button" id="btnVerArchivos" class="btn-load-files"><i class="fas fa-folder-open"></i> Ver mis archivos</button>
+      <div id="misArchivosLoading" class="loading-state" style="display:none;">
+        <div class="spinner"></div>
+        <span>Cargando archivos…</span>
+      </div>
+      <div id="misArchivosList" class="refl-mis-archivos" style="display:none;">
+        <button type="button" id="btnDescargarTodo" class="btn-download-all" style="display:none;"><i class="fas fa-download"></i> Descargar todo</button>
+        <div class="empty" id="misArchivosEmpty" style="display:none;"></div>
       </div>
     </section>
 
@@ -253,7 +292,7 @@
           const result = await storage.subirArchivoSOR(file, uid);
           if (result) {
             updateLastRow(true, "Subido");
-            loadMisArchivos();
+            if (window.__REFL_LISTA_CARGADA__) loadMisArchivos(true);
           } else {
             updateLastRow(false, "Error al subir");
           }
@@ -263,30 +302,42 @@
       }
     }
 
-    async function loadMisArchivos() {
+    async function loadMisArchivos(esActualizacion) {
       const container = document.getElementById("misArchivosList");
       const emptyEl = document.getElementById("misArchivosEmpty");
+      const loadingEl = document.getElementById("misArchivosLoading");
+      const btnVer = document.getElementById("btnVerArchivos");
       if (!container || !emptyEl) return;
+      if (!esActualizacion && btnVer) { btnVer.style.display = "none"; }
+      if (loadingEl) loadingEl.style.display = "flex";
+      if (esActualizacion && container) container.style.display = "none";
       const uid = window.__USER__?.uid;
       if (!uid) {
+        if (loadingEl) loadingEl.style.display = "none";
+        container.style.display = "block";
         emptyEl.textContent = "Inicia sesión para ver tus archivos.";
         emptyEl.style.display = "block";
+        window.__REFL_LISTA_CARGADA__ = true;
         return;
       }
       const storage = window.FTTH_STORAGE;
       if (!storage?.listarArchivosSOR) {
+        if (loadingEl) loadingEl.style.display = "none";
+        container.style.display = "block";
         emptyEl.textContent = "Servicio no disponible.";
         emptyEl.style.display = "block";
+        window.__REFL_LISTA_CARGADA__ = true;
         return;
       }
-      emptyEl.textContent = "Cargando…";
-      emptyEl.style.display = "block";
       const list = await storage.listarArchivosSOR(uid);
+      if (loadingEl) loadingEl.style.display = "none";
+      container.style.display = "block";
       emptyEl.style.display = list.length ? "none" : "block";
       emptyEl.textContent = "Aún no has subido ningún archivo .SOR.";
       const existing = container.querySelectorAll(".file-item");
       existing.forEach((el) => el.remove());
       window.__REFL_LISTA_ARCHIVOS__ = list;
+      window.__REFL_LISTA_CARGADA__ = true;
       const btnTodo = document.getElementById("btnDescargarTodo");
       if (btnTodo) btnTodo.style.display = list.length ? "inline-flex" : "none";
       list.forEach((f) => {
@@ -359,12 +410,19 @@
     const btnDescargarTodo = document.getElementById("btnDescargarTodo");
     if (btnDescargarTodo) btnDescargarTodo.addEventListener("click", descargarTodo);
 
+    document.getElementById("btnVerArchivos").addEventListener("click", function() {
+      this.disabled = true;
+      loadMisArchivos(false).then(function() {
+        const b = document.getElementById("btnVerArchivos");
+        if (b) b.disabled = false;
+      });
+    });
+
     const waitUser = setInterval(() => {
       if (window.__USER__) {
         clearInterval(waitUser);
         const el = document.getElementById("usernameDisplay");
         if (el) el.textContent = window.__USER__.nombre || window.__USER__.email || "Usuario";
-        loadMisArchivos();
       }
     }, 100);
   </script>

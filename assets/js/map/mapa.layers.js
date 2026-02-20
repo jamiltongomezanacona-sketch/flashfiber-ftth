@@ -736,7 +736,12 @@
           layout: { visibility: "none" },
           paint: {
             "circle-radius": 6,
-            "circle-color": "#ffaa00",
+            "circle-color": [
+              "match",
+              ["get", "tipo"],
+              "E2", "#FF8C00",
+              "#9E9E9E"
+            ],
             "circle-stroke-width": 2,
             "circle-stroke-color": "#000",
             "circle-opacity": 0.9

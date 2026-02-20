@@ -210,11 +210,12 @@
     const ICON_SIZE = 40; // Tamaño base del icono
 
     /* ===============================
-       Colores por tipo de cierre
+       Colores por tipo de cierre (E1 gris, E2 naranja)
     =============================== */
     function getColorByTipo(tipo) {
-      // ✅ Todos los cierres en gris
-      return "#9E9E9E"; // Gris para todos los tipos
+      const t = (tipo || "").toUpperCase();
+      if (t === "E2") return "#FF8C00"; // Naranja para E2
+      return "#9E9E9E"; // Gris para E1, E0 y resto
     }
 
     /* ===============================

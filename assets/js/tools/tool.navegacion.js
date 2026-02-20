@@ -18,6 +18,8 @@
   let markerDestino = null;
 
   const modal = document.getElementById("navModal");
+  const coordText = document.getElementById("navCoordText");
+  const btnCopy = document.getElementById("btnNavCopy");
   const btnWaze = document.getElementById("btnNavWaze");
   const btnGoogle = document.getElementById("btnNavGoogle");
   const btnCancel = document.getElementById("btnNavCancel");
@@ -77,6 +79,12 @@
 
   function abrirModal() {
     if (!modal) return;
+    if (coordText && destino) {
+      const lat = typeof destino.lat === "number" ? destino.lat.toFixed(6) : destino.lat;
+      const lng = typeof destino.lng === "number" ? destino.lng.toFixed(6) : destino.lng;
+      coordText.textContent = `${lat}, ${lng}`;
+    }
+    if (btnCopy) btnCopy.textContent = "📋 Copiar coordenada";
     modal.classList.remove("hidden");
   }
 
@@ -107,6 +115,45 @@
     cerrarModal();
   }
 
+  function copiarCoordenada() {
+    if (!destino) {
+      alert("📍 Seleccione un destino en el mapa");
+      return;
+    }
+    const lat = typeof destino.lat === "number" ? destino.lat.toFixed(6) : destino.lat;
+    const lng = typeof destino.lng === "number" ? destino.lng.toFixed(6) : destino.lng;
+    const texto = `${lat}, ${lng}`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(() => {
+        if (btnCopy) {
+          btnCopy.textContent = "✓ Copiado";
+          setTimeout(() => { if (btnCopy) btnCopy.textContent = "📋 Copiar coordenada"; }, 2000);
+        }
+      }).catch(() => fallbackCopiar(texto));
+    } else {
+      fallbackCopiar(texto);
+    }
+  }
+
+  function fallbackCopiar(texto) {
+    const input = document.createElement("input");
+    input.value = texto;
+    input.setAttribute("readonly", "");
+    input.style.position = "fixed";
+    input.style.opacity = "0";
+    document.body.appendChild(input);
+    input.select();
+    try {
+      document.execCommand("copy");
+      if (btnCopy) {
+        btnCopy.textContent = "✓ Copiado";
+        setTimeout(() => { if (btnCopy) btnCopy.textContent = "📋 Copiar coordenada"; }, 2000);
+      }
+    } catch (e) {}
+    document.body.removeChild(input);
+  }
+
+  btnCopy?.addEventListener("click", copiarCoordenada);
   btnWaze?.addEventListener("click", abrirWaze);
   btnGoogle?.addEventListener("click", abrirGoogle);
   btnCancel?.addEventListener("click", cerrarModal);

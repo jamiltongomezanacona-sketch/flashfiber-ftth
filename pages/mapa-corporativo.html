@@ -163,14 +163,17 @@
 
     <div class="nav-card">
       <h3>🧭 ¿Cómo deseas navegar?</h3>
+      <p id="navCoordText" class="nav-coord-text" aria-live="polite"></p>
 
       <div class="nav-options">
-        <button id="btnNavWaze" class="nav-btn waze">
-          🚗 Waze
+        <button id="btnNavCopy" type="button" class="nav-btn copy" title="Copiar coordenada">
+          📋 Copiar coordenada
         </button>
-
         <button id="btnNavGoogle" class="nav-btn google">
           🌍 Google Maps
+        </button>
+        <button id="btnNavWaze" class="nav-btn waze">
+          🚗 Waze
         </button>
       </div>
 

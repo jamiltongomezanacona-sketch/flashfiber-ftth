@@ -243,23 +243,50 @@ main.map-wrapper {
 }
 
 .nav-card h3 {
-  margin-bottom: 18px;
+  margin-bottom: 12px;
   font-size: 18px;
+}
+
+.nav-coord-text {
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-family: ui-monospace, monospace;
+  color: #7dd3fc;
+  word-break: break-all;
+  padding: 8px 10px;
+  background: rgba(0,0,0,.2);
+  border-radius: 8px;
 }
 
 .nav-options {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
+}
+
+@media (max-width: 767px) {
+  .nav-options {
+    flex-direction: column;
+  }
+  .nav-btn {
+    min-height: 48px;
+  }
 }
 
 .nav-btn {
   flex: 1;
+  min-width: 120px;
   padding: 14px 10px;
   border-radius: 12px;
   border: none;
   font-weight: 600;
   cursor: pointer;
   transition: .25s;
+}
+
+.nav-btn.copy {
+  background: linear-gradient(135deg, #5c6bc0, #3949ab);
+  color: #fff;
 }
 
 .nav-btn.waze {

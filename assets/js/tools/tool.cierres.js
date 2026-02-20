@@ -910,14 +910,28 @@
       const user = window.FTTH_CORE?.auth?.currentUser;
       const createdBy = user?.email || user?.displayName || user?.uid || "";
 
+      const editId = modal.dataset.editId;
+      let lng = selectedLngLat?.lng;
+      let lat = selectedLngLat?.lat;
+      if (editId && (lng == null || lat == null)) {
+        const existing = App.data?.cierres?.find(c => c.id === editId);
+        if (existing?.geometry?.coordinates) {
+          lng = existing.geometry.coordinates[0];
+          lat = existing.geometry.coordinates[1];
+        } else if (existing?.properties?.lng != null && existing?.properties?.lat != null) {
+          lng = existing.properties.lng;
+          lat = existing.properties.lat;
+        }
+      }
+
       const cierre = {
         codigo: document.getElementById("cierreCodigo").value.trim(),
         tipo: document.getElementById("cierreTipo").value,
         central: document.getElementById("cierreCentral").value.trim(),
         molecula: document.getElementById("cierreMolecula").value.trim(),
         notas: document.getElementById("cierreNotas").value.trim(),
-        lng: selectedLngLat?.lng,
-        lat: selectedLngLat?.lat,
+        lng: lng,
+        lat: lat,
         createdAt: new Date().toISOString(),
         createdBy
       };
@@ -927,9 +941,13 @@
         return;
       }
 
+      if (cierre.lng == null || cierre.lat == null) {
+        alert("⚠️ Faltan coordenadas. En creación, haga clic en el mapa; en edición, el cierre debe tener posición.");
+        return;
+      }
+
       try {
         const FB = window.FTTH_FIREBASE;
-        const editId = modal.dataset.editId;
 
         if (editId) await FB?.actualizarCierre?.(editId, cierre);
         else await FB?.guardarCierre?.(cierre);

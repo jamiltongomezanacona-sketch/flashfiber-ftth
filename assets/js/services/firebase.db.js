@@ -57,7 +57,11 @@ export function escucharCierres(callback) {
 }
 
 export async function actualizarCierre(id, data) {
-  await updateDoc(doc(db, CIERRES_COLLECTION, id), data);
+  const clean = {};
+  for (const [k, v] of Object.entries(data || {})) {
+    if (v !== undefined) clean[k] = v;
+  }
+  await updateDoc(doc(db, CIERRES_COLLECTION, id), clean);
 }
 
 export async function eliminarCierre(id) {

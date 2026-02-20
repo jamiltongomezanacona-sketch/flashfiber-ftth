@@ -53,11 +53,12 @@ async function actualizarCierre(id, data) {
   }
 
   const ref = doc(db, "cierres", id);
-  await updateDoc(ref, {
-    ...data,
-    updatedAt: new Date().toISOString(),
-    serverTime: serverTimestamp()
-  });
+  const clean = {};
+  for (const [k, v] of Object.entries({ ...data, updatedAt: new Date().toISOString() })) {
+    if (v !== undefined) clean[k] = v;
+  }
+  clean.serverTime = serverTimestamp();
+  await updateDoc(ref, clean);
 
   console.log("✏️ Cierre actualizado:", id);
 }

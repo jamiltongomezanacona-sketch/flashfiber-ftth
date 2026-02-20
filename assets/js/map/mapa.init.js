@@ -115,39 +115,62 @@
         const lat = lngLat.lat != null ? Number(lngLat.lat) : 0;
         const lng = lngLat.lng != null ? Number(lngLat.lng) : 0;
         const coordsText = lat.toFixed(6) + ", " + lng.toFixed(6);
+        const latLng = { lat: lat, lng: lng };
 
         const popup = new mapboxgl.Popup({ closeButton: true, closeOnClick: true })
           .setLngLat(lngLat)
           .setHTML(
-            '<div class="pin-popup pin-popup-card" style="min-width:200px">' +
+            '<div class="pin-popup pin-popup-card longpress-nav-popup" style="min-width:220px">' +
             '<div class="pin-popup-header" style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.08)">' +
             '<span style="font-size:13px;font-weight:600;color:#e2e8f0">📍 Coordenadas</span></div>' +
             '<div class="pin-popup-body" style="padding:12px">' +
-            '<div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:6px">' + coordsText + '</div>' +
-            '<button type="button" class="pin-popup-btn pin-popup-btn-copy" data-copy-coords style="width:100%;padding:8px 12px;border-radius:8px;border:none;background:rgba(0,180,216,0.25);color:#00e5ff;font-size:12px;font-weight:600;cursor:pointer">📋 Copiar coordenadas</button>' +
-            '</div></div>'
+            '<div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:10px;word-break:break-all">' + coordsText + '</div>' +
+            '<div style="display:flex;flex-direction:column;gap:8px">' +
+            '<button type="button" class="pin-popup-btn" data-copy-coords style="width:100%;padding:10px 12px;border-radius:8px;border:none;background:rgba(92,107,192,0.4);color:#fff;font-size:12px;font-weight:600;cursor:pointer">📋 Copiar coordenada</button>' +
+            '<button type="button" class="pin-popup-btn" data-nav-google style="width:100%;padding:10px 12px;border-radius:8px;border:none;background:rgba(52,168,83,0.5);color:#fff;font-size:12px;font-weight:600;cursor:pointer">🌍 Google Maps</button>' +
+            '<button type="button" class="pin-popup-btn" data-nav-waze style="width:100%;padding:10px 12px;border-radius:8px;border:none;background:rgba(0,229,255,0.35);color:#003;font-size:12px;font-weight:600;cursor:pointer">🚗 Waze</button>' +
+            '</div></div></div>'
           )
           .addTo(map);
 
-        const btn = popup.getElement().querySelector("[data-copy-coords]");
-        if (btn) {
-          btn.addEventListener("click", function (e) {
+        var el = popup.getElement();
+        var btnCopy = el.querySelector("[data-copy-coords]");
+        if (btnCopy) {
+          btnCopy.addEventListener("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
-            const text = coordsText;
+            var text = coordsText;
             if (navigator.clipboard && navigator.clipboard.writeText) {
               navigator.clipboard.writeText(text).then(function () {
-                btn.textContent = "✓ Copiado";
-                setTimeout(function () { btn.textContent = "📋 Copiar coordenadas"; }, 1500);
-              }).catch(function () { fallbackCopy(text, btn); });
+                btnCopy.textContent = "✓ Copiado";
+                setTimeout(function () { btnCopy.textContent = "📋 Copiar coordenada"; }, 1500);
+              }).catch(function () { fallbackCopy(text, btnCopy); });
             } else {
-              fallbackCopy(text, btn);
+              fallbackCopy(text, btnCopy);
             }
+          });
+        }
+        var btnGoogle = el.querySelector("[data-nav-google]");
+        if (btnGoogle) {
+          btnGoogle.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.open("https://www.google.com/maps/dir/?api=1&destination=" + lat + "," + lng, "_blank");
+            popup.remove();
+          });
+        }
+        var btnWaze = el.querySelector("[data-nav-waze]");
+        if (btnWaze) {
+          btnWaze.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.open("https://waze.com/ul?ll=" + lat + "," + lng + "&navigate=yes", "_blank");
+            popup.remove();
           });
         }
         function fallbackCopy(text, button) {
           try {
-            const ta = document.createElement("textarea");
+            var ta = document.createElement("textarea");
             ta.value = text;
             ta.style.position = "fixed";
             ta.style.opacity = "0";
@@ -156,7 +179,7 @@
             document.execCommand("copy");
             document.body.removeChild(ta);
             button.textContent = "✓ Copiado";
-            setTimeout(function () { button.textContent = "📋 Copiar coordenadas"; }, 1500);
+            setTimeout(function () { button.textContent = "📋 Copiar coordenada"; }, 1500);
           } catch (err) {
             alert("Coordenadas: " + text);
           }

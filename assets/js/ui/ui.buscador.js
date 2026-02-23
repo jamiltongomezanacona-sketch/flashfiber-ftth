@@ -169,7 +169,7 @@
       loadCentrales().then(() => {
         console.log(`✅ Centrales cargadas: ${searchIndex.centrales.length}`);
       });
-      loadCables().then(() => loadCablesMuzu()).then(() => {
+      loadCables().then(() => loadCablesMuzu()).then(() => loadCablesChico()).then(() => {
         console.log(`✅ Cables cargados: ${searchIndex.cables.length}`);
       });
       waitForFirebaseAndLoadCierres();
@@ -596,6 +596,44 @@
     }
   }
 
+  /** Cargar cables CHICO (geojson/CHICO) y añadirlos al índice del buscador (CO02..CO36..CO43). */
+  async function loadCablesChico() {
+    if (isCorporativo) return;
+    try {
+      const res = await fetch("../geojson/CHICO/chico.geojson", { cache: "default" });
+      if (!res.ok) return;
+      const geojson = await res.json();
+      if (!geojson.features || !geojson.features.length) return;
+      let count = 0;
+      geojson.features.forEach(function (f) {
+        if (f.geometry && f.geometry.type !== "LineString") return;
+        const props = f.properties || {};
+        const name = (props.name && String(props.name).trim()) || "";
+        if (!name) return;
+        const coords = f.geometry.coordinates;
+        if (!coords || coords.length < 2) return;
+        const mid = Math.floor(coords.length / 2);
+        const coordinates = coords[mid];
+        const molecula = (props.molecula && /^CO\d+$/i.test(props.molecula)) ? props.molecula : "";
+        searchIndex.cables.push({
+          id: "chico-" + name,
+          name: name,
+          type: "cable",
+          layerId: "chico-lines",
+          coordinates: coordinates,
+          icon: "🧵",
+          subtitle: "CHICO" + (molecula ? " · " + molecula : ""),
+          molecula: molecula,
+          isChico: true
+        });
+        count++;
+      });
+      if (count > 0) console.log("✅ Cables CHICO en buscador: " + count);
+    } catch (e) {
+      console.warn("⚠️ Cables CHICO para buscador:", e.message || e);
+    }
+  }
+
   /** Normalizar nombre cable CUNI: CUO6FH144 → CU06FH144 (O a 0). */
   function normalizeCuniCableName(s) {
     if (!s || typeof s !== "string") return s;
@@ -661,6 +699,8 @@
     if (molMatch) return molMatch[1].toUpperCase();
     const muMatch = from.match(/(MU\d+)/i);
     if (muMatch) return muMatch[1].toUpperCase();
+    const coMatch = from.match(/(CO\d+)/i);
+    if (coMatch) return coMatch[1].toUpperCase();
     return null;
   }
 
@@ -1276,6 +1316,28 @@
           if (typeof App.showPinsWhenCableActivated === "function") {
             App.showPinsWhenCableActivated("muzu-lines", result.molecula);
           }
+        }
+      } else if (result.isChico) {
+        // CHICO: filtrar chico-lines por nombre del cable (ej. CO36FH144) y mostrar capa
+        function applyChicoFilter() {
+          if (App.map.getLayer("chico-lines")) {
+            App.map.setFilter("chico-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "name"], result.name]]);
+            App.map.setLayoutProperty("chico-lines", "visibility", "visible");
+          }
+          if (App.map.getLayer("chico-points") && result.molecula) {
+            App.map.setFilter("chico-points", ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "molecula"], result.molecula]]);
+            App.map.setLayoutProperty("chico-points", "visibility", "visible");
+          }
+        }
+        if (!App.map.getLayer("chico-lines") && typeof App.loadChicoLayer === "function") {
+          App.loadChicoLayer().then(function () {
+            setTimeout(applyChicoFilter, 100);
+          });
+        } else {
+          applyChicoFilter();
+        }
+        if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
+          App.setSelectedMoleculaForPins(result.molecula);
         }
       } else if (isCorporativo) {
         // GIS Corporativo: solo un cable a la vez (filter por nombre)

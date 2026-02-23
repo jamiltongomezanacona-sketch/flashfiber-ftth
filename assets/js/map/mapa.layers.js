@@ -1667,7 +1667,7 @@
           type: "line",
           source: "chico-src",
           filter: ["==", ["geometry-type"], "LineString"],
-          layout: { visibility: "none" },
+          layout: { visibility: "visible" },
           paint: {
             "line-color": "#426104",
             "line-width": 4,
@@ -1681,7 +1681,7 @@
           type: "circle",
           source: "chico-src",
           filter: ["==", ["geometry-type"], "Point"],
-          layout: { visibility: "none" },
+          layout: { visibility: "visible" },
           paint: {
             "circle-radius": 6,
             "circle-color": "#426104",
@@ -1694,6 +1694,9 @@
       if (hasLines && !App.__ftthLayerIds.includes("chico-lines")) App.__ftthLayerIds.push("chico-lines");
       if (hasPoints && !App.__ftthLayerIds.includes("chico-points")) App.__ftthLayerIds.push("chico-points");
       console.log("✅ CHICO cargado: " + geojson.features.length + " features (cables + puntos)");
+      try {
+        window.dispatchEvent(new CustomEvent("ftth-consolidated-layers-ready"));
+      } catch (e) {}
     } catch (err) {
       console.warn("⚠️ CHICO:", err.message || err);
     }

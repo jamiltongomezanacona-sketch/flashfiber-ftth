@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """
-Convierte CHICO.kml a GeoJSON para cargar en el mapa FlashFiber FTTH.
-Uso: python scripts/kml_to_geojson_chico.py [ruta_a_CHICO.kml]
+Convierte CHICO.kml o CHICO.kmz a GeoJSON para cargar en el mapa FlashFiber FTTH.
+Uso: python scripts/kml_to_geojson_chico.py [ruta_a_CHICO.kml o CHICO.kmz]
 Por defecto lee: geojson/CHICO/CHICO.kml
 Escribe: geojson/CHICO/chico.geojson
+Soporta KMZ (descomprime y usa doc.kml o el primer .kml dentro).
 """
 import json
 import os
 import sys
+import tempfile
+import zipfile
 import xml.etree.ElementTree as ET
 
 KML_NS = "{http://www.opengis.net/kml/2.2}"
@@ -42,6 +45,21 @@ def get_text(el, default=""):
     return (el.text or "").strip() or default
 
 
+def load_kml_root(path):
+    """Carga el root del KML desde .kml o .kmz (zip con doc.kml)."""
+    path = os.path.abspath(path)
+    if not os.path.isfile(path):
+        return None
+    if path.lower().endswith(".kmz"):
+        with zipfile.ZipFile(path, "r") as z:
+            for name in z.namelist():
+                if name.lower().endswith(".kml"):
+                    with z.open(name) as f:
+                        return ET.parse(f).getroot()
+        return None
+    return ET.parse(path).getroot()
+
+
 def collect_placemarks(element, folder_name, features):
     """Recorre el árbol KML; folder_name = molécula (CO01, CO02, ... CO40) de la carpeta actual."""
     for child in element:
@@ -55,30 +73,32 @@ def collect_placemarks(element, folder_name, features):
             name = get_text(name_el, "Sin nombre")
             desc_el = child.find(KML_NS + "description")
             description = get_text(desc_el, "")
-            props = {"name": name}
+            props_base = {"name": name}
             if folder_name:
-                props["molecula"] = folder_name
+                props_base["molecula"] = folder_name
             if description:
-                props["description"] = description
+                props_base["description"] = description
 
-            point_el = child.find(".//" + KML_NS + "Point/" + KML_NS + "coordinates")
-            if point_el is not None:
+            # Puntos (directos o dentro de MultiGeometry)
+            for point_el in child.findall(".//" + KML_NS + "Point/" + KML_NS + "coordinates"):
                 coords = parse_coords_point(point_el.text)
                 if coords:
                     features.append({
                         "type": "Feature",
-                        "properties": props,
+                        "properties": dict(props_base),
                         "geometry": {"type": "Point", "coordinates": coords},
                     })
-                continue
 
-            line_el = child.find(".//" + KML_NS + "LineString/" + KML_NS + "coordinates")
-            if line_el is not None:
+            # Líneas (directas o dentro de MultiGeometry) – todas las LineString del Placemark
+            for idx, line_el in enumerate(child.findall(".//" + KML_NS + "LineString/" + KML_NS + "coordinates")):
                 coords = parse_coords_linestring(line_el.text)
                 if coords:
+                    p = dict(props_base)
+                    if idx > 0:
+                        p["name"] = props_base["name"] + "_" + str(idx + 1)
                     features.append({
                         "type": "Feature",
-                        "properties": props,
+                        "properties": p,
                         "geometry": {"type": "LineString", "coordinates": coords},
                     })
 
@@ -92,11 +112,13 @@ def main():
     else:
         kml_path = default_path
     if not os.path.isfile(kml_path):
-        print(f"No se encontró {kml_path}. Uso: python kml_to_geojson_chico.py [ruta/CHICO.kml]")
+        print(f"No se encontró {kml_path}. Uso: python kml_to_geojson_chico.py [ruta/CHICO.kml o CHICO.kmz]")
         sys.exit(1)
 
-    tree = ET.parse(kml_path)
-    root = tree.getroot()
+    root = load_kml_root(kml_path)
+    if root is None:
+        print("No se pudo leer el KML/KMZ")
+        sys.exit(1)
     features = []
 
     # Document puede tener un Folder raíz (CHICO) con Folders CO02, CO03, ... CO36, etc.

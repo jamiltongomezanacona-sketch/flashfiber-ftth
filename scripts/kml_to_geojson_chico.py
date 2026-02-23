@@ -42,6 +42,47 @@ def get_text(el, default=""):
     return (el.text or "").strip() or default
 
 
+def collect_placemarks(element, folder_name, features):
+    """Recorre el árbol KML; folder_name = molécula (CO01, CO02, ... CO40) de la carpeta actual."""
+    for child in element:
+        if child.tag == KML_NS + "Folder":
+            sub_name = get_text(child.find(KML_NS + "name"), "")
+            # Si la carpeta tiene nombre tipo COxx, usarlo como molécula para sus Placemarks
+            name_to_use = sub_name if sub_name and (sub_name == "CHICO" or sub_name.startswith("CO")) else folder_name
+            collect_placemarks(child, name_to_use, features)
+        elif child.tag == KML_NS + "Placemark":
+            name_el = child.find(KML_NS + "name")
+            name = get_text(name_el, "Sin nombre")
+            desc_el = child.find(KML_NS + "description")
+            description = get_text(desc_el, "")
+            props = {"name": name}
+            if folder_name:
+                props["molecula"] = folder_name
+            if description:
+                props["description"] = description
+
+            point_el = child.find(".//" + KML_NS + "Point/" + KML_NS + "coordinates")
+            if point_el is not None:
+                coords = parse_coords_point(point_el.text)
+                if coords:
+                    features.append({
+                        "type": "Feature",
+                        "properties": props,
+                        "geometry": {"type": "Point", "coordinates": coords},
+                    })
+                continue
+
+            line_el = child.find(".//" + KML_NS + "LineString/" + KML_NS + "coordinates")
+            if line_el is not None:
+                coords = parse_coords_linestring(line_el.text)
+                if coords:
+                    features.append({
+                        "type": "Feature",
+                        "properties": props,
+                        "geometry": {"type": "LineString", "coordinates": coords},
+                    })
+
+
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     repo_root = os.path.dirname(script_dir)
@@ -58,35 +99,18 @@ def main():
     root = tree.getroot()
     features = []
 
-    for pm in root.iter(KML_NS + "Placemark"):
-        name_el = pm.find(KML_NS + "name")
-        name = get_text(name_el, "Sin nombre")
-        desc_el = pm.find(KML_NS + "description")
-        description = get_text(desc_el, "")
-        props = {"name": name}
-        if description:
-            props["description"] = description
-
-        point_el = pm.find(".//" + KML_NS + "Point/" + KML_NS + "coordinates")
-        if point_el is not None:
-            coords = parse_coords_point(point_el.text)
-            if coords:
-                features.append({
-                    "type": "Feature",
-                    "properties": props,
-                    "geometry": {"type": "Point", "coordinates": coords},
-                })
-            continue
-
-        line_el = pm.find(".//" + KML_NS + "LineString/" + KML_NS + "coordinates")
-        if line_el is not None:
-            coords = parse_coords_linestring(line_el.text)
-            if coords:
-                features.append({
-                    "type": "Feature",
-                    "properties": props,
-                    "geometry": {"type": "LineString", "coordinates": coords},
-                })
+    # Document puede tener un Folder raíz (CHICO) con Folders CO02, CO03, ... CO36, etc.
+    for doc_child in root:
+        if doc_child.tag == KML_NS + "Document":
+            for folder in doc_child:
+                if folder.tag == KML_NS + "Folder":
+                    folder_label = get_text(folder.find(KML_NS + "name"), "")
+                    collect_placemarks(folder, folder_label, features)
+            break
+        elif doc_child.tag == KML_NS + "Folder":
+            folder_label = get_text(doc_child.find(KML_NS + "name"), "")
+            collect_placemarks(doc_child, folder_label, features)
+            break
 
     out_dir = os.path.join(repo_root, "geojson", "CHICO")
     os.makedirs(out_dir, exist_ok=True)

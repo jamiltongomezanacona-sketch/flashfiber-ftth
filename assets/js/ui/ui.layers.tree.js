@@ -89,12 +89,14 @@
         
         // Agregar capas consolidadas como hijos
         App.__ftthLayerIds.forEach(layerId => {
-          if (layerId.startsWith("geojson-") || layerId.startsWith("ftth-") || layerId.startsWith("muzu-")) {
+          if (layerId.startsWith("geojson-") || layerId.startsWith("ftth-") || layerId.startsWith("muzu-") || layerId.startsWith("chico-")) {
             const layerName = layerId === "geojson-lines" ? "🧵 Cables (Consolidado)" :
                              layerId === "ftth-cables" ? "🧵 Cables FTTH" :
                              layerId === "ftth-puntos" ? "📍 Puntos FTTH" :
                              layerId === "geojson-points" ? "📍 Puntos (Consolidado)" :
                              layerId === "muzu-lines" ? "🧵 MUZU (cables)" :
+                             layerId === "chico-lines" ? "🧵 CHICO (cables)" :
+                             layerId === "chico-points" ? "📍 CHICO (puntos)" :
                              layerId;
             consolidatedNode.children.push({
               type: "layer",
@@ -519,7 +521,7 @@
   ========================= */
   function extractMoleculaFromCableLayerId(layerId) {
     if (!layerId || typeof layerId !== "string") return null;
-    if (layerId === "geojson-lines" || layerId === "ftth-cables" || layerId === "muzu-lines") return null;
+    if (layerId === "geojson-lines" || layerId === "ftth-cables" || layerId === "muzu-lines" || layerId === "chico-lines") return null;
     const parts = layerId.split("_");
     const match = parts.find(function (p) { return /^[A-Z]{2}\d+$/.test(p); });
     return match || null;
@@ -597,7 +599,7 @@
         }
         // Al activar cable (FTTH o MUZU): mostrar pines y filtros como el resto de moléculas
         if (isCable) {
-          showPinsWhenCableActivated(layerId, layerId === "muzu-lines" ? null : undefined);
+          showPinsWhenCableActivated(layerId, (layerId === "muzu-lines" || layerId === "chico-lines") ? null : undefined);
         }
       }
     } else if (!window.__GEOJSON_INDEX__ && map.getLayer("geojson-lines")) {

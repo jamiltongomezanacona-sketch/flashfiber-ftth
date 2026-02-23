@@ -82,6 +82,7 @@
       }
       map.once("idle", () => {
         if (App.loadMuzuLayer) App.loadMuzuLayer();
+        if (App.loadChicoLayer) App.loadChicoLayer();
       });
     });
 

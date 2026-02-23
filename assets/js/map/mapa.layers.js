@@ -1636,6 +1636,70 @@
   }
 
   /* ===============================
+     CHICO – capa desde KML convertido a GeoJSON (cables + puntos)
+  =============================== */
+  async function loadChicoLayer() {
+    const map = App.map;
+    if (!map || !map.getStyle()) return;
+    const url = "../geojson/CHICO/chico.geojson";
+    try {
+      const res = await fetch(url, { cache: "default" });
+      if (!res.ok) {
+        console.warn("⚠️ CHICO: no se pudo cargar " + url);
+        return;
+      }
+      const geojson = await res.json();
+      if (!geojson.features || geojson.features.length === 0) {
+        console.warn("⚠️ CHICO: GeoJSON sin features");
+        return;
+      }
+      if (map.getSource("chico-src")) {
+        map.getSource("chico-src").setData(geojson);
+        console.log("✅ CHICO actualizado: " + geojson.features.length + " features");
+        return;
+      }
+      map.addSource("chico-src", { type: "geojson", data: geojson, promoteId: "name" });
+      const hasLines = geojson.features.some(f => f.geometry && f.geometry.type === "LineString");
+      const hasPoints = geojson.features.some(f => f.geometry && f.geometry.type === "Point");
+      if (hasLines) {
+        map.addLayer({
+          id: "chico-lines",
+          type: "line",
+          source: "chico-src",
+          filter: ["==", ["geometry-type"], "LineString"],
+          layout: { visibility: "none" },
+          paint: {
+            "line-color": "#426104",
+            "line-width": 4,
+            "line-opacity": 0.9
+          }
+        }, getBeforeIdForDataLayers(map));
+      }
+      if (hasPoints) {
+        map.addLayer({
+          id: "chico-points",
+          type: "circle",
+          source: "chico-src",
+          filter: ["==", ["geometry-type"], "Point"],
+          layout: { visibility: "none" },
+          paint: {
+            "circle-radius": 6,
+            "circle-color": "#426104",
+            "circle-stroke-width": 2,
+            "circle-stroke-color": "#fff"
+          }
+        }, getBeforeIdForDataLayers(map));
+      }
+      if (!App.__ftthLayerIds) App.__ftthLayerIds = [];
+      if (hasLines && !App.__ftthLayerIds.includes("chico-lines")) App.__ftthLayerIds.push("chico-lines");
+      if (hasPoints && !App.__ftthLayerIds.includes("chico-points")) App.__ftthLayerIds.push("chico-points");
+      console.log("✅ CHICO cargado: " + geojson.features.length + " features (cables + puntos)");
+    } catch (err) {
+      console.warn("⚠️ CHICO:", err.message || err);
+    }
+  }
+
+  /* ===============================
      API pública
   =============================== */
   App.loadFTTHTree = loadFTTHTree;
@@ -1643,6 +1707,7 @@
   App.loadConsolidatedGeoJSONToBaseMap = loadConsolidatedGeoJSONToBaseMap;
   App.loadCentralesFijas = loadCentralesFijas;
   App.loadMuzuLayer = loadMuzuLayer;
+  App.loadChicoLayer = loadChicoLayer;
   App.enforceOnlyCentralesVisible = enforceOnlyCentralesVisible; // 🔒 Solo centrales visibles por defecto
   App.getBeforeIdForDataLayers = getBeforeIdForDataLayers; // para insertar capas debajo de etiquetas (cierres, eventos, etc.)
 

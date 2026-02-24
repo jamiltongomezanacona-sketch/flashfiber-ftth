@@ -1667,7 +1667,7 @@
           type: "line",
           source: "chico-src",
           filter: ["==", ["geometry-type"], "LineString"],
-          layout: { visibility: "visible" },
+          layout: { visibility: "none" },
           paint: {
             "line-color": "#426104",
             "line-width": 4,
@@ -1681,7 +1681,7 @@
           type: "circle",
           source: "chico-src",
           filter: ["==", ["geometry-type"], "Point"],
-          layout: { visibility: "visible" },
+          layout: { visibility: "none" },
           paint: {
             "circle-radius": 6,
             "circle-color": "#426104",

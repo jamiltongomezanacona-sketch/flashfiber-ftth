@@ -60,6 +60,9 @@
 
   // Registrar mapa
   App.setMap(map);
+  try {
+    window.dispatchEvent(new CustomEvent("ftth-map-ready"));
+  } catch (e) {}
 
   /* ===============================
      MAPA LISTO

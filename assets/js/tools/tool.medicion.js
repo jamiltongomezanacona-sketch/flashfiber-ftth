@@ -9,11 +9,16 @@
 (function () {
   "use strict";
 
-  const wait = setInterval(() => {
-    const App = window.__FTTH_APP__;
-    if (!App?.map) return;
-    clearInterval(wait);
+  function whenMapReady(fn) {
+    if (window.__FTTH_APP__?.map) {
+      fn();
+      return;
+    }
+    document.addEventListener("ftth-map-ready", fn, { once: true });
+  }
 
+  whenMapReady(() => {
+    const App = window.__FTTH_APP__;
     if (!App.tools) App.tools = {};
 
     let active = false;
@@ -287,7 +292,7 @@ function restoreAfterStyleChange() {
       document.head.appendChild(style);
     }
 
-  }, 300);
+  });
 
 })();
 export {};

@@ -5,19 +5,20 @@
 (function () {
   "use strict";
 
-  const wait = setInterval(() => {
+  function whenMapReady(fn) {
+    if (window.__FTTH_APP__?.map) {
+      fn();
+      return;
+    }
+    document.addEventListener("ftth-map-ready", fn, { once: true });
+  }
+
+  whenMapReady(() => {
     const App = window.__FTTH_APP__;
-    if (!App?.map) return;
-
-    clearInterval(wait);
     console.log("🧩 FTTH loader listo");
-
     loadFTTHLayers();
-
-    // Permite recargar si cambia estilo
     App.reloadFTTH = loadFTTHLayers;
-
-  }, 300);
+  });
 
   function loadFTTHLayers() {
     const App = window.__FTTH_APP__;

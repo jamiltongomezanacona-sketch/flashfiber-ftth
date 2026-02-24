@@ -6,11 +6,15 @@
 document.addEventListener("DOMContentLoaded", () => {
   "use strict";
 
-  const wait = setInterval(() => {
-    const App = window.__FTTH_APP__;
-    if (!App?.map) return;
+  function whenMapReady(fn) {
+    if (window.__FTTH_APP__?.map) {
+      fn();
+      return;
+    }
+    document.addEventListener("ftth-map-ready", fn, { once: true });
+  }
 
-    clearInterval(wait);
+  whenMapReady(() => {
     console.log("✅ ui.menu.js cargado");
 
     const btnCapas = document.getElementById("btnOpenLayers") || document.getElementById("btnCapas");
@@ -94,7 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       console.log("🗺️ Toggle FTTH:", ftthLayers.length, "capas");
     }
-
-  }, 300);
+  });
 });
 export {};

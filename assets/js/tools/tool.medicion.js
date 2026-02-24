@@ -290,3 +290,4 @@ function restoreAfterStyleChange() {
   }, 300);
 
 })();
+export {};

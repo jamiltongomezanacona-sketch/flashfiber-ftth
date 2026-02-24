@@ -1,7 +1,13 @@
 {
   "name": "flashfiber-ftth",
   "private": true,
+  "type": "module",
   "scripts": {
-    "build": "node scripts/write-config-production.js"
+    "build": "npm run build:js && npm run build:geojson && node scripts/write-config-production.js",
+    "build:js": "npx vite build",
+    "build:geojson": "node scripts/build-consolidado-geojson.js"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
   }
 }

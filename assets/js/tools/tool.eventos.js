@@ -738,6 +738,12 @@
     const CENTRAL_PREFIX = (window.__FTTH_CENTRALES__ && window.__FTTH_CENTRALES__.CENTRAL_PREFIX) || {};
     const generarMoleculas = (window.__FTTH_CENTRALES__ && window.__FTTH_CENTRALES__.generarMoleculas) || (function () { return []; });
 
+    function onDocumentClickCloseCableResults(e) {
+      if (!elEventoCableResults || elEventoCableResults.classList.contains("hidden")) return;
+      if (elEventoCable.contains(e.target) || elEventoCableResults.contains(e.target)) return;
+      hideCableResults();
+    }
+
     if (isCorporativoEvento && elEventoCable) {
       elEventoCable.addEventListener("input", () => {
         clearTimeout(eventoCableSearchTimeout);
@@ -748,11 +754,6 @@
       elEventoCable.addEventListener("focus", () => {
         if (cableNamesList.length === 0) loadCableNames().then(() => showCableResults(elEventoCable.value));
         else showCableResults(elEventoCable.value);
-      });
-      document.addEventListener("click", function closeCableResultsOnClick(e) {
-        if (!elEventoCableResults || elEventoCableResults.classList.contains("hidden")) return;
-        if (elEventoCable.contains(e.target) || elEventoCableResults.contains(e.target)) return;
-        hideCableResults();
       });
     }
 
@@ -790,6 +791,9 @@
 
       App.map.getCanvas().style.cursor = "crosshair";
       App.map.on("click", handleMapClick);
+      if (isCorporativoEvento && elEventoCable) {
+        document.addEventListener("click", onDocumentClickCloseCableResults);
+      }
 
       console.log("🚨 Montar Evento ACTIVADO");
     }
@@ -798,6 +802,9 @@
       active = false;
       App.map.off("click", handleMapClick);
       App.map.getCanvas().style.cursor = "";
+      if (isCorporativoEvento && elEventoCable) {
+        document.removeEventListener("click", onDocumentClickCloseCableResults);
+      }
       closeModal();
       
       // ✅ Limpiar listener de Firebase si existe
@@ -1007,3 +1014,4 @@ btnSave?.addEventListener("click", async (e) => {
     init();
   }
 })();
+export {};

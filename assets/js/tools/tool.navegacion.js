@@ -164,3 +164,4 @@
   console.log("✅ tool.navegacion registrado correctamente");
 
 })();
+export {};

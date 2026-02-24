@@ -86,3 +86,4 @@ if ("serviceWorker" in navigator) {
       .catch(err => console.error("❌ Error SW", err));
   });
 }
+export {};

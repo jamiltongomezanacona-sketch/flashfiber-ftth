@@ -97,3 +97,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
   }, 300);
 });
+export {};

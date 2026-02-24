@@ -5,9 +5,11 @@
  * Ejecutar desde la raíz: node scripts/build-consolidado-geojson.js
  */
 
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const GEOJSON_DIR = path.join(__dirname, "..", "geojson");
 const ROOT_INDEX = path.join(GEOJSON_DIR, "index.json");
 const OUTPUT_FILE = path.join(GEOJSON_DIR, "consolidado-ftth.geojson");

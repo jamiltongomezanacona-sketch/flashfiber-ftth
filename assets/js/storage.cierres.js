@@ -17,3 +17,4 @@
 
   window.__FTTH_CIERRES__ = { getCierres, saveCierre };
 })();
+export {};

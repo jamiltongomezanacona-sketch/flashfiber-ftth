@@ -95,3 +95,4 @@
   /* ========= REGISTRO ========= */
   App.tools.gps = { start, stop };
 })();
+export {};

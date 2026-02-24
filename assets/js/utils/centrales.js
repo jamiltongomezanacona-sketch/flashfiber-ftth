@@ -41,3 +41,4 @@
     generarMoleculas: generarMoleculas
   };
 })();
+export {};

@@ -6,23 +6,17 @@ Análisis del proyecto (mapa, UI, carga de datos) con sugerencias priorizadas pa
 
 ## 1. Mapbox GL – Mapa
 
-### 1.1 `preserveDrawingBuffer: true`
+### 1.1 `preserveDrawingBuffer: true` (evaluado, sin cambio)
 - **Situación:** Está activado siempre para exportar PNG/PDF en "Crear diseño de mapa".
 - **Impacto:** Puede reducir FPS al mover/zoom porque el canvas se mantiene en un modo más costoso.
-- **Recomendación:** Activar solo cuando se abra el panel de diseño (p. ej. `map.getCanvas().style.preserveDrawingBuffer = true` al abrir y `false` al cerrar), o usar una instancia de mapa secundaria solo para la exportación.
+- **Recomendación:** Activar solo cuando se abra el panel de diseño o usar una instancia de mapa secundaria solo para la exportación.
+- **Estado:** Evaluado. El atributo `preserveDrawingBuffer` es una opción del contexto WebGL y no se puede cambiar después de crear el mapa. Un segundo mapa solo para exportar tendría que volver a cargar el estilo y no incluiría nuestras capas (cierres, eventos, consolidado) sin replicarlas. Se mantiene `preserveDrawingBuffer: true` en el mapa principal y se documenta la razón en `mapa.init.js`.
 
-### 1.2 `promoteId` en fuentes GeoJSON
+### 1.2 `promoteId` en fuentes GeoJSON ✅ Hecho
 - **Situación:** Los sources (geojson-consolidado, cierres-layer, eventos-layer, muzu-src) no usan `promoteId`.
 - **Impacto:** Con muchos features, Mapbox puede rendir mejor y manejar mejor el estado por feature si hay un id único.
-- **Recomendación:** En `addSource`, si las features tienen `id` o un campo único (p. ej. `properties.id`), usar:
-  ```js
-  map.addSource("geojson-consolidado", {
-    type: "geojson",
-    data: consolidated,
-    promoteId: "id"  // o la propiedad que sea única (ej. "name" en cables)
-  });
-  ```
-  Aplicar igual en cierres, eventos y MUZU donde exista un identificador único.
+- **Recomendación:** En `addSource`, si las features tienen `id` o un campo único (p. ej. `properties.id`), usar `promoteId`.
+- **Estado:** `geojson-consolidado` usa `promoteId: "__id"`; cierres y eventos usan `promoteId: "id"`; muzu-src y chico-src ya tenían `promoteId: "name"`. Añadido `promoteId: "name"` en centrales-etb-source, ftth-src y en los sources dinámicos del árbol de capas (mapa.layers.js).
 
 ### 1.3 Orden de capas y `beforeId` ✅ Hecho
 - **Situación:** Las capas se añadían sin `beforeId`, quedando por encima de etiquetas del mapa base.
@@ -129,12 +123,14 @@ Análisis del proyecto (mapa, UI, carga de datos) con sugerencias priorizadas pa
 
 ## 8. Firebase y tiempo real
 
-### 8.1 Listeners y `setData`
+### 8.1 Listeners y `setData` ✅ Hecho
 - **Situación:** Actualizaciones de cierres/eventos que disparan `setData` en la capa.
-- **Recomendación:** Hacer throttle/debounce (p. ej. 300–500 ms) de las actualizaciones antes de llamar a `setData`, para no redibujar en cada cambio si llegan muchos eventos seguidos.
+- **Recomendación:** Hacer throttle/debounce (p. ej. 300–500 ms) de las actualizaciones antes de llamar a `setData`.
+- **Estado:** En `tool.cierres.js` y `tool.eventos.js` ya existe throttle de 400 ms (`SETDATA_THROTTLE_MS`): `refreshLayer()` programa un único `setTimeout` y ejecuta `source.setData` una sola vez tras el intervalo, aunque se llame varias veces seguidas.
 
-### 8.2 Evitar listeners duplicados
-- **Recomendación:** Asegurar que los listeners de Firebase (cierres, eventos) se registren una sola vez (por ejemplo desde un módulo singleton o comprobando una bandera antes de `onSnapshot`).
+### 8.2 Evitar listeners duplicados ✅ Hecho
+- **Recomendación:** Asegurar que los listeners de Firebase (cierres, eventos) se registren una sola vez.
+- **Estado:** En `firebase.cierres.js` y `firebase.eventos.js` se usa un único `onSnapshot` por colección: se mantiene un array de callbacks; la primera llamada a `escucharCierres`/`escucharEventos` crea el listener y las siguientes solo añaden el callback. Cada llamada sigue devolviendo una función `unsubscribe` que quita ese callback y, si no queda ninguno, cierra el listener.
 
 ---
 

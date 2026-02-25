@@ -20,8 +20,9 @@
     TOBERIN: "TO"
   };
 
-  /** Número de moléculas por central (CO01..CO40 = 40; resto 30). */
+  /** Número de moléculas por central (CO01..CO40 = 40; resto MOLECULAS_DEFAULT_COUNT). */
   var CENTRAL_MOLECULA_COUNT = { CO: 40 };
+  var MOLECULAS_DEFAULT_COUNT = 30;
 
   /**
    * Genera lista de moléculas para una central (ej: SI01..SI30, CO01..CO40).
@@ -30,7 +31,7 @@
    */
   function generarMoleculas(prefijo) {
     if (!prefijo || typeof prefijo !== "string") return [];
-    var length = CENTRAL_MOLECULA_COUNT[prefijo] || 30;
+    var length = CENTRAL_MOLECULA_COUNT[prefijo] || MOLECULAS_DEFAULT_COUNT;
     return Array.from({ length: length }, function (_, i) {
       return prefijo + String(i + 1).padStart(2, "0");
     });

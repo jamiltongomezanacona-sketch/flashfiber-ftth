@@ -36,3 +36,6 @@ yarn-error.log*
 config.local.js
 config.production.js
 secrets.js
+firebase-service-account.json
+.vercel
+.env*.local

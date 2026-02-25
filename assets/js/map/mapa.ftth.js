@@ -33,7 +33,8 @@
 
     map.addSource("ftth-src", {
       type: "geojson",
-      data: "../geojson/FTTH_COMPLETO.geojson"
+      data: "../geojson/FTTH_COMPLETO.geojson",
+      promoteId: "name"
     });
 
     /* ======================

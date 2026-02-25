@@ -4,11 +4,14 @@
  * Uso: en Vercel (o similar) define MAPBOX_TOKEN en Environment Variables.
  * Build: node scripts/write-config-production.js
  */
-var fs = require("fs");
-var path = require("path");
-var token = (process.env.MAPBOX_TOKEN || "").trim();
-var outPath = path.join(__dirname, "..", "config.production.js");
-var content =
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const token = (process.env.MAPBOX_TOKEN || "").trim();
+const outPath = path.join(__dirname, "..", "config.production.js");
+const content =
   "/* Generado en build. Token desde MAPBOX_TOKEN (Vercel/host). */\n" +
   "window.__FTTH_MAPBOX_TOKEN__ = " +
   JSON.stringify(token) +

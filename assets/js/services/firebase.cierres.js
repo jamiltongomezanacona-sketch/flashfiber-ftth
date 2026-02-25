@@ -79,33 +79,41 @@ async function eliminarCierre(id) {
 }
 
 /* =========================
-   Escuchar Cierres
+   Escuchar Cierres (un solo onSnapshot, múltiples callbacks)
 ========================= */
+const _cierresCallbacks = [];
+let _cierresUnsubscribe = null;
+
 function escucharCierres(callback) {
   if (!db) {
     console.warn("⏳ Firebase DB aún no disponible...");
-    return null;
+    return () => {};
   }
 
-  const ref = collection(db, "cierres");
-  console.log("👂 Escuchando cierres...");
+  _cierresCallbacks.push(callback);
 
-  return onSnapshot(ref, snapshot => {
-    snapshot.docChanges().forEach(change => {
-      if (change.type === "added" || change.type === "modified") {
-        callback({
-          id: change.doc.id,
-          ...change.doc.data()
-        });
-      } else if (change.type === "removed") {
-        // Notificar eliminación
-        callback({
-          id: change.doc.id,
-          _deleted: true
-        });
-      }
+  if (!_cierresUnsubscribe) {
+    const ref = collection(db, "cierres");
+    console.log("👂 Escuchando cierres (singleton)...");
+    _cierresUnsubscribe = onSnapshot(ref, snapshot => {
+      snapshot.docChanges().forEach(change => {
+        const payload =
+          change.type === "removed"
+            ? { id: change.doc.id, _deleted: true }
+            : { id: change.doc.id, ...change.doc.data() };
+        _cierresCallbacks.forEach(cb => cb(payload));
+      });
     });
-  });
+  }
+
+  return function unsubscribe() {
+    const i = _cierresCallbacks.indexOf(callback);
+    if (i !== -1) _cierresCallbacks.splice(i, 1);
+    if (_cierresCallbacks.length === 0 && _cierresUnsubscribe) {
+      _cierresUnsubscribe();
+      _cierresUnsubscribe = null;
+    }
+  };
 }
 
 /* =========================

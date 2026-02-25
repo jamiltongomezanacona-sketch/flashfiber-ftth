@@ -5,9 +5,12 @@
   "scripts": {
     "build": "npm run build:js && npm run build:geojson && node scripts/write-config-production.js",
     "build:js": "npx vite build",
-    "build:geojson": "node scripts/build-consolidado-geojson.js"
+    "build:geojson": "node scripts/build-consolidado-geojson.js",
+    "backup:firebase": "node scripts/backup-firebase-to-pc.js",
+    "backup:firebase:full": "node scripts/backup-firebase-to-pc.js --storage"
   },
   "devDependencies": {
+    "firebase-admin": "^13.0.0",
     "vite": "^6.0.0"
   }
 }

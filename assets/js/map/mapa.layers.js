@@ -210,9 +210,8 @@
     });
   }
   
-  // ❌ DESHABILITADO: Handler global de iconos faltantes (genera errores)
+  // Handler de iconos faltantes deshabilitado (generaba errores en estilo).
   function initGlobalImageMissingHandler() {
-    // ❌ DESHABILITADO: No inicializar handler de iconos faltantes
     return;
     
     /*
@@ -618,6 +617,36 @@
       const res = await fetch(ROOT_INDEX, { cache: "default" });
       const root = await res.json();
       await collectGeoJSON(root, "../geojson/", "");
+
+      // ✅ Estandar: MUZU como el resto de centrales — incorporar cables al consolidado (mismo formato que FTTH)
+      try {
+        const muzuRes = await fetch("../geojson/FTTH/MUZU/muzu.geojson", { cache: "default" });
+        if (muzuRes.ok) {
+          const muzuGeo = await muzuRes.json();
+          if (muzuGeo.features && muzuGeo.features.length > 0) {
+            let muzuCount = 0;
+            muzuGeo.features.forEach((feature, idx) => {
+              if (!feature.geometry || feature.geometry.type !== "LineString") return;
+              const name = (feature.properties && feature.properties.name) ? String(feature.properties.name).trim() : "";
+              if (!name) return;
+              const moleculaMatch = name.match(/(MU\d+)/i);
+              const _molecula = moleculaMatch ? moleculaMatch[1].toUpperCase() : "";
+              if (!_molecula) return;
+              if (!feature.properties) feature.properties = {};
+              feature.properties._layerId = "FTTH_MUZU_" + _molecula + "_" + name;
+              feature.properties._layerLabel = name;
+              feature.properties._layerType = "line";
+              feature.properties._molecula = _molecula;
+              feature.properties.__id = "muzu-l-" + idx;
+              allFeatures.push(feature);
+              muzuCount++;
+            });
+            if (muzuCount > 0) console.log(`✅ MUZU en consolidado: ${muzuCount} cables (mismo método que resto de centrales)`);
+          }
+        }
+      } catch (e) {
+        console.warn("⚠️ MUZU no incorporado al consolidado:", e.message || e);
+      }
       
       // Crear FeatureCollection consolidado
       const consolidated = {
@@ -886,7 +915,8 @@
     const id  = layer.id;
     
     // ✅ OMITIR centrales - se cargan de forma fija e independiente
-    if (id === "CORPORATIVO_CENTRALES_ETB" || 
+    const centralesLayerId = CONFIG.LAYERS?.CENTRALES || "CORPORATIVO_CENTRALES_ETB";
+    if (id === centralesLayerId ||
         id?.toLowerCase().includes("centrales") && id?.toLowerCase().includes("corporativo")) {
       console.log("ℹ️ Centrales se cargan de forma fija, omitiendo carga desde árbol");
       return;
@@ -970,33 +1000,14 @@
         });
         console.log(`📋 Centrales encontradas: ${Array.from(centralNames).join(", ")}`);
 
-        // ❌ DESHABILITADO: Carga de iconos personalizados (genera errores 404)
-        // const iconPaths = new Set();
-        const iconMap = new Map(); // Mapear nombre/ruta → ID de icono
-        
-        // ❌ DESHABILITADO: No cargar iconos personalizados
-        // geojson.features.forEach(f => {
-        //   if (f.properties?.icon) {
-        //     iconPaths.add(f.properties.icon);
-        //   }
-        // });
+        const iconMap = new Map(); // nombre central → ID de icono
+        const customIconIds = new Set();
+        const generatedPinIds = new Set(); // pins generados (Canvas). Iconos personalizados (404) deshabilitados.
 
-        // Separar iconos personalizados de pins generados
-        const customIconIds = new Set(); // IDs de iconos personalizados (PNG externos)
-        const generatedPinIds = new Set(); // IDs de pins generados (Canvas)
-        
-        // ❌ DESHABILITADO: Carga de iconos personalizados desde rutas (genera errores 404)
-        // Los iconos personalizados están deshabilitados para evitar errores 404
-        // Solo se usarán pins generados dinámicamente
-        
-        // Registrar esta capa en el sistema global ANTES de cargar iconos
         layerIconRegistry.set(id, {
           iconMap,
           CENTRAL_COLOR
         });
-        
-        // ❌ DESHABILITADO: Handler global de iconos faltantes
-        // initGlobalImageMissingHandler();
         
         // Generar pins SVG para cada central
         console.log(`📌 Generando pins para ${centralNames.size} centrales únicas`);
@@ -1118,7 +1129,8 @@
           } else {
             map.addSource(id, {
               type: "geojson",
-              data: geojson
+              data: geojson,
+              promoteId: "name"
             });
             console.log(`✅ Source ${id} creado con datos actualizados`);
           }
@@ -1224,7 +1236,8 @@
         if (!map.getSource(id)) {
           map.addSource(id, {
             type: "geojson",
-            data: geojson
+            data: geojson,
+            promoteId: "name"
           });
         } else {
           console.log(`⚠️ Source ${id} ya existe al intentar agregar, usando existente`);
@@ -1278,7 +1291,8 @@
 
       // 🎯 Zoom a Santa Inés después de cargar la primera capa importante
       // Solo hacer zoom una vez cuando se carga la capa de centrales
-      if (id === "CORPORATIVO_CENTRALES_ETB" && geojson.features.length > 0) {
+      const centralesId = CONFIG.LAYERS?.CENTRALES || "CORPORATIVO_CENTRALES_ETB";
+      if (id === centralesId && geojson.features.length > 0) {
         zoomToSantaInes();
       }
       
@@ -1295,6 +1309,11 @@
   /* ===============================
      Forzar solo centrales visibles (evitar que capas se activen sin selección)
   =============================== */
+  /**
+   * Fuerza la visibilidad de capas según el estado de los filtros del sidebar: solo centrales
+   * visibles si el checkbox lo permite; cierres y eventos ocultos salvo que estén explícitamente
+   * activados. Usa CONFIG.LAYERS para IDs de capas de cierres y eventos.
+   */
   function enforceOnlyCentralesVisible() {
     const map = App?.map;
     if (!map || !map.isStyleLoaded()) return;
@@ -1304,7 +1323,7 @@
     const filterCentrales = typeof document !== "undefined" ? document.getElementById("filterCentrales") : null;
     const centralesVisible = !filterCentrales || filterCentrales.checked;
     const pinsLayerIds = [CONFIG.LAYERS?.CIERRES, CONFIG.LAYERS?.EVENTOS].filter(Boolean);
-    if (pinsLayerIds.length === 0) pinsLayerIds.push("cierres-layer", "eventos-layer");
+    if (pinsLayerIds.length === 0) pinsLayerIds.push(CONFIG.LAYERS?.CIERRES || "cierres-layer", CONFIG.LAYERS?.EVENTOS || "eventos-layer");
     pinsLayerIds.forEach(layerId => {
       if (isCorporativo && (layerId === "eventos-layer" || layerId === (CONFIG.LAYERS?.EVENTOS))) return;
       if (map.getLayer(layerId)) {
@@ -1327,9 +1346,22 @@
         return;
       }
       if (cablesExplicitlyVisible && (id === "geojson-lines" || id === "geojson-points")) return;
+      // ftth-cables (FTTH_COMPLETO) siempre oculto cuando no es la fuente activa: evita que persista CO36 u otro cable
+      if (id === "ftth-cables" || id === "ftth-puntos") {
+        try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) {}
+        return;
+      }
       const current = map.getLayoutProperty(id, "visibility");
       if (current !== "none") {
         try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) {}
+        // Sincronizar árbol: desmarcar checkbox para que CO36 u otra capa no quede "activa" en la UI
+        try {
+          const tree = typeof document !== "undefined" && document.getElementById("layersTree");
+          if (tree) {
+            const cb = tree.querySelector('input[data-layer-id="' + id + '"]');
+            if (cb && cb.checked) cb.checked = false;
+          }
+        } catch (e2) {}
       }
     });
     // También revisar capas del estilo que no estén en __ftthLayerIds
@@ -1342,9 +1374,21 @@
       const isCentral = id.includes("CENTRALES") || id.includes("CORPORATIVO");
       if (isCentral) return;
       if (cablesExplicitlyVisible && (id === "geojson-lines" || id === "geojson-points")) return;
+      // ftth-cables (FTTH_COMPLETO) siempre oculto cuando no es la fuente activa: evita que persista CO36 u otro cable
+      if (id === "ftth-cables" || id === "ftth-puntos") {
+        try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) {}
+        return;
+      }
       const current = map.getLayoutProperty(id, "visibility");
       if (current !== "none") {
         try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) {}
+        try {
+          const tree = typeof document !== "undefined" && document.getElementById("layersTree");
+          if (tree) {
+            const cb = tree.querySelector('input[data-layer-id="' + id + '"]');
+            if (cb && cb.checked) cb.checked = false;
+          }
+        } catch (e2) {}
       }
     });
     if (enforced > 0) console.log(`🔒 enforceOnlyCentralesVisible: ${enforced} capas forzadas a oculto`);
@@ -1403,7 +1447,7 @@
       return;
     }
     
-    const CENTRALES_ID = "CORPORATIVO_CENTRALES_ETB";
+    const CENTRALES_ID = CONFIG.LAYERS?.CENTRALES || "CORPORATIVO_CENTRALES_ETB";
     const CENTRALES_SOURCE = "centrales-etb-source";
     
     // Si ya está cargado, asegurar que esté visible
@@ -1435,7 +1479,8 @@
         try {
           map.addSource(CENTRALES_SOURCE, {
             type: "geojson",
-            data: geojson
+            data: geojson,
+            promoteId: "name"
           });
           console.log("✅ Source creado:", CENTRALES_SOURCE);
         } catch (err) {
@@ -1565,142 +1610,7 @@
     layerIconRegistry.clear();
   });
 
-  /* ===============================
-     MUZU – capa desde KML convertido a GeoJSON (cada cable con color distinto)
-  =============================== */
-  var MUZU_LINE_PALETTE = [
-    "#009c38", "#e63946", "#0066cc", "#f4a261", "#2a9d8f", "#9b59b6",
-    "#e9c46a", "#e76f51", "#264653", "#00e5ff", "#ff6b6b", "#4ecdc4",
-    "#d62828", "#06d6a0", "#ffd166", "#118ab2", "#ef476f", "#073b4c"
-  ];
-  function addMuzuColors(geojson) {
-    if (!geojson || !geojson.features) return geojson;
-    var lineIndex = 0;
-    var nameToColor = {};
-    geojson.features.forEach(function (f) {
-      if (!f.properties) f.properties = {};
-      if (f.geometry && f.geometry.type === "LineString") {
-        var name = (f.properties.name || "cable") + "";
-        if (nameToColor[name] === undefined) {
-          nameToColor[name] = MUZU_LINE_PALETTE[lineIndex % MUZU_LINE_PALETTE.length];
-          lineIndex++;
-        }
-        f.properties.color = nameToColor[name];
-      }
-    });
-    return geojson;
-  }
-  async function loadMuzuLayer() {
-    const map = App.map;
-    if (!map || !map.getStyle()) return;
-    const url = "../geojson/MUZU/muzu.geojson";
-    try {
-      const res = await fetch(url, { cache: "default" });
-      if (!res.ok) {
-        console.warn("⚠️ MUZU: no se pudo cargar " + url);
-        return;
-      }
-      const geojson = await res.json();
-      if (!geojson.features || geojson.features.length === 0) {
-        console.warn("⚠️ MUZU: GeoJSON sin features");
-        return;
-      }
-      addMuzuColors(geojson);
-      if (map.getSource("muzu-src")) {
-        map.getSource("muzu-src").setData(geojson);
-        console.log("✅ MUZU actualizado: " + geojson.features.length + " features");
-        return;
-      }
-      map.addSource("muzu-src", { type: "geojson", data: geojson, promoteId: "name" });
-      const hasLines = geojson.features.some(f => f.geometry && f.geometry.type === "LineString");
-      if (hasLines) {
-        map.addLayer({
-          id: "muzu-lines",
-          type: "line",
-          source: "muzu-src",
-          filter: ["==", ["geometry-type"], "LineString"],
-          layout: { visibility: "none" },
-          paint: {
-            "line-color": ["get", "color"],
-            "line-width": 4,
-            "line-opacity": 0.9
-          }
-        }, getBeforeIdForDataLayers(map));
-      }
-      if (!App.__ftthLayerIds) App.__ftthLayerIds = [];
-      if (hasLines && !App.__ftthLayerIds.includes("muzu-lines")) App.__ftthLayerIds.push("muzu-lines");
-      console.log("✅ MUZU cargado: " + geojson.features.length + " features (solo cables)");
-    } catch (err) {
-      console.warn("⚠️ MUZU:", err.message || err);
-    }
-  }
-
-  /* ===============================
-     CHICO – capa desde KML convertido a GeoJSON (cables + puntos)
-  =============================== */
-  async function loadChicoLayer() {
-    const map = App.map;
-    if (!map || !map.getStyle()) return;
-    const url = "../geojson/CHICO/chico.geojson";
-    try {
-      const res = await fetch(url, { cache: "default" });
-      if (!res.ok) {
-        console.warn("⚠️ CHICO: no se pudo cargar " + url);
-        return;
-      }
-      const geojson = await res.json();
-      if (!geojson.features || geojson.features.length === 0) {
-        console.warn("⚠️ CHICO: GeoJSON sin features");
-        return;
-      }
-      if (map.getSource("chico-src")) {
-        map.getSource("chico-src").setData(geojson);
-        console.log("✅ CHICO actualizado: " + geojson.features.length + " features");
-        return;
-      }
-      map.addSource("chico-src", { type: "geojson", data: geojson, promoteId: "name" });
-      const hasLines = geojson.features.some(f => f.geometry && f.geometry.type === "LineString");
-      const hasPoints = geojson.features.some(f => f.geometry && f.geometry.type === "Point");
-      if (hasLines) {
-        map.addLayer({
-          id: "chico-lines",
-          type: "line",
-          source: "chico-src",
-          filter: ["==", ["geometry-type"], "LineString"],
-          layout: { visibility: "none" },
-          paint: {
-            "line-color": "#426104",
-            "line-width": 4,
-            "line-opacity": 0.9
-          }
-        }, getBeforeIdForDataLayers(map));
-      }
-      if (hasPoints) {
-        map.addLayer({
-          id: "chico-points",
-          type: "circle",
-          source: "chico-src",
-          filter: ["==", ["geometry-type"], "Point"],
-          layout: { visibility: "none" },
-          paint: {
-            "circle-radius": 6,
-            "circle-color": "#426104",
-            "circle-stroke-width": 2,
-            "circle-stroke-color": "#fff"
-          }
-        }, getBeforeIdForDataLayers(map));
-      }
-      if (!App.__ftthLayerIds) App.__ftthLayerIds = [];
-      if (hasLines && !App.__ftthLayerIds.includes("chico-lines")) App.__ftthLayerIds.push("chico-lines");
-      if (hasPoints && !App.__ftthLayerIds.includes("chico-points")) App.__ftthLayerIds.push("chico-points");
-      console.log("✅ CHICO cargado: " + geojson.features.length + " features (cables + puntos)");
-      try {
-        window.dispatchEvent(new CustomEvent("ftth-consolidated-layers-ready"));
-      } catch (e) {}
-    } catch (err) {
-      console.warn("⚠️ CHICO:", err.message || err);
-    }
-  }
+  /* MUZU y CHICO se cargan como el resto de centrales: MUZU se incorpora en consolidateAllGeoJSON (muzu.geojson → geojson-lines con _molecula). No hay capa muzu-lines ni loadMuzuLayer. */
 
   /* ===============================
      API pública
@@ -1709,8 +1619,6 @@
   App.consolidateAllGeoJSON = consolidateAllGeoJSON;
   App.loadConsolidatedGeoJSONToBaseMap = loadConsolidatedGeoJSONToBaseMap;
   App.loadCentralesFijas = loadCentralesFijas;
-  App.loadMuzuLayer = loadMuzuLayer;
-  App.loadChicoLayer = loadChicoLayer;
   App.enforceOnlyCentralesVisible = enforceOnlyCentralesVisible; // 🔒 Solo centrales visibles por defecto
   App.getBeforeIdForDataLayers = getBeforeIdForDataLayers; // para insertar capas debajo de etiquetas (cierres, eventos, etc.)
 

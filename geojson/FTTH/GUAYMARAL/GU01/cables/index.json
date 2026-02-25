@@ -14,9 +14,9 @@
     },
     {
       "type": "layer",
-      "id": "FTTH_GUAYMARAL_GU01_CU01FH144",
-      "label": "CU01FH144",
-      "path": "CU01FH144.geojson",
+      "id": "FTTH_GUAYMARAL_GU01_GU01FH144",
+      "label": "GU01FH144",
+      "path": "GU01FH144.geojson",
       "typeLayer": "line",
       "paint": {
         "line-color": "#000099",

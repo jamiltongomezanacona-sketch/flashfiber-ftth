@@ -203,10 +203,11 @@
     selectMolecula?.addEventListener("change", generarCodigo);
 
     /* ===============================
-       Map Layer - Estilo Google Maps
+       Map Layer - Estilo Google Maps (IDs desde config)
     =============================== */
+    const CONFIG = window.__FTTH_CONFIG__ || {};
     const SOURCE_ID = "cierres-src";
-    const LAYER_ID  = "cierres-layer";
+    const LAYER_ID  = CONFIG.LAYERS?.CIERRES || "cierres-layer";
     const ICON_SIZE = 40; // Tamaño base del icono
 
     /* ===============================
@@ -612,14 +613,22 @@
 
     function addCierreToMap(cierre) {
       if (!cierre?.lng || !cierre?.lat) {
-        console.warn("⚠️ Cierre sin coordenadas:", cierre.codigo || cierre.id);
+        if (window.ErrorHandler) window.ErrorHandler.handle(new Error("Cierre sin coordenadas"), "addCierreToMap", { codigo: cierre?.codigo, id: cierre?.id });
+        else console.warn("⚠️ Cierre sin coordenadas:", cierre.codigo || cierre.id);
         return;
       }
 
-      // Normalizar (por si viene string)
       const lng = Number(cierre.lng);
       const lat = Number(cierre.lat);
-      if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
+      const validators = window.__FTTH_VALIDATORS__;
+      if (validators?.coordenadas) {
+        const res = validators.coordenadas(lng, lat);
+        if (!res.valid) {
+          if (window.ErrorHandler) window.ErrorHandler.handle(new Error(res.error), "addCierreToMap", { codigo: cierre?.codigo });
+          else console.warn("⚠️ Coordenadas inválidas:", res.error);
+          return;
+        }
+      } else if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
         console.warn("⚠️ Coordenadas inválidas:", cierre.codigo || cierre.id, lng, lat);
         return;
       }
@@ -946,6 +955,15 @@
         return;
       }
 
+      const validators = window.__FTTH_VALIDATORS__;
+      if (validators?.coordenadas) {
+        const res = validators.coordenadas(Number(cierre.lng), Number(cierre.lat));
+        if (!res.valid) {
+          alert("⚠️ " + (res.error || "Coordenadas inválidas"));
+          return;
+        }
+      }
+
       try {
         const FB = window.FTTH_FIREBASE;
 
@@ -954,8 +972,13 @@
 
         closeModal();
       } catch (err) {
-        console.error(err);
-        alert("❌ Error guardando cierre");
+        if (window.ErrorHandler) {
+          window.ErrorHandler.handle(err, "guardarCierre", { editId: editId || null });
+          alert("❌ " + (window.ErrorHandler.getUserMessage(err) || "Error guardando cierre"));
+        } else {
+          console.error(err);
+          alert("❌ Error guardando cierre");
+        }
       }
     });
 

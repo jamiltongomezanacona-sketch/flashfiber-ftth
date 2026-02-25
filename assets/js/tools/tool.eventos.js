@@ -136,10 +136,11 @@
     });
 
     /* ===============================
-       Map Layer
+       Map Layer (IDs desde config)
     =============================== */
+    const CONFIG = window.__FTTH_CONFIG__ || {};
     const SOURCE_ID = "eventos-src";
-    const LAYER_ID  = "eventos-layer";
+    const LAYER_ID  = CONFIG.LAYERS?.EVENTOS || "eventos-layer";
     const ICON_SIZE = 40;
 
     function colorByEstado(estado) {
@@ -509,10 +510,16 @@
     function addEventoToMap(evt) {
       if (!evt?.lng || !evt?.lat) return;
 
-      // Normalizar (por si viene string)
       const lng = Number(evt.lng);
       const lat = Number(evt.lat);
-      if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
+      const validators = window.__FTTH_VALIDATORS__;
+      if (validators?.coordenadas) {
+        const res = validators.coordenadas(lng, lat);
+        if (!res.valid) {
+          if (window.ErrorHandler) window.ErrorHandler.handle(new Error(res.error), "addEventoToMap", { id: evt?.id });
+          return;
+        }
+      } else if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
 
       // ✅ Asegurar que el icono esté cargado
       const estado = evt.estado || "";
@@ -886,7 +893,16 @@ btnSave?.addEventListener("click", async (e) => {
 
   const msg = validar(evento);
   if (msg) return alert(msg);
-  
+
+  const validators = window.__FTTH_VALIDATORS__;
+  if (validators?.coordenadas && evento.lng != null && evento.lat != null) {
+    const res = validators.coordenadas(Number(evento.lng), Number(evento.lat));
+    if (!res.valid) {
+      alert("⚠️ " + (res.error || "Coordenadas inválidas"));
+      return;
+    }
+  }
+
   try {
     const editId = modal.dataset.editId;
     let eventoId = editId;
@@ -964,8 +980,13 @@ btnSave?.addEventListener("click", async (e) => {
     
     closeModal();
   } catch (err) {
-    console.error("❌ Error guardando evento con fotos:", err);
-    alert("❌ Error guardando evento o subiendo fotos");
+    if (window.ErrorHandler) {
+      window.ErrorHandler.handle(err, "guardarEvento");
+      alert("❌ " + (window.ErrorHandler.getUserMessage(err) || "Error guardando evento o subiendo fotos"));
+    } else {
+      console.error("❌ Error guardando evento con fotos:", err);
+      alert("❌ Error guardando evento o subiendo fotos");
+    }
   }
 });
     /* ===============================

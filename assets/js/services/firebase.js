@@ -42,8 +42,7 @@ if (missingKeys.length > 0) {
   console.error("❌ Firebase config incompleto. Faltan:", missingKeys);
   console.error("💡 Crea config.local.js basado en config.local.example.js");
 } else if (!SECRETS.FIREBASE) {
-  // ❌ DESHABILITADO: Advertencia silenciada
-  // console.warn("⚠️ Usando configuración Firebase por defecto. Para producción, usa config.local.js");
+  // Advertencia Firebase por defecto silenciada; en producción usar config con SECRETS.
 }
 
 /* =========================

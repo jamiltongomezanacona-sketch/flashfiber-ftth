@@ -1,7 +1,16 @@
 /**
- * Entry point para bundle Vite - mapa FTTH
- * Orden: initializer → Firebase → auth → servicios → app → storage → mapa → tools → ui
- * Cargar después de: Mapbox, Turf, config.js, devtools-guard.js
+ * Entry point para bundle Vite - mapa FTTH.
+ *
+ * Orden de carga (respetar dependencias):
+ * 1. config (externo: config.js) → __FTTH_CONFIG__, __FTTH_SECRETS__
+ * 2. initializer → Firebase → auth → servicios
+ * 3. app → storage → utils (centrales)
+ * 4. mapa (init → controls → layers → ftth)
+ * 5. tools (medicion, gps, navegacion, capas, rutas, cierres, eventos, diseno-mapa)
+ * 6. ui (panel, layers.tree, buscador)
+ *
+ * Dependencias globales esperadas: Mapbox GL, Turf, config.js, devtools-guard.js.
+ * App y mapa: window.__FTTH_APP__, App.setMap(), App.map.
  */
 
 // Core
@@ -13,6 +22,14 @@ import "./services/firebase.cierres.js";
 import "./services/firebase.eventos.js";
 import "./services/firebase.rutas.js";
 import "./services/firebase.storage.js";
+
+// Utils (exponer para tools que no son ESM: cierres, eventos)
+import ErrorHandler from "./utils/errorHandler.js";
+import { validators } from "./utils/validators.js";
+if (typeof window !== "undefined") {
+  window.ErrorHandler = ErrorHandler;
+  window.__FTTH_VALIDATORS__ = validators;
+}
 
 // App + storage + utils
 import "./app.js";

@@ -3,9 +3,9 @@
   "children": [
     {
       "type": "layer",
-      "id": "FTTH_CUNI_CU06_CUO6FH144",
-      "label": "CUO6FH144",
-      "path": "CUO6FH144.geojson",
+      "id": "FTTH_CUNI_CU06_CU06FH144",
+      "label": "CU06FH144",
+      "path": "CU06FH144.geojson",
       "typeLayer": "line",
       "paint": {
         "line-color": "#009966",

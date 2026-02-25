@@ -89,14 +89,11 @@
         
         // Agregar capas consolidadas como hijos
         App.__ftthLayerIds.forEach(layerId => {
-          if (layerId.startsWith("geojson-") || layerId.startsWith("ftth-") || layerId.startsWith("muzu-") || layerId.startsWith("chico-")) {
+          if (layerId.startsWith("geojson-") || layerId.startsWith("ftth-")) {
             const layerName = layerId === "geojson-lines" ? "🧵 Cables (Consolidado)" :
                              layerId === "ftth-cables" ? "🧵 Cables FTTH" :
                              layerId === "ftth-puntos" ? "📍 Puntos FTTH" :
                              layerId === "geojson-points" ? "📍 Puntos (Consolidado)" :
-                             layerId === "muzu-lines" ? "🧵 MUZU (cables)" :
-                             layerId === "chico-lines" ? "🧵 CHICO (cables)" :
-                             layerId === "chico-points" ? "📍 CHICO (puntos)" :
                              layerId;
             consolidatedNode.children.push({
               type: "layer",
@@ -292,10 +289,11 @@
        Toggle capas
     ========================= */
     checkbox.addEventListener("change", async () => {
+      if (window.__FTTH_APP__?.__syncingTreeToMolecula) return;
       const nodeLabel = label.textContent.trim();
       
-      // ✅ Si es una molécula (SI01, SI02, etc.) y se está activando
-      const isMolecula = /^SI\d+$/.test(nodeLabel);
+      // ✅ Si es una molécula (SI01, CO36, BA05, etc.) y se está activando
+      const isMolecula = /^(SI|CO|BA|HO|FO|SU|TO|GU|MU)\d+$/i.test(nodeLabel);
       
       if (isMolecula) {
         const App = window.__FTTH_APP__;
@@ -411,7 +409,7 @@
       if (!rowLabel) return;
       
       const labelText = rowLabel.textContent.trim();
-      const isMolecula = /^SI\d+$/.test(labelText);
+      const isMolecula = /^(SI|CO|BA|HO|FO|SU|TO|GU|MU)\d+$/i.test(labelText);
       
       if (isMolecula && labelText !== activeMolecula) {
         const cb = row.querySelector("input[type=checkbox]");
@@ -422,6 +420,7 @@
           const childrenBox = row.nextElementSibling;
           if (childrenBox && childrenBox.classList.contains("tree-children")) {
             toggleChildren(childrenBox, false);
+            toggleLayers(labelText, false);
           }
         }
       }
@@ -517,11 +516,52 @@
   }
 
   /* =========================
+     Sincronizar árbol con la molécula seleccionada: desmarcar todas las demás (evita que CO36 u otra permanezca activa)
+  ========================= */
+  function syncTreeToSelectedMolecula(mol) {
+    const tree = document.getElementById(TREE_CONTAINER_ID);
+    if (!tree) return;
+    const molUpper = (mol || "").toUpperCase();
+    const isMol = /^(SI|CO|BA|HO|FO|SU|TO|GU|MU)\d+$/i;
+    const App = window.__FTTH_APP__;
+    if (App) App.__syncingTreeToMolecula = true;
+    try {
+      tree.querySelectorAll(".tree-row").forEach(row => {
+        const labelEl = row.querySelector("span:not(.tree-toggle)");
+        const label = labelEl ? labelEl.textContent.trim() : "";
+        if (isMol.test(label) && label.toUpperCase() !== molUpper) {
+          const cb = row.querySelector("input[type=checkbox]");
+          if (cb && cb.checked) {
+            cb.checked = false;
+            const childrenBox = row.nextElementSibling;
+            if (childrenBox && childrenBox.classList.contains("tree-children")) {
+              toggleChildren(childrenBox, false);
+              toggleLayers(label, false);
+            }
+          }
+        }
+      });
+      tree.querySelectorAll("input[data-layer-id]").forEach(cb => {
+        const layerId = cb.getAttribute("data-layer-id") || "";
+        if (!layerId) return;
+        if (!molUpper) {
+          if (cb.checked) cb.checked = false;
+          return;
+        }
+        const belongsToMol = layerId.includes("_" + molUpper + "_") || layerId.endsWith("_" + molUpper);
+        if (!belongsToMol && cb.checked) cb.checked = false;
+      });
+    } finally {
+      if (App) App.__syncingTreeToMolecula = false;
+    }
+  }
+
+  /* =========================
      Extraer molécula del id de capa de cable (ej. FTTH_SANTA_INES_SI17_SI17FH144_1 → SI17)
   ========================= */
   function extractMoleculaFromCableLayerId(layerId) {
     if (!layerId || typeof layerId !== "string") return null;
-    if (layerId === "geojson-lines" || layerId === "ftth-cables" || layerId === "muzu-lines" || layerId === "chico-lines") return null;
+    if (layerId === "geojson-lines" || layerId === "ftth-cables") return null;
     const parts = layerId.split("_");
     const match = parts.find(function (p) { return /^[A-Z]{2}\d+$/.test(p); });
     return match || null;
@@ -560,6 +600,7 @@
 
   if (window.__FTTH_APP__) {
     window.__FTTH_APP__.showPinsWhenCableActivated = showPinsWhenCableActivated;
+    window.__FTTH_APP__.syncTreeToSelectedMolecula = syncTreeToSelectedMolecula;
   }
 
   /* =========================
@@ -599,7 +640,7 @@
         }
         // Al activar cable (FTTH o MUZU): mostrar pines y filtros como el resto de moléculas
         if (isCable) {
-          showPinsWhenCableActivated(layerId, (layerId === "muzu-lines" || layerId === "chico-lines") ? null : undefined);
+          showPinsWhenCableActivated(layerId, undefined);
         }
       }
     } else if (!window.__GEOJSON_INDEX__ && map.getLayer("geojson-lines")) {

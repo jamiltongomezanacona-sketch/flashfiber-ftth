@@ -61,28 +61,40 @@ export async function eliminarEvento(id) {
 }
 
 /* ===============================
-   Escuchar eventos en tiempo real
+   Escuchar eventos (un solo onSnapshot, múltiples callbacks)
 =============================== */
+const _eventosCallbacks = [];
+let _eventosUnsubscribe = null;
+
 export function escucharEventos(callback) {
-  return onSnapshot(
-    collection(db, EVENTOS_COLLECTION),
-    (snapshot) => {
-      snapshot.docChanges().forEach(change => {
-        const data = change.doc.data();
-        const evento = {
-          id: change.doc.id,
-          ...data
-        };
-        
-        // Manejar diferentes tipos de cambios
-        if (change.type === "removed") {
-          evento._deleted = true;
-        }
-        
-        callback(evento);
-      });
+  _eventosCallbacks.push(callback);
+
+  if (!_eventosUnsubscribe) {
+    console.log("👂 Escuchando eventos (singleton)...");
+    _eventosUnsubscribe = onSnapshot(
+      collection(db, EVENTOS_COLLECTION),
+      (snapshot) => {
+        snapshot.docChanges().forEach(change => {
+          const data = change.doc.data();
+          const evento = {
+            id: change.doc.id,
+            ...data
+          };
+          if (change.type === "removed") evento._deleted = true;
+          _eventosCallbacks.forEach(cb => cb(evento));
+        });
+      }
+    );
+  }
+
+  return function unsubscribe() {
+    const i = _eventosCallbacks.indexOf(callback);
+    if (i !== -1) _eventosCallbacks.splice(i, 1);
+    if (_eventosCallbacks.length === 0 && _eventosUnsubscribe) {
+      _eventosUnsubscribe();
+      _eventosUnsubscribe = null;
     }
-  );
+  };
 }
 
 /* ===============================

@@ -21,17 +21,22 @@
     return;
   }
 
+  // En producción no usar token por defecto en código; debe venir de variables de entorno.
   var token = (CONFIG.MAPBOX_TOKEN && String(CONFIG.MAPBOX_TOKEN).trim()) || "";
   if (!token) {
-    console.warn("❌ MAPBOX_TOKEN no configurado. En Vercel: Settings → Environment Variables → MAPBOX_TOKEN → Redeploy.");
+    console.warn("❌ MAPBOX_TOKEN no configurado. En producción usa variables de entorno (ej. Vercel). En desarrollo: config.local.js.");
     var el = document.getElementById("map");
-    if (el) el.innerHTML = "<div style=\"padding:2rem;text-align:center;color:#a3d5ff;font-family:Inter,sans-serif;\"><p>⚠️ Mapa no disponible</p><p style=\"font-size:0.9rem;margin-top:0.5rem;\">En Vercel: Settings → Environment Variables → añade <strong>MAPBOX_TOKEN</strong> con tu token de Mapbox y haz Redeploy.</p></div>";
+    if (el) el.innerHTML = "<div style=\"padding:2rem;text-align:center;color:#a3d5ff;font-family:Inter,sans-serif;\">" +
+      "<p><strong>⚠️ Configuración requerida</strong></p>" +
+      "<p style=\"font-size:0.9rem;margin-top:0.5rem;\">MAPBOX_TOKEN no está definido. En producción configura la variable de entorno (ej. Vercel: Environment Variables → MAPBOX_TOKEN → Redeploy). En desarrollo crea <strong>config.local.js</strong> desde config.local.example.js.</p>" +
+      "</div>";
     return;
   }
   mapboxgl.accessToken = token;
 
   // 🗺️ MAPA BASE – calles (estilo desde config)
-  // preserveDrawingBuffer: true permite exportar el mapa a imagen/PDF (Crear diseño de mapa)
+  // preserveDrawingBuffer: true necesario para exportar a PNG/PDF (Crear diseño de mapa).
+  // No se puede activar solo al exportar (atributo WebGL fijo); un segundo mapa no tendría nuestras capas.
   const map = new mapboxgl.Map({
     container: "map",
     style: CONFIG.MAP.STYLES?.streets || CONFIG.MAP.STYLE_DEFAULT || "mapbox://styles/mapbox/streets-v12",
@@ -83,10 +88,7 @@
       if (!window.__GEOJSON_INDEX__ && App.loadConsolidatedGeoJSONToBaseMap) {
         App.loadConsolidatedGeoJSONToBaseMap();
       }
-      map.once("idle", () => {
-        if (App.loadMuzuLayer) App.loadMuzuLayer();
-        if (App.loadChicoLayer) App.loadChicoLayer();
-      });
+      map.once("idle", () => {});
     });
 
     // 💾 Rutas guardadas

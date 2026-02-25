@@ -159,6 +159,20 @@
   async function init() {
     setupEventListeners();
 
+    // Un solo listener en document para cerrar al hacer clic fuera (resultados + dropdown molécula)
+    document.addEventListener("click", function onDocumentClickCloseBuscadorPanels(e) {
+      const mainInput = document.getElementById("searchInput");
+      const mainResults = document.getElementById("searchResults");
+      const filterSearch = document.getElementById("filterMoleculaSearch");
+      const filterDropdown = document.getElementById("filterMoleculaDropdown");
+      if (mainInput && mainResults && !mainInput.contains(e.target) && !mainResults.contains(e.target)) {
+        hideResults();
+      }
+      if (filterSearch && filterDropdown && !filterSearch.contains(e.target) && !filterDropdown.contains(e.target)) {
+        filterDropdown.classList.add("hidden");
+      }
+    });
+
     if (isCorporativo) {
       // GIS Corporativo: solo los 235 cables de CABLES (no centrales/cierres/eventos FTTH)
       loadCablesCorporativo().then(() => {
@@ -169,7 +183,7 @@
       loadCentrales().then(() => {
         console.log(`✅ Centrales cargadas: ${searchIndex.centrales.length}`);
       });
-      loadCables().then(() => loadCablesMuzu()).then(() => loadCablesChico()).then(() => {
+      loadCables().then(() => loadCablesMuzu()).then(() => {
         console.log(`✅ Cables cargados: ${searchIndex.cables.length}`);
       });
       waitForFirebaseAndLoadCierres();
@@ -271,7 +285,13 @@
      Mostrar/ocultar pines según molécula seleccionada en árbol Capas
      Llamado desde ui.layers.tree.js al marcar/desmarcar molécula
   ========================= */
-  function setSelectedMoleculaForPins(moleculaOrNull) {
+  /**
+   * Filtra los pines (cierres y eventos) por molécula seleccionada en el árbol de capas.
+   * Actualiza el filtro de molécula en el sidebar y la visibilidad/filtro de LAYER_CIERRES y LAYER_EVENTOS.
+   * @param {string|null} moleculaOrNull - Código de molécula (ej. "SI02") o null para mostrar todos.
+   * @param {{ keepCablesVisible?: boolean }} [opts] - keepCablesVisible: true cuando se llama desde selección de cable (no ocultar geojson-lines).
+   */
+  function setSelectedMoleculaForPins(moleculaOrNull, opts) {
     selectedMoleculaForPins = moleculaOrNull || null;
     const filterCierres = document.getElementById("filterCierres");
     const filterEventos = document.getElementById("filterEventos");
@@ -284,6 +304,10 @@
       filterMoleculaSearch.value = moleculaOrNull || "";
     }
     if (!App?.map) return;
+    // Al cambiar molécula, ocultar capas individuales del árbol (ej. FTTH_CHICO_CO36_*) salvo si estamos mostrando un cable
+    if (App) App.__cablesExplicitlyVisible = !!opts?.keepCablesVisible;
+    if (typeof App.enforceOnlyCentralesVisible === "function") App.enforceOnlyCentralesVisible();
+    if (typeof App.syncTreeToSelectedMolecula === "function") App.syncTreeToSelectedMolecula(selectedMoleculaForPins);
     const showPins = selectedMoleculaForPins != null;
     const filter = selectedMoleculaForPins ? ["==", ["get", "molecula"], selectedMoleculaForPins] : null;
     [LAYER_CIERRES, LAYER_EVENTOS].forEach((layerId, i) => {
@@ -415,12 +439,6 @@
       if (e.key === "Escape") {
         closeDropdown();
         searchInput.blur();
-      }
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
-        closeDropdown();
       }
     });
 
@@ -558,11 +576,11 @@
     }
   }
 
-  /** Cargar cables MUZU (geojson/MUZU) y añadirlos al índice del buscador. */
+  /** Cargar cables MUZU al índice del buscador (mismo método que otras centrales: layerId geojson-lines, filtro por _molecula). */
   async function loadCablesMuzu() {
     if (isCorporativo) return;
     try {
-      const res = await fetch("../geojson/MUZU/muzu.geojson", { cache: "default" });
+      const res = await fetch("../geojson/FTTH/MUZU/muzu.geojson", { cache: "default" });
       if (!res.ok) return;
       const geojson = await res.json();
       if (!geojson.features || !geojson.features.length) return;
@@ -578,61 +596,24 @@
         const moleculaMatch = name.match(/(MU\d+)/i);
         const molecula = moleculaMatch ? moleculaMatch[1].toUpperCase() : "";
         searchIndex.cables.push({
-          id: "muzu-" + name,
+          id: "FTTH_MUZU_" + molecula + "_" + name,
           name: name,
           type: "cable",
-          layerId: name,
+          layerId: "geojson-lines",
           coordinates: coordinates,
           icon: "🧵",
-          subtitle: "MUZU " + (molecula || ""),
-          molecula: molecula,
-          isMuzu: true
+          subtitle: "MUZU" + (molecula ? " · " + molecula : ""),
+          molecula: molecula
         });
         count++;
       });
-      if (count > 0) console.log("✅ Cables MUZU en buscador: " + count);
+      if (count > 0) console.log("✅ Cables MUZU en buscador: " + count + " (estándar geojson-lines)");
     } catch (e) {
       console.warn("⚠️ Cables MUZU para buscador:", e.message || e);
     }
   }
 
-  /** Cargar cables CHICO (geojson/CHICO) y añadirlos al índice del buscador (CO02..CO36..CO43). */
-  async function loadCablesChico() {
-    if (isCorporativo) return;
-    try {
-      const res = await fetch("../geojson/CHICO/chico.geojson", { cache: "default" });
-      if (!res.ok) return;
-      const geojson = await res.json();
-      if (!geojson.features || !geojson.features.length) return;
-      let count = 0;
-      geojson.features.forEach(function (f) {
-        if (f.geometry && f.geometry.type !== "LineString") return;
-        const props = f.properties || {};
-        const name = (props.name && String(props.name).trim()) || "";
-        if (!name) return;
-        const coords = f.geometry.coordinates;
-        if (!coords || coords.length < 2) return;
-        const mid = Math.floor(coords.length / 2);
-        const coordinates = coords[mid];
-        const molecula = (props.molecula && /^CO\d+$/i.test(props.molecula)) ? props.molecula : "";
-        searchIndex.cables.push({
-          id: "chico-" + name,
-          name: name,
-          type: "cable",
-          layerId: "chico-lines",
-          coordinates: coordinates,
-          icon: "🧵",
-          subtitle: "CHICO" + (molecula ? " · " + molecula : ""),
-          molecula: molecula,
-          isChico: true
-        });
-        count++;
-      });
-      if (count > 0) console.log("✅ Cables CHICO en buscador: " + count);
-    } catch (e) {
-      console.warn("⚠️ Cables CHICO para buscador:", e.message || e);
-    }
-  }
+  /** CHICO se carga como el resto de centrales desde el árbol FTTH (walkTreeForCables / cables-index.json). */
 
   /** Normalizar nombre cable CUNI: CUO6FH144 → CU06FH144 (O a 0). */
   function normalizeCuniCableName(s) {
@@ -978,13 +959,6 @@
       currentSearch = "";
     });
 
-    // Cerrar resultados al hacer clic fuera
-    document.addEventListener("click", (e) => {
-      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-        hideResults();
-      }
-    });
-
     // Un solo clic en cualquier resultado: ubicar en el mapa de inmediato (delegado, una vez)
     searchResults.addEventListener("click", (e) => {
       const row = e.target.closest(".search-result-item");
@@ -1151,12 +1125,12 @@
       <div class="search-results-header">
         ${allResults.length} resultado${allResults.length > 1 ? "s" : ""}
       </div>
-      <div class="search-results-list">
+      <div class="search-results-list" role="listbox" aria-label="Resultados de búsqueda">
         ${allResults.map(result => {
           const displayName = result.type === "cable" ? cableNameForDisplay(result.layerId, result.name) : result.name;
           const badge = result.type === "direccion" ? "dirección" : result.type;
           return `
-          <div class="search-result-item" data-type="${result.type}" data-id="${result.id}">
+          <div class="search-result-item" role="option" data-type="${result.type}" data-id="${result.id}">
             <div class="search-result-icon ${result.type}">
               ${result.icon}
             </div>
@@ -1181,6 +1155,15 @@
   /* =========================
      Seleccionar resultado
   ========================= */
+  /**
+   * Ubica en el mapa el resultado seleccionado: hace flyTo a sus coordenadas, muestra capas
+   * necesarias (cierres/eventos) y opcionalmente aplica filtro por cable. Si el resultado es
+   * cierre o evento y no está en App.data, lo añade y dispara ftth-refresh-cierres/eventos.
+   * @param {Object} result - Resultado de búsqueda con al menos { type, id, name, coordinates: [lng, lat] }.
+   * @param {string} [result.central] - Central (para cierres).
+   * @param {string} [result.molecula] - Molécula (para cierres/eventos).
+   * @param {string} [result.tipo] - Tipo de cierre (E1, E2).
+   */
   function selectResult(result) {
     if (!App.map || !result.coordinates) {
       console.warn("⚠️ No se puede hacer zoom: mapa o coordenadas no disponibles");
@@ -1286,60 +1269,9 @@
       });
     }
 
-    // Mostrar capas del cable seleccionado
+    // Mostrar capas del cable seleccionado (un solo método FTTH: geojson-lines por _molecula; MUZU ya va por aquí)
     if (result.type === "cable") {
-      if (result.isMuzu) {
-        // MUZU: filtrar por nombre del cable y mostrar capa; misma lógica que otras moléculas (pines + filtro)
-        function applyMuzuFilter() {
-          if (App.map.getLayer("muzu-lines")) {
-            App.map.setFilter("muzu-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "name"], result.name]]);
-            App.map.setLayoutProperty("muzu-lines", "visibility", "visible");
-          }
-        }
-        if (!App.map.getLayer("muzu-lines") && typeof App.loadMuzuLayer === "function") {
-          App.loadMuzuLayer().then(function () {
-            setTimeout(function () {
-              applyMuzuFilter();
-              if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
-                App.setSelectedMoleculaForPins(result.molecula);
-              }
-              if (typeof App.showPinsWhenCableActivated === "function") {
-                App.showPinsWhenCableActivated("muzu-lines", result.molecula);
-              }
-            }, 100);
-          });
-        } else {
-          applyMuzuFilter();
-          if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
-            App.setSelectedMoleculaForPins(result.molecula);
-          }
-          if (typeof App.showPinsWhenCableActivated === "function") {
-            App.showPinsWhenCableActivated("muzu-lines", result.molecula);
-          }
-        }
-      } else if (result.isChico) {
-        // CHICO: filtrar chico-lines por nombre del cable (ej. CO36FH144) y mostrar capa
-        function applyChicoFilter() {
-          if (App.map.getLayer("chico-lines")) {
-            App.map.setFilter("chico-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "name"], result.name]]);
-            App.map.setLayoutProperty("chico-lines", "visibility", "visible");
-          }
-          if (App.map.getLayer("chico-points") && result.molecula) {
-            App.map.setFilter("chico-points", ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "molecula"], result.molecula]]);
-            App.map.setLayoutProperty("chico-points", "visibility", "visible");
-          }
-        }
-        if (!App.map.getLayer("chico-lines") && typeof App.loadChicoLayer === "function") {
-          App.loadChicoLayer().then(function () {
-            setTimeout(applyChicoFilter, 100);
-          });
-        } else {
-          applyChicoFilter();
-        }
-        if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
-          App.setSelectedMoleculaForPins(result.molecula);
-        }
-      } else if (isCorporativo) {
+      if (isCorporativo) {
         // GIS Corporativo: solo un cable a la vez (filter por nombre)
         if (App.map.getLayer("CABLES_KML")) {
           App.map.setFilter("CABLES_KML", ["==", ["get", "name"], result.name]);
@@ -1351,15 +1283,24 @@
           App.map.setFilter(LAYER_EVENTOS, ["==", ["get", "cable"], result.name]);
         }
       } else {
-        // GIS FTTH: mostrar todos los cables de la misma molécula (ej. SI17FH144 → SI17FH48, SI17FH144, etc.)
+        // GIS FTTH: al elegir un cable desde el buscador, mostrar SOLO ese cable (por _layerId) para que al cambiar a otro el anterior desaparezca
+        if (App) App.__cablesExplicitlyVisible = true;
+        if (typeof App.enforceOnlyCentralesVisible === "function") App.enforceOnlyCentralesVisible();
+        const layerId = result.layerId || result.id;
         const mol = result.molecula || getMoleculaFromCable(result);
         function applyCableFilter() {
           try {
             if (!App.map || !App.map.getLayer("geojson-lines")) return false;
-            if (mol) {
+            // Ocultar siempre la capa ftth-cables (FTTH_COMPLETO) para que no muestre todos los cables y persista CO36 u otro
+            if (App.map.getLayer("ftth-cables")) {
+              App.map.setLayoutProperty("ftth-cables", "visibility", "none");
+            }
+            // Primero filtrar a ninguno para que el cable anterior desaparezca; luego el cable seleccionado
+            App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_layerId"], "__none__"]]);
+            if (layerId) {
+              App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_layerId"], layerId]]);
+            } else if (mol) {
               App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_molecula"], mol]]);
-            } else {
-              App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_layerId"], result.layerId]]);
             }
             App.map.setLayoutProperty("geojson-lines", "visibility", "visible");
             return true;
@@ -1384,6 +1325,9 @@
         }
         if (typeof App.showPinsWhenCableActivated === "function") {
           App.showPinsWhenCableActivated(result.layerId, result.molecula || getMoleculaFromCable(result));
+        }
+        if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
+          App.setSelectedMoleculaForPins(result.molecula, { keepCablesVisible: true });
         }
       }
     }

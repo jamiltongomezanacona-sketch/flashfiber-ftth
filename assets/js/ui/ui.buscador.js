@@ -542,11 +542,14 @@
     try {
       console.log("🔍 Iniciando carga de cables para buscador...");
       clearSearchCache();
+      searchIndex.cables = [];
       searchIndex.moleculas = [];
+      // Primero consolidado (misma fuente que el mapa): asegura CO36FH144 y todos los cables
+      await loadCablesFromConsolidado();
       const res = await fetch(CABLES_INDEX_URL, { cache: "default" });
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           searchIndex.cables = data.map(function (c) {
             return {
               id: c.id,
@@ -598,65 +601,73 @@
     }
   }
 
-  /** Completar searchIndex.cables y searchIndex.moleculas desde consolidado-ftth.geojson (todos los cables del mapa). */
+  /** URLs para consolidado (misma fuente que el mapa): relativa y absoluta por si la página está en /mapa-ftth. */
+  const CONSOLIDADO_URLS = ["../geojson/consolidado-ftth.geojson", "/geojson/consolidado-ftth.geojson", "geojson/consolidado-ftth.geojson"];
+
+  /** Completar searchIndex.cables y searchIndex.moleculas desde consolidado-ftth.geojson (todos los cables del mapa, incl. CO36FH144). */
   async function loadCablesFromConsolidado() {
     if (isCorporativo) return;
-    try {
-      const res = await fetch("../geojson/consolidado-ftth.geojson", { cache: "default" });
-      if (!res.ok) return;
-      const geojson = await res.json();
-      if (!geojson.features || !geojson.features.length) return;
-      let added = 0;
-      geojson.features.forEach(function (feature) {
-        if (feature.geometry?.type !== "LineString" || !feature.properties) return;
-        const layerId = feature.properties._layerId;
-        const molecula = feature.properties._molecula || feature.properties.molecula;
-        const central = feature.properties.central || "";
-        const name = feature.properties.name || feature.properties._layerLabel || "";
-        if (!layerId || !name) return;
-        let coordinates = null;
-        if (feature.geometry.coordinates && feature.geometry.coordinates.length > 0) {
-          const mid = Math.floor(feature.geometry.coordinates.length / 2);
-          coordinates = feature.geometry.coordinates[mid];
-        }
-        if (!coordinates) return;
-        const id = layerId;
-        const exists = searchIndex.cables.some(function (c) { return c.id === id || c.layerId === layerId; });
-        if (!exists) {
-          searchIndex.cables.push({
-            id: id,
-            name: shortCableDisplayName(layerId, name),
-            type: "cable",
-            layerId: layerId,
-            coordinates: coordinates,
-            icon: "🧵",
-            subtitle: central + (molecula ? " · " + molecula : ""),
-            central: central,
-            molecula: molecula || ""
-          });
-          added++;
-        }
-        if (molecula && central && /^[A-Z]{2}\d+$/i.test(molecula)) {
-          const molExists = searchIndex.moleculas.some(function (m) { return m.id === molecula && m.central === central; });
-          if (!molExists) {
-            searchIndex.moleculas.push({
-              id: molecula,
-              name: molecula,
-              type: "molecula",
-              central: central,
-              coordinates: coordinates,
-              icon: "📍",
-              subtitle: central + " · " + molecula
-            });
+    for (let i = 0; i < CONSOLIDADO_URLS.length; i++) {
+      try {
+        const res = await fetch(CONSOLIDADO_URLS[i], { cache: "default" });
+        if (!res.ok) continue;
+        const geojson = await res.json();
+        if (!geojson.features || !geojson.features.length) continue;
+        let added = 0;
+        geojson.features.forEach(function (feature) {
+          if (feature.geometry?.type !== "LineString" || !feature.properties) return;
+          const layerId = feature.properties._layerId;
+          const molecula = feature.properties._molecula || feature.properties.molecula;
+          const central = feature.properties.central || "";
+          const name = feature.properties.name || feature.properties._layerLabel || "";
+          if (!layerId || !name) return;
+          let coordinates = null;
+          if (feature.geometry.coordinates && feature.geometry.coordinates.length > 0) {
+            const mid = Math.floor(feature.geometry.coordinates.length / 2);
+            coordinates = feature.geometry.coordinates[mid];
           }
+          if (!coordinates) return;
+          const id = layerId;
+          const exists = searchIndex.cables.some(function (c) { return c.id === id || c.layerId === layerId; });
+          if (!exists) {
+            searchIndex.cables.push({
+              id: id,
+              name: shortCableDisplayName(layerId, name),
+              type: "cable",
+              layerId: layerId,
+              coordinates: coordinates,
+              icon: "🧵",
+              subtitle: central + (molecula ? " · " + molecula : ""),
+              central: central,
+              molecula: molecula || ""
+            });
+            added++;
+          }
+          if (molecula && central && /^[A-Z]{2}\d+$/i.test(molecula)) {
+            const molExists = searchIndex.moleculas.some(function (m) { return m.id === molecula && m.central === central; });
+            if (!molExists) {
+              searchIndex.moleculas.push({
+                id: molecula,
+                name: molecula,
+                type: "molecula",
+                central: central,
+                coordinates: coordinates,
+                icon: "📍",
+                subtitle: central + " · " + molecula
+              });
+            }
+          }
+        });
+        if (added > 0) {
+          clearSearchCache();
+          console.log("✅ Buscador: " + added + " cables desde consolidado (CO36FH144, etc.)");
         }
-      });
-      if (added > 0) {
-        clearSearchCache();
-        console.log("✅ Buscador: " + added + " cables añadidos desde consolidado (incl. CO35FH144 si faltaban)");
+        return;
+      } catch (e) {
+        if (i === CONSOLIDADO_URLS.length - 1) {
+          console.warn("⚠️ No se pudo cargar consolidado para buscador:", e.message || e);
+        }
       }
-    } catch (e) {
-      console.warn("⚠️ No se pudo cargar consolidado para buscador:", e.message || e);
     }
   }
 

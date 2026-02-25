@@ -1,1 +1,16 @@
-{"label":"Cables","children":[{"type":"layer","id":"FTTH_CHICO_CO02_CO02FH144","label":"CO02FH144","path":"CO02FH144.geojson","typeLayer":"line","paint":{"line-color":"#046142","line-width":4}}]}
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_CHICO_CO02_CO04FH144",
+      "label": "CO04FH144",
+      "path": "CO04FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#034a32",
+        "line-width": 4
+      }
+    }
+  ]
+}

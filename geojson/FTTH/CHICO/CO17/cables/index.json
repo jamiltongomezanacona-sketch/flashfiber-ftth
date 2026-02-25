@@ -8,7 +8,7 @@
       "path": "CO17FH144.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#660066",
+        "line-color": "#034a32",
         "line-width": 4
       }
     },
@@ -19,7 +19,7 @@
       "path": "CO17FH48-3.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#660066",
+        "line-color": "#034a32",
         "line-width": 4
       }
     },
@@ -30,7 +30,7 @@
       "path": "CO17FH48_1.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#660066",
+        "line-color": "#034a32",
         "line-width": 4
       }
     },
@@ -41,7 +41,7 @@
       "path": "CO17FH48_2.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#660066",
+        "line-color": "#034a32",
         "line-width": 4
       }
     }

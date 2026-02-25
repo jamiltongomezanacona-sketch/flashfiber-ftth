@@ -8,7 +8,7 @@
       "path": "CO03FH144.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#11b826",
+        "line-color": "#034a32",
         "line-width": 4
       }
     },
@@ -19,7 +19,7 @@
       "path": "CO03FH48_1.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#11b826",
+        "line-color": "#034a32",
         "line-width": 4
       }
     },
@@ -30,7 +30,7 @@
       "path": "CO03FH48_2.geojson",
       "typeLayer": "line",
       "paint": {
-        "line-color": "#11b826",
+        "line-color": "#034a32",
         "line-width": 4
       }
     }

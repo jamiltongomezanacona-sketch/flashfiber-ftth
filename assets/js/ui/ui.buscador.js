@@ -41,9 +41,10 @@
   // GIS Corporativo: solo buscar los 235 cables de CABLES (no FTTH)
   const isCorporativo = typeof window !== "undefined" && !!window.__GEOJSON_INDEX__;
 
-  // Índice de búsqueda (centrales, cables, cierres y eventos desde Firebase)
+  // Índice de búsqueda (centrales, moléculas, cables, cierres y eventos desde Firebase)
   const searchIndex = {
     centrales: [],
+    moleculas: [],
     cables: [],
     cierres: [],
     eventos: []
@@ -541,6 +542,7 @@
     try {
       console.log("🔍 Iniciando carga de cables para buscador...");
       clearSearchCache();
+      searchIndex.moleculas = [];
       const res = await fetch(CABLES_INDEX_URL, { cache: "default" });
       if (res.ok) {
         const data = await res.json();
@@ -559,6 +561,23 @@
               tipo: c.tipo || "",
               fibras: c.fibras || ""
             };
+          });
+          // Poblar moléculas desde cables (para que CO36, SI05, etc. aparezcan en el buscador)
+          searchIndex.cables.forEach(function (c) {
+            if (c.central && c.molecula && /^[A-Z]{2}\d+$/i.test(c.molecula)) {
+              const exists = searchIndex.moleculas.some(m => m.id === c.molecula && m.central === c.central);
+              if (!exists && c.coordinates) {
+                searchIndex.moleculas.push({
+                  id: c.molecula,
+                  name: c.molecula,
+                  type: "molecula",
+                  central: c.central,
+                  coordinates: c.coordinates,
+                  icon: "📍",
+                  subtitle: `${c.central} · ${c.molecula}`
+                });
+              }
+            }
           });
           console.log("✅ Cables cargados desde índice único:", searchIndex.cables.length);
           return;
@@ -603,8 +622,23 @@
           coordinates: coordinates,
           icon: "🧵",
           subtitle: "MUZU" + (molecula ? " · " + molecula : ""),
+          central: "MUZU",
           molecula: molecula
         });
+        if (molecula) {
+          const exists = searchIndex.moleculas.some(m => m.id === molecula && m.central === "MUZU");
+          if (!exists) {
+            searchIndex.moleculas.push({
+              id: molecula,
+              name: molecula,
+              type: "molecula",
+              central: "MUZU",
+              coordinates: coordinates,
+              icon: "📍",
+              subtitle: "MUZU · " + molecula
+            });
+          }
+        }
         count++;
       });
       if (count > 0) console.log("✅ Cables MUZU en buscador: " + count + " (estándar geojson-lines)");
@@ -765,6 +799,21 @@
                   fibras: fibras
                 });
                 console.log(`✅ Cable agregado al buscador: ${id}`);
+              }
+              // ✅ Añadir molécula al índice para que "CO36" etc. aparezca en el buscador
+              if (central && molecula && /^[A-Z]{2}\d+$/i.test(molecula)) {
+                const molExists = searchIndex.moleculas.some(m => m.id === molecula && m.central === central);
+                if (!molExists) {
+                  searchIndex.moleculas.push({
+                    id: molecula,
+                    name: molecula,
+                    type: "molecula",
+                    central: central,
+                    coordinates: coordinates,
+                    icon: "📍",
+                    subtitle: `${central} · ${molecula}`
+                  });
+                }
               }
             }
           });
@@ -1021,7 +1070,7 @@
     }
 
     // ✅ Si el índice está vacío, mostrar "Cargando..." y reintentar cuando haya datos
-    const totalItems = searchIndex.centrales.length + searchIndex.cables.length + searchIndex.cierres.length + searchIndex.eventos.length;
+    const totalItems = searchIndex.centrales.length + searchIndex.moleculas.length + searchIndex.cables.length + searchIndex.cierres.length + searchIndex.eventos.length;
     if (totalItems === 0) {
       if (retryCount < SEARCH_MAX_RETRIES) {
         searchResults.innerHTML = `<div class="search-no-results"><i class="fas fa-spinner fa-spin"></i><div>Cargando índice de búsqueda...</div></div>`;
@@ -1042,6 +1091,14 @@
     searchIndex.centrales.forEach(central => {
       if (central.name.toLowerCase().includes(lowerQuery)) {
         allResults.push(central);
+      }
+    });
+
+    // Buscar en moléculas (CO36, SI05, etc.)
+    searchIndex.moleculas.forEach(mol => {
+      const searchText = `${mol.name} ${mol.central || ""} ${mol.subtitle || ""}`.toLowerCase();
+      if (searchText.includes(lowerQuery)) {
+        allResults.push(mol);
       }
     });
 
@@ -1128,7 +1185,7 @@
       <div class="search-results-list" role="listbox" aria-label="Resultados de búsqueda">
         ${allResults.map(result => {
           const displayName = result.type === "cable" ? cableNameForDisplay(result.layerId, result.name) : result.name;
-          const badge = result.type === "direccion" ? "dirección" : result.type;
+          const badge = result.type === "direccion" ? "dirección" : (result.type === "molecula" ? "molécula" : result.type);
           return `
           <div class="search-result-item" role="option" data-type="${result.type}" data-id="${result.id}">
             <div class="search-result-icon ${result.type}">
@@ -1228,9 +1285,10 @@
     }
 
     // Hacer zoom al resultado
+    const zoomLevel = result.type === "central" ? 15 : (result.type === "direccion" ? 17 : (result.type === "molecula" ? 16 : 17));
     App.map.flyTo({
       center: result.coordinates,
-      zoom: result.type === "central" ? 15 : (result.type === "direccion" ? 17 : 17),
+      zoom: zoomLevel,
       duration: MAP_FLYTO_DURATION_MS
     });
 
@@ -1269,6 +1327,30 @@
       });
     }
 
+    // Mostrar capa de la molécula seleccionada (CO36, SI05, etc.): zoom + filtro por _molecula
+    if (result.type === "molecula") {
+      if (!isCorporativo && result.id && result.coordinates) {
+        if (App) App.__cablesExplicitlyVisible = true;
+        if (typeof App.enforceOnlyCentralesVisible === "function") App.enforceOnlyCentralesVisible();
+        try {
+          if (App.map.getLayer("ftth-cables")) {
+            App.map.setLayoutProperty("ftth-cables", "visibility", "none");
+          }
+          if (App.map.getLayer("geojson-lines")) {
+            App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_molecula"], result.id]]);
+            App.map.setLayoutProperty("geojson-lines", "visibility", "visible");
+          }
+        } catch (e) {
+          console.warn("⚠️ Filtro molécula:", e);
+        }
+        if (typeof App.setSelectedMoleculaForPins === "function") {
+          App.setSelectedMoleculaForPins(result.id, { keepCablesVisible: true });
+        }
+        if (typeof App.showPinsWhenCableActivated === "function") {
+          App.showPinsWhenCableActivated(null, result.id);
+        }
+      }
+    }
     // Mostrar capas del cable seleccionado (un solo método FTTH: geojson-lines por _molecula; MUZU ya va por aquí)
     if (result.type === "cable") {
       if (isCorporativo) {

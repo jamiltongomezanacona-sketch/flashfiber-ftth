@@ -68,6 +68,11 @@
       font-weight: 700;
       font-size: 1rem;
     }
+    .leyenda-origen {
+      font-size: 0.75rem;
+      color: #7dd3fc;
+      margin-left: 0.25rem;
+    }
     .map-container {
       position: relative;
       flex: 1;
@@ -106,10 +111,57 @@
     .popup-origen { font-size: 0.75rem; text-transform: uppercase; color: #7dd3fc; margin-top: 0.5rem; }
     .loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #a3d5ff; z-index: 10; }
     .hidden { display: none !important; }
+    .gate-mapa-eventos {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0a1929 0%, #132f4c 100%);
+      padding: 2rem;
+    }
+    .gate-mapa-eventos h2 { color: #00b4d8; margin-bottom: 0.5rem; font-size: 1.25rem; }
+    .gate-mapa-eventos p { color: #a3d5ff; margin-bottom: 1.5rem; font-size: 0.9375rem; }
+    .gate-mapa-eventos input {
+      background: rgba(19, 47, 76, 0.9);
+      border: 1px solid rgba(0, 180, 216, 0.4);
+      color: #e6f7ff;
+      padding: 0.6rem 1rem;
+      border-radius: 10px;
+      font-size: 1.125rem;
+      letter-spacing: 0.2em;
+      text-align: center;
+      width: 140px;
+      margin-bottom: 1rem;
+    }
+    .gate-mapa-eventos button {
+      background: linear-gradient(135deg, #00b4d8, #0096c7);
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .gate-mapa-eventos button:hover { opacity: 0.95; }
+    .gate-mapa-eventos .gate-error { color: #ff5252; font-size: 0.875rem; margin-top: 0.5rem; }
+    .contenido-mapa-eventos { display: none; flex: 1; flex-direction: column; min-height: 0; }
+    body.page-mapa-eventos.contenido-mapa-eventos--visible .contenido-mapa-eventos { display: flex; }
+    body.page-mapa-eventos.gate-mapa-eventos--oculto .gate-mapa-eventos { display: none !important; }
   </style>
 </head>
 
-<body class="page-mapa-eventos">
+<body class="page-mapa-eventos" id="bodyMapaEventos">
+  <div class="gate-mapa-eventos" id="gateMapaEventos">
+    <h2><i class="fas fa-lock"></i> Mapa de eventos</h2>
+    <p>Introduce la clave de acceso</p>
+    <input type="password" id="gateClave" placeholder="••••" maxlength="6" autocomplete="off" inputmode="numeric" />
+    <button type="button" id="gateBtnEntrar">Entrar</button>
+    <div class="gate-error hidden" id="gateError">Clave incorrecta</div>
+  </div>
+
+  <div class="contenido-mapa-eventos" id="contenidoMapaEventos">
   <header class="header">
     <h1><i class="fas fa-map-pin"></i> Mapa de eventos (FTTH + Corporativo)</h1>
     <a href="home.html"><i class="fas fa-home"></i> Home</a>
@@ -129,6 +181,7 @@
       <input type="date" id="fechaHasta" />
       <button type="button" id="btnFiltrar"><i class="fas fa-filter"></i> Filtrar</button>
       <span class="total-badge" id="totalEventos">0 eventos</span>
+      <span class="leyenda-origen" title="Pines en el mapa">F = FTTH · C = Corporativo</span>
     </div>
   </div>
 
@@ -136,6 +189,7 @@
     <div id="map"></div>
   </div>
   <div class="loading hidden" id="loading"><i class="fas fa-spinner fa-spin"></i> Cargando eventos...</div>
+  </div>
 
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
   <script>
@@ -147,6 +201,37 @@
   </script>
   <script>window.__FTTH_SECRETS__ = window.__FTTH_SECRETS__ || {};</script>
   <script src="/assets/js/config.js"></script>
+  <script>
+  window.__MAPA_EVENTOS_UNLOCK_KEY__ = "ff_mapa_eventos_ok";
+  (function(){
+    var STORAGE_KEY = "ff_mapa_eventos_ok";
+    var CLAVE = (window.__FTTH_CONFIG__ && window.__FTTH_CONFIG__.MAPA_EVENTOS_PIN) || "7431";
+    function desbloquear() {
+      try { sessionStorage.setItem(STORAGE_KEY, "1"); } catch (e) {}
+      document.getElementById("bodyMapaEventos").classList.add("contenido-mapa-eventos--visible", "gate-mapa-eventos--oculto");
+      window.dispatchEvent(new CustomEvent("mapa-eventos-unlocked"));
+    }
+    if (sessionStorage.getItem(STORAGE_KEY) === "1") {
+      desbloquear();
+    } else {
+      document.getElementById("gateBtnEntrar").addEventListener("click", function() {
+        var input = document.getElementById("gateClave");
+        var err = document.getElementById("gateError");
+        if ((input.value || "").trim() === CLAVE) {
+          err.classList.add("hidden");
+          desbloquear();
+        } else {
+          err.classList.remove("hidden");
+          input.select();
+        }
+      });
+      document.getElementById("gateClave").addEventListener("keydown", function(e) {
+        if (e.key === "Enter") document.getElementById("gateBtnEntrar").click();
+      });
+    }
+    window.dispatchEvent(new CustomEvent("mapa-eventos-gate-ready"));
+  })();
+  </script>
   <script type="module" src="/assets/js/services/firebase.js"></script>
   <script type="module" src="/assets/js/services/firebase.db.js"></script>
   <script type="module" src="/assets/js/pages/mapa-eventos.js"></script>

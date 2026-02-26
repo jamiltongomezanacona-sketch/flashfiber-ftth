@@ -27,32 +27,33 @@ function colorByEstado(estado) {
   return "#9e9e9e";
 }
 
-function createEventoPinIconSVG(color, estado = "") {
+function createEventoPinIconSVG(color, estado = "", origen = "") {
   const size = 48;
-  let emoji = "🚨";
-  if (estado === "CRITICO") emoji = "🔴";
-  else if (estado === "PROVISIONAL") emoji = "🟡";
-  else if (estado === "RESUELTO") emoji = "🟢";
+  const label = origen === "Corporativo" ? "C" : "F";
+  const strokeHex = String(color).replace("#", "");
+  const filterId = `sf-${strokeHex}-${origen === "Corporativo" ? "c" : "f"}`;
   const svg = `
     <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <filter id="shadow-${String(color).replace("#", "")}">
+        <filter id="${filterId}">
           <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
         </filter>
       </defs>
-      <path d="M ${size/2} ${size*0.15} Q ${size*0.2} ${size*0.15} ${size*0.2} ${size*0.4} L ${size*0.2} ${size*0.7} Q ${size*0.2} ${size*0.85} ${size*0.35} ${size*0.85} L ${size*0.5} ${size} L ${size*0.65} ${size*0.85} Q ${size*0.8} ${size*0.85} ${size*0.8} ${size*0.7} L ${size*0.8} ${size*0.4} Q ${size*0.8} ${size*0.15} ${size*0.5} ${size*0.15} Z" fill="${color}" stroke="#000" stroke-width="1.5" filter="url(#shadow-${String(color).replace("#", "")})"/>
+      <path d="M ${size/2} ${size*0.15} Q ${size*0.2} ${size*0.15} ${size*0.2} ${size*0.4} L ${size*0.2} ${size*0.7} Q ${size*0.2} ${size*0.85} ${size*0.35} ${size*0.85} L ${size*0.5} ${size} L ${size*0.65} ${size*0.85} Q ${size*0.8} ${size*0.85} ${size*0.8} ${size*0.7} L ${size*0.8} ${size*0.4} Q ${size*0.8} ${size*0.15} ${size*0.5} ${size*0.15} Z" fill="${color}" stroke="${origen === "Corporativo" ? "#1565c0" : "#000"}" stroke-width="1.5" filter="url(#${filterId})"/>
       <circle cx="${size/2}" cy="${size*0.4}" r="${size*0.25}" fill="#fff" stroke="${color}" stroke-width="2"/>
-      <text x="${size/2}" y="${size*0.48}" font-size="${size*0.25}" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-weight="bold">${emoji}</text>
+      <text x="${size/2}" y="${size*0.48}" font-size="${size*0.32}" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-weight="bold" fill="${color}">${label}</text>
     </svg>
   `;
   return svg;
 }
 
-function loadEventoIcon(map, estado) {
-  const iconId = `evento-${(estado || "").toLowerCase() || "default"}`;
+function loadEventoIcon(map, estado, origen) {
+  const orig = (origen || "FTTH") === "Corporativo" ? "corporativo" : "ftth";
+  const est = (estado || "").toLowerCase() || "default";
+  const iconId = `evento-${orig}-${est}`;
   if (map.hasImage(iconId)) return;
   const color = colorByEstado(estado);
-  const svg = createEventoPinIconSVG(color, estado);
+  const svg = createEventoPinIconSVG(color, estado, origen || "FTTH");
   const img = new Image();
   const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
   img.onload = () => {
@@ -188,7 +189,10 @@ function initMap() {
 
   map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
-  ["CRITICO", "PROVISIONAL", "RESUELTO", ""].forEach((e) => loadEventoIcon(map, e));
+  ["CRITICO", "PROVISIONAL", "RESUELTO", ""].forEach((estado) => {
+    loadEventoIcon(map, estado, "FTTH");
+    loadEventoIcon(map, estado, "Corporativo");
+  });
 
   map.on("load", () => {
     map.addSource(SOURCE_ID, {
@@ -203,11 +207,15 @@ function initMap() {
       layout: {
         "icon-image": [
           "match",
-          ["get", "estado"],
-          "CRITICO", "evento-critico",
-          "PROVISIONAL", "evento-provisional",
-          "RESUELTO", "evento-resuelto",
-          "evento-default"
+          ["concat", ["get", "origen"], "-", ["get", "estado"]],
+          "FTTH-CRITICO", "evento-ftth-critico",
+          "FTTH-PROVISIONAL", "evento-ftth-provisional",
+          "FTTH-RESUELTO", "evento-ftth-resuelto",
+          "Corporativo-CRITICO", "evento-corporativo-critico",
+          "Corporativo-PROVISIONAL", "evento-corporativo-provisional",
+          "Corporativo-RESUELTO", "evento-corporativo-resuelto",
+          "Corporativo-", "evento-corporativo-default",
+          "evento-ftth-default"
         ],
         "icon-size": ["interpolate", ["linear"], ["zoom"], 10, 0.6, 15, 1.0, 20, 1.4],
         "icon-allow-overlap": true,
@@ -267,9 +275,12 @@ function getFiltroValues() {
   };
 }
 
-(async () => {
+const UNLOCK_KEY = window.__MAPA_EVENTOS_UNLOCK_KEY__ || "ff_mapa_eventos_ok";
+
+function runMapaEventos() {
   const loadingEl = document.getElementById("loading");
   const totalEl = document.getElementById("totalEventos");
+  if (!loadingEl || !totalEl) return;
   loadingEl.classList.remove("hidden");
   setDefaultDates();
 
@@ -287,4 +298,10 @@ function getFiltroValues() {
     const v = getFiltroValues();
     await applyFilter(map, v.fechaDesde, v.fechaHasta, v.origen, totalEl, loadingEl);
   });
-})();
+}
+
+if (typeof sessionStorage !== "undefined" && sessionStorage.getItem(UNLOCK_KEY) === "1") {
+  runMapaEventos();
+} else {
+  window.addEventListener("mapa-eventos-unlocked", runMapaEventos, { once: true });
+}

@@ -53,7 +53,10 @@ window.__FTTH_CONFIG__ = {
   MAP_FLYTO_DURATION_MS: 800,
 
   // Código para permitir eliminar pines (cierres/eventos). Override en config.local.js con __FTTH_SECRETS__.DELETE_PIN
-  DELETE_PIN: SECRETS.DELETE_PIN || "7431"
+  DELETE_PIN: SECRETS.DELETE_PIN || "7431",
+
+  // Clave de acceso al Mapa de eventos (FTTH + Corporativo). Override con __FTTH_SECRETS__.MAPA_EVENTOS_PIN
+  MAPA_EVENTOS_PIN: SECRETS.MAPA_EVENTOS_PIN || "7431"
 };
 
 // Aviso solo si no hay token

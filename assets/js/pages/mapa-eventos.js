@@ -149,9 +149,15 @@ function setTotal(el, n) {
 function showPopup(map, props, lngLat) {
   const escape = (s) => (s == null ? "" : String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"));
   const fecha = props.createdAt ? new Date(props.createdAt).toLocaleString() : "—";
+  const lineMol = props.molecula ? `<p><strong>Molécula:</strong> ${escape(props.molecula)}</p>` : "";
+  const lineCentral = props.central ? `<p><strong>Central:</strong> ${escape(props.central)}</p>` : "";
+  const lineCable = props.cable ? `<p><strong>Cable:</strong> ${escape(props.cable)}</p>` : "";
   const html = `
     <h3>${escape(props.tipo || "Evento")}</h3>
     <p><strong>Estado:</strong> ${escape(props.estado) || "—"}</p>
+    ${lineMol}
+    ${lineCentral}
+    ${lineCable}
     <p><strong>Fecha:</strong> ${fecha}</p>
     <p><strong>Creado por:</strong> ${escape(props.createdBy) || "—"}</p>
     ${props.notas ? `<p><strong>Notas:</strong> ${escape(props.notas)}</p>` : ""}

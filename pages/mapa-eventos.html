@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Mapa de eventos | Flash Fiber FTTH</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/icons/icon-192.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/theme.css">
+  <link rel="stylesheet" href="/assets/css/layout.css">
+  <link rel="stylesheet" href="/assets/css/map.css">
+  <style>
+    body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: #0a1929; color: #e6f7ff; }
+    .header {
+      background: rgba(10, 25, 41, 0.9);
+      border-bottom: 1px solid rgba(0, 180, 216, 0.2);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .header h1 { font-size: 1.25rem; margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+    .header a { color: #00b4d8; text-decoration: none; }
+    .filtros {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .filtros label { font-size: 0.875rem; color: #a3d5ff; }
+    .filtros input[type="date"] {
+      background: rgba(19, 47, 76, 0.8);
+      border: 1px solid rgba(0, 180, 216, 0.3);
+      color: #e6f7ff;
+      padding: 0.35rem 0.5rem;
+      border-radius: 6px;
+    }
+    .filtros button {
+      background: linear-gradient(135deg, #00b4d8, #0096c7);
+      color: #fff;
+      border: none;
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+    .filtros button:hover { opacity: 0.95; }
+    .total-badge {
+      background: rgba(0, 180, 216, 0.2);
+      border: 1px solid rgba(0, 180, 216, 0.4);
+      color: #00e5ff;
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    #map { width: 100%; height: calc(100vh - 56px); }
+    .mapboxgl-popup-content {
+      background: rgba(19, 47, 76, 0.95);
+      border: 1px solid rgba(0, 180, 216, 0.3);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      color: #e6f7ff;
+      min-width: 200px;
+    }
+    .mapboxgl-popup-content h3 { margin: 0 0 0.5rem 0; font-size: 1rem; color: #00b4d8; }
+    .mapboxgl-popup-content p { margin: 0.25rem 0; font-size: 0.8125rem; color: #a3d5ff; }
+    .popup-origen { font-size: 0.75rem; text-transform: uppercase; color: #7dd3fc; margin-top: 0.5rem; }
+    .loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #a3d5ff; z-index: 10; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <h1><i class="fas fa-map-pin"></i> Mapa de eventos (FTTH + Corporativo)</h1>
+    <a href="home.html"><i class="fas fa-home"></i> Home</a>
+  </header>
+
+  <div class="header" style="padding: 0.5rem 1rem; border-top: none;">
+    <div class="filtros">
+      <label>Desde</label>
+      <input type="date" id="fechaDesde" />
+      <label>Hasta</label>
+      <input type="date" id="fechaHasta" />
+      <button type="button" id="btnFiltrar"><i class="fas fa-filter"></i> Filtrar</button>
+      <span class="total-badge" id="totalEventos">0 eventos</span>
+    </div>
+  </div>
+
+  <div id="map"></div>
+  <div class="loading hidden" id="loading"><i class="fas fa-spinner fa-spin"></i> Cargando eventos...</div>
+
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
+  <script>
+  (function(){
+    var base = '../';
+    var isLocal = typeof location !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:');
+    document.write('<script src="' + base + (isLocal ? 'config.local.js' : 'config.production.js') + '"><\/script>');
+  })();
+  </script>
+  <script>window.__FTTH_SECRETS__ = window.__FTTH_SECRETS__ || {};</script>
+  <script src="/assets/js/config.js"></script>
+  <script type="module" src="/assets/js/pages/mapa-eventos.js"></script>
+</body>
+
+</html>

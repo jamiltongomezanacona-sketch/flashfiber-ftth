@@ -59,7 +59,31 @@
       font-weight: 700;
       font-size: 1rem;
     }
-    #map { width: 100%; height: calc(100vh - 56px); }
+    .map-container {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+    .map-container #map {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    body.page-mapa-eventos {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    body.page-mapa-eventos .header,
+    body.page-mapa-eventos .filtros-bar {
+      flex-shrink: 0;
+    }
+    body.page-mapa-eventos .filtros-bar {
+      z-index: 200;
+    }
     .mapboxgl-popup-content {
       background: rgba(19, 47, 76, 0.95);
       border: 1px solid rgba(0, 180, 216, 0.3);
@@ -76,13 +100,13 @@
   </style>
 </head>
 
-<body>
+<body class="page-mapa-eventos">
   <header class="header">
     <h1><i class="fas fa-map-pin"></i> Mapa de eventos (FTTH + Corporativo)</h1>
     <a href="home.html"><i class="fas fa-home"></i> Home</a>
   </header>
 
-  <div class="header" style="padding: 0.5rem 1rem; border-top: none;">
+  <div class="header filtros-bar" style="padding: 0.5rem 1rem; border-top: none;">
     <div class="filtros">
       <label>Desde</label>
       <input type="date" id="fechaDesde" />
@@ -93,7 +117,9 @@
     </div>
   </div>
 
-  <div id="map"></div>
+  <div class="map-container">
+    <div id="map"></div>
+  </div>
   <div class="loading hidden" id="loading"><i class="fas fa-spinner fa-spin"></i> Cargando eventos...</div>
 
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>

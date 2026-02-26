@@ -259,6 +259,14 @@ function setDefaultDates() {
   if (hasta && !hasta.value) hasta.value = id(hoy);
 }
 
+function getFiltroValues() {
+  return {
+    fechaDesde: document.getElementById("fechaDesde")?.value || "",
+    fechaHasta: document.getElementById("fechaHasta")?.value || "",
+    origen: (document.getElementById("filtroOrigen")?.value || "FTTH-Corporativo").trim()
+  };
+}
+
 (async () => {
   const loadingEl = document.getElementById("loading");
   const totalEl = document.getElementById("totalEventos");
@@ -268,25 +276,15 @@ function setDefaultDates() {
   const map = initMap();
   if (!map) return;
 
-  const filtroOrigenEl = document.getElementById("filtroOrigen");
+  function onFiltrar() {
+    const v = getFiltroValues();
+    applyFilter(map, v.fechaDesde, v.fechaHasta, v.origen, totalEl, loadingEl);
+  }
 
-  await applyFilter(
-    map,
-    document.getElementById("fechaDesde")?.value,
-    document.getElementById("fechaHasta")?.value,
-    filtroOrigenEl?.value || "FTTH-Corporativo",
-    totalEl,
-    loadingEl
-  );
+  document.getElementById("btnFiltrar").addEventListener("click", onFiltrar);
 
-  document.getElementById("btnFiltrar").addEventListener("click", () => {
-    applyFilter(
-      map,
-      document.getElementById("fechaDesde")?.value,
-      document.getElementById("fechaHasta")?.value,
-      filtroOrigenEl?.value || "FTTH-Corporativo",
-      totalEl,
-      loadingEl
-    );
+  map.once("load", async () => {
+    const v = getFiltroValues();
+    await applyFilter(map, v.fechaDesde, v.fechaHasta, v.origen, totalEl, loadingEl);
   });
 })();

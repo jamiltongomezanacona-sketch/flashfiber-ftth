@@ -76,46 +76,48 @@ function toDateOnly(d) {
   return x.getTime();
 }
 
-async function fetchEventos(fechaDesde, fechaHasta) {
+async function fetchEventos(fechaDesde, fechaHasta, origenFilter) {
   const desde = toDateOnly(fechaDesde);
   const hasta = fechaHasta ? toDateOnly(fechaHasta) + 86400000 - 1 : null;
-
-  const [snapFtth, snapCorp] = await Promise.all([
-    getDocs(collection(db, EVENTOS_COLLECTION)),
-    getDocs(collection(db, EVENTOS_CORP_COLLECTION))
-  ]);
+  const origen = origenFilter === "FTTH" || origenFilter === "Corporativo" ? origenFilter : "FTTH-Corporativo";
 
   const list = [];
 
-  snapFtth.forEach((doc) => {
-    const d = doc.data();
-    const createdAt = parseDate(d.createdAt);
-    const t = createdAt ? toDateOnly(createdAt) : null;
-    if (t != null && (desde == null || t >= desde) && (hasta == null || t <= hasta)) {
-      if (d.lat != null && d.lng != null) {
-        list.push({
-          id: `ftth-${doc.id}`,
-          ...d,
-          origen: "FTTH"
-        });
+  if (origen === "FTTH" || origen === "FTTH-Corporativo") {
+    const snapFtth = await getDocs(collection(db, EVENTOS_COLLECTION));
+    snapFtth.forEach((doc) => {
+      const d = doc.data();
+      const createdAt = parseDate(d.createdAt);
+      const t = createdAt ? toDateOnly(createdAt) : null;
+      if (t != null && (desde == null || t >= desde) && (hasta == null || t <= hasta)) {
+        if (d.lat != null && d.lng != null) {
+          list.push({
+            id: `ftth-${doc.id}`,
+            ...d,
+            origen: "FTTH"
+          });
+        }
       }
-    }
-  });
+    });
+  }
 
-  snapCorp.forEach((doc) => {
-    const d = doc.data();
-    const createdAt = parseDate(d.createdAt);
-    const t = createdAt ? toDateOnly(createdAt) : null;
-    if (t != null && (desde == null || t >= desde) && (hasta == null || t <= hasta)) {
-      if (d.lat != null && d.lng != null) {
-        list.push({
-          id: `corp-${doc.id}`,
-          ...d,
-          origen: "Corporativo"
-        });
+  if (origen === "Corporativo" || origen === "FTTH-Corporativo") {
+    const snapCorp = await getDocs(collection(db, EVENTOS_CORP_COLLECTION));
+    snapCorp.forEach((doc) => {
+      const d = doc.data();
+      const createdAt = parseDate(d.createdAt);
+      const t = createdAt ? toDateOnly(createdAt) : null;
+      if (t != null && (desde == null || t >= desde) && (hasta == null || t <= hasta)) {
+        if (d.lat != null && d.lng != null) {
+          list.push({
+            id: `corp-${doc.id}`,
+            ...d,
+            origen: "Corporativo"
+          });
+        }
       }
-    }
-  });
+    });
+  }
 
   return list;
 }
@@ -229,10 +231,10 @@ function initMap() {
   return map;
 }
 
-async function applyFilter(map, fechaDesde, fechaHasta, totalEl, loadingEl) {
+async function applyFilter(map, fechaDesde, fechaHasta, origenFilter, totalEl, loadingEl) {
   if (loadingEl) loadingEl.classList.remove("hidden");
   try {
-    const eventos = await fetchEventos(fechaDesde, fechaHasta);
+    const eventos = await fetchEventos(fechaDesde, fechaHasta, origenFilter);
     const geojson = toGeoJSON(eventos);
     setTotal(totalEl, eventos.length);
     if (map && map.getSource(SOURCE_ID)) {
@@ -266,10 +268,13 @@ function setDefaultDates() {
   const map = initMap();
   if (!map) return;
 
+  const filtroOrigenEl = document.getElementById("filtroOrigen");
+
   await applyFilter(
     map,
     document.getElementById("fechaDesde")?.value,
     document.getElementById("fechaHasta")?.value,
+    filtroOrigenEl?.value || "FTTH-Corporativo",
     totalEl,
     loadingEl
   );
@@ -279,6 +284,7 @@ function setDefaultDates() {
       map,
       document.getElementById("fechaDesde")?.value,
       document.getElementById("fechaHasta")?.value,
+      filtroOrigenEl?.value || "FTTH-Corporativo",
       totalEl,
       loadingEl
     );

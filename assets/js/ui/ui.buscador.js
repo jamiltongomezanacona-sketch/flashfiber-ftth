@@ -349,6 +349,10 @@
         App.map.setFilter("geojson-points", filterPoints);
       } catch (e) {}
     }
+    // Rutas guardadas (Firebase/local): filtrar por molécula como cables y cierres
+    if (typeof App.applySavedRoutesMoleculaFilter === "function") {
+      App.applySavedRoutesMoleculaFilter(selectedMoleculaForPins);
+    }
   }
 
 
@@ -1605,6 +1609,8 @@
           let feature = parsed.geometry
             ? { type: "Feature", geometry: parsed.geometry, properties: parsed.properties || {}, id: result.id }
             : (parsed.features?.[0] ? { ...parsed.features[0], id: result.id } : parsed);
+          feature.properties = feature.properties || {};
+          feature.properties.molecula = result.molecula || "";
           if (feature.geometry) window.drawSavedRoute(feature);
         } catch (e) {
           console.warn("⚠️ No se pudo dibujar ruta en el mapa:", e);

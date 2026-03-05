@@ -203,8 +203,91 @@
     console.log("✅ Capa rutas guardadas creada");
   }
 
+  /**
+   * Filtra la capa de rutas guardadas por molécula (como geojson-lines / geojson-points).
+   * Si moleculaOrNull es null, se muestran todas; si es un string (ej. "SI05"), solo las rutas de esa molécula.
+   */
+  function applySavedRoutesMoleculaFilter(moleculaOrNull) {
+    if (!App?.map) return;
+    App._lastSavedRoutesMoleculaFilter = moleculaOrNull ?? null;
+    if (!App.map.getLayer(SAVED_ROUTES_LAYER)) return;
+    try {
+      if (moleculaOrNull == null || moleculaOrNull === "") {
+        App.map.setFilter(SAVED_ROUTES_LAYER, null);
+      } else {
+        App.map.setFilter(SAVED_ROUTES_LAYER, ["==", ["get", "molecula"], String(moleculaOrNull)]);
+      }
+    } catch (e) {
+      console.warn("⚠️ applySavedRoutesMoleculaFilter:", e);
+    }
+  }
+
+  App.applySavedRoutesMoleculaFilter = applySavedRoutesMoleculaFilter;
+
+  /**
+   * Sincroniza la lista de rutas de Firebase al mapa: reemplaza la capa con esas rutas
+   * y asegura properties.molecula en cada feature para que el filtro por molécula funcione.
+   */
+  function syncFirebaseRutasToMap(rutas) {
+    if (!App?.map || !Array.isArray(rutas)) return;
+    if (!App.map.getSource(SAVED_ROUTES_SOURCE)) return;
+    savedRoutes.clear();
+    rutas.forEach((r) => {
+      let geom = null;
+      let props = {};
+      try {
+        const parsed = typeof r.geojson === "string" ? JSON.parse(r.geojson) : r.geojson;
+        if (parsed && parsed.geometry) {
+          geom = parsed.geometry;
+          props = { ...(parsed.properties || {}), molecula: String(r.molecula || "") };
+        } else if (parsed && parsed.features?.[0]) {
+          const f = parsed.features[0];
+          geom = f.geometry;
+          props = { ...(f.properties || {}), molecula: String(r.molecula || "") };
+        }
+      } catch (e) {
+        console.warn("⚠️ Ruta " + (r.id || "") + " sin geojson válido:", e);
+      }
+      if (!geom || geom.type !== "LineString") return;
+      const feature = {
+        type: "Feature",
+        id: r.id || "route-" + Date.now() + "-" + Math.random().toString(36).slice(2),
+        properties: props,
+        geometry: geom
+      };
+      savedRoutes.set(feature.id, feature);
+    });
+    const source = App.map.getSource(SAVED_ROUTES_SOURCE);
+    if (source) {
+      source.setData({ type: "FeatureCollection", features: Array.from(savedRoutes.values()) });
+    }
+    applySavedRoutesMoleculaFilter(App._lastSavedRoutesMoleculaFilter ?? null);
+  }
+
+  App.syncFirebaseRutasToMap = syncFirebaseRutasToMap;
+
+  function startFirebaseRutasSync() {
+    if (!window.FTTH_FIREBASE?.escucharRutas || !App?.map?.getLayer?.(SAVED_ROUTES_LAYER)) return;
+    if (App._firebaseRutasUnsubscribe) return;
+    try {
+      App._firebaseRutasUnsubscribe = window.FTTH_FIREBASE.escucharRutas((rutas) => {
+        syncFirebaseRutasToMap(rutas || []);
+      });
+      console.log("🛣️ Rutas Firebase sincronizadas al mapa (filtro por molécula activo)");
+    } catch (e) {
+      console.warn("⚠️ No se pudo suscribir a rutas Firebase:", e);
+    }
+  }
+
   function drawSavedRoute(feature) {
     if (!App.map || !feature?.geometry) return;
+
+    // Asegurar properties.molecula para filtrar por molécula (como geojson-lines / geojson-points)
+    const props = feature.properties || {};
+    if (typeof props.molecula === "undefined" || props.molecula === null) {
+      props.molecula = "";
+    }
+    feature.properties = props;
 
     // Inicializar capa si no existe
     initSavedRoutesLayer();
@@ -223,6 +306,10 @@
         features: allRoutes
       });
     }
+    // Reaplicar filtro por molécula si existe
+    if (typeof App.applySavedRoutesMoleculaFilter === "function") {
+      App.applySavedRoutesMoleculaFilter(App._lastSavedRoutesMoleculaFilter ?? null);
+    }
   }
 
   /* ============================
@@ -239,6 +326,9 @@
     savedRoutes.clear();
     rutas.forEach(ruta => {
       if (ruta?.geometry) {
+        const props = ruta.properties || {};
+        if (typeof props.molecula === "undefined" || props.molecula === null) props.molecula = "";
+        ruta.properties = props;
         const routeId = ruta.id || `route-${Date.now()}`;
         savedRoutes.set(routeId, ruta);
       }
@@ -253,6 +343,9 @@
         features: Array.from(savedRoutes.values())
       });
     }
+    if (typeof App.applySavedRoutesMoleculaFilter === "function") {
+      App.applySavedRoutesMoleculaFilter(App._lastSavedRoutesMoleculaFilter ?? null);
+    }
   };
 
   // Exponer función global para dibujar rutas
@@ -261,10 +354,12 @@
   // Inicializar capa al cargar
   if (App.map && App.map.isStyleLoaded()) {
     initSavedRoutesLayer();
+    setTimeout(startFirebaseRutasSync, 800);
   } else if (App.map) {
     App.map.once("load", () => {
       initSavedRoutesLayer();
       App.reloadRutas();
+      setTimeout(startFirebaseRutasSync, 800);
     });
   }
 
@@ -273,6 +368,7 @@
     App.map.on("style.load", () => {
       initSavedRoutesLayer();
       App.reloadRutas();
+      setTimeout(startFirebaseRutasSync, 500);
     });
   }
 
@@ -418,6 +514,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     window.FTTH_FIREBASE.guardarRuta(payloadCloud)
       .then(() => {
+        if (window.drawSavedRoute) window.drawSavedRoute(feature);
         App?.ui?.notify?.("✅ Ruta corregida guardada en Firebase");
         rutasAPI.stop();
         closeCorregirRutaModal();
@@ -452,6 +549,7 @@ document.addEventListener("DOMContentLoaded", () => {
         nombre: inputName?.value?.trim() || "Ruta sin nombre",
         tipo: inputType?.value || "distribucion",
         central: inputCentral?.value?.trim() || "SIN-DEFINIR",
+        molecula: "",
         notas: inputNotes?.value?.trim() || "",
         tecnico: "Hamilton",
         fecha: new Date().toISOString(),
@@ -477,6 +575,7 @@ document.addEventListener("DOMContentLoaded", () => {
         nombre: feature.properties.nombre,
         tipo: feature.properties.tipo,
         central: feature.properties.central,
+        molecula: feature.properties.molecula || "",
         notas: feature.properties.notas,
         distancia: feature.properties.longitud_m,
 

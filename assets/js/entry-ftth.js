@@ -20,6 +20,7 @@ import "./services/firebase.db.js";
 import "./core/auth.guard.js";
 import "./services/firebase.cierres.js";
 import "./services/firebase.eventos.js";
+import "./services/firebase.eventosCorp.js";
 import "./services/firebase.rutas.js";
 import "./services/firebase.storage.js";
 
@@ -58,3 +59,4 @@ import "./tools/tool.diseno-mapa.js";
 import "./ui/ui.panel.js";
 import "./ui/ui.layers.tree.js";
 import "./ui/ui.buscador.js";
+import "./ui/ui.rutas.js";

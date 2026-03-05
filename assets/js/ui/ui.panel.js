@@ -61,6 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
   medir: document.querySelector('[data-action="medir"]'),
   navegar: document.querySelector('[data-action="navegar"]'),
   ruta: document.querySelector('[data-action="ruta"]'),
+  corregirRuta: document.querySelector('[data-action="corregirRuta"]'),
   cierres: document.querySelector('[data-action="cierres"]'),
   eventos: document.querySelector('[data-action="eventos"]'),
   posteria: document.querySelector('[data-action="posteria"]')
@@ -79,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
   medir: false,
   navegar: false,
   ruta: false,
+  corregirRuta: false,
   cierres: false,
   eventos: false,
   posteria: false
@@ -92,16 +94,21 @@ document.addEventListener("DOMContentLoaded", () => {
     toolButtons[tool]?.classList.remove("active");
 
     try {
-      if (tool === "gps") App.tools.gps?.stop();
+      if (tool === "gps") {
+        App.tools.gps?.stop();
+        document.getElementById("btnGPS")?.classList.remove("active");
+      }
 if (tool === "medir") App.tools.medicion?.stop();
 if (tool === "navegar") App.tools.navegacion?.stop();
 if (tool === "ruta") App.tools.rutas?.stop();
+if (tool === "corregirRuta") { window.__CORREGIR_RUTA_MODE__ = false; App.tools.rutas?.stop(); }
 if (tool === "cierres") App.tools.cierres?.stop();
 if (tool === "eventos") App.tools.eventos?.stop();
 if (tool === "posteria") App.tools.posteria?.stop();
     } catch (e) {
       console.warn("⚠️ Error apagando tool:", tool);
     }
+    document.getElementById("btnFinalizarRuta")?.classList.add("hidden");
   }
 
   function encenderTool(tool) {
@@ -110,10 +117,20 @@ if (tool === "posteria") App.tools.posteria?.stop();
 
   try {
 
-    if (tool === "gps") App.tools.gps?.start();
+    if (tool === "gps") {
+      App.tools.gps?.start();
+      document.getElementById("btnGPS")?.classList.add("active");
+    }
     if (tool === "medir") App.tools.medicion?.start();
     if (tool === "navegar") App.tools.navegacion?.start();
     if (tool === "ruta") App.tools.rutas?.start();
+    if (tool === "corregirRuta") {
+      window.__CORREGIR_RUTA_MODE__ = true;
+      App.tools.rutas?.start();
+    }
+    if (tool === "ruta" || tool === "corregirRuta") {
+      document.getElementById("btnFinalizarRuta")?.classList.remove("hidden");
+    }
 
     // ✅ EVENTOS con espera automática (robusto)
     if (tool === "eventos") {
@@ -189,6 +206,14 @@ if (tool === "posteria") App.tools.posteria?.stop();
     }
   }
 
+  window.addEventListener("ftth-switch-tool", (e) => {
+    const tool = e.detail?.tool;
+    if (!tool) return;
+    Object.keys(toolState).forEach(t => apagarTool(t));
+    encenderTool(tool);
+    if (toolButtons[tool]) toolButtons[tool].classList.add("active");
+  });
+
   /* ===============================
      BIND BOTONES SIDEBAR
   =============================== */
@@ -197,6 +222,7 @@ toolButtons.gps?.addEventListener("click", () => toggleTool("gps"));
 toolButtons.medir?.addEventListener("click", () => toggleTool("medir"));
 toolButtons.navegar?.addEventListener("click", () => toggleTool("navegar"));
 toolButtons.ruta?.addEventListener("click", () => toggleTool("ruta"));
+toolButtons.corregirRuta?.addEventListener("click", () => toggleTool("corregirRuta"));
 toolButtons.cierres?.addEventListener("click", () => toggleTool("cierres"));
 if (toolButtons.eventos) {
   toolButtons.eventos.addEventListener("click", () => toggleTool("eventos"));
@@ -211,8 +237,22 @@ toolButtons.posteria?.addEventListener("click", () => toggleTool("posteria"));
   const btnBaseMap = document.getElementById("btnBaseMap");
   const btnLimpiarMapa = document.getElementById("btnLimpiarMapa");
 
-  btnGPSMap?.addEventListener("click", () => toggleTool("gps"));
+  btnGPSMap?.addEventListener("click", () => {
+    if (toolState.gps && App.tools.gps?.recenter) {
+      App.tools.gps.recenter();
+      btnGPSMap.classList.add("active");
+      return;
+    }
+    toggleTool("gps");
+  });
   btnMedirMap?.addEventListener("click", () => toggleTool("medir"));
+
+  const btnFinalizarRuta = document.getElementById("btnFinalizarRuta");
+  btnFinalizarRuta?.addEventListener("click", () => {
+    if ((toolState.ruta || toolState.corregirRuta) && App.tools.rutas?.finish) {
+      App.tools.rutas.finish();
+    }
+  });
 
   // 🧹 Limpiar mapa: ocultar cables y pines, dejar solo centrales (según filtros)
   btnLimpiarMapa?.addEventListener("click", () => {

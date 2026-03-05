@@ -142,6 +142,36 @@ function main() {
   const basePath = path.join(GEOJSON_DIR, "");
   collectGeoJSON(root, basePath, "");
 
+  // ✅ Incluir MUZU (muzu.geojson) como en mapa.layers.js — cables con _molecula (MU01..MU45)
+  const muzuPath = path.join(GEOJSON_DIR, "FTTH", "MUZU", "muzu.geojson");
+  if (fs.existsSync(muzuPath)) {
+    try {
+      const muzuGeo = JSON.parse(fs.readFileSync(muzuPath, "utf8"));
+      if (muzuGeo.features && muzuGeo.features.length > 0) {
+        let muzuCount = 0;
+        muzuGeo.features.forEach((feature, idx) => {
+          if (!feature.geometry || feature.geometry.type !== "LineString") return;
+          const name = (feature.properties && feature.properties.name) ? String(feature.properties.name).trim() : "";
+          if (!name) return;
+          const moleculaMatch = name.match(/(MU\d+)/i);
+          const _molecula = moleculaMatch ? moleculaMatch[1].toUpperCase() : "";
+          if (!_molecula) return;
+          if (!feature.properties) feature.properties = {};
+          feature.properties._layerId = "FTTH_MUZU_" + _molecula + "_" + name;
+          feature.properties._layerLabel = name;
+          feature.properties._layerType = "line";
+          feature.properties._molecula = _molecula;
+          feature.properties.__id = "muzu-l-" + idx;
+          allFeatures.push(feature);
+          muzuCount++;
+        });
+        console.log("✅ MUZU en consolidado:", muzuCount, "cables");
+      }
+    } catch (e) {
+      console.warn("⚠ MUZU no incorporado al consolidado:", e.message);
+    }
+  }
+
   const consolidated = { type: "FeatureCollection", features: allFeatures };
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(consolidated, null, 0), "utf8");
   console.log("✅ Escrito", OUTPUT_FILE, "con", allFeatures.length, "features");

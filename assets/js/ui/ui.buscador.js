@@ -41,13 +41,14 @@
   // GIS Corporativo: solo buscar los 235 cables de CABLES (no FTTH)
   const isCorporativo = typeof window !== "undefined" && !!window.__GEOJSON_INDEX__;
 
-  // Índice de búsqueda (centrales, moléculas, cables, cierres y eventos desde Firebase)
+  // Índice de búsqueda (centrales, moléculas, cables, cierres, eventos y rutas desde Firebase)
   const searchIndex = {
     centrales: [],
     moleculas: [],
     cables: [],
     cierres: [],
-    eventos: []
+    eventos: [],
+    rutas: []
   };
 
   // IDs de capas desde config (fallback a valores por defecto)
@@ -189,6 +190,7 @@
       });
       waitForFirebaseAndLoadCierres();
       waitForFirebaseAndLoadEventos();
+      waitForFirebaseAndLoadRutas();
       setupFilterToggles();
       setupMoleculaFilter();
       if (App) App.setSelectedMoleculaForPins = setSelectedMoleculaForPins;
@@ -219,6 +221,17 @@
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     console.warn("⚠️ Firebase no disponible para cargar eventos");
+    return false;
+  }
+
+  async function waitForFirebaseAndLoadRutas(maxAttempts = 100) {
+    for (let i = 0; i < maxAttempts; i++) {
+      if (window.FTTH_FIREBASE?.escucharRutas) {
+        loadRutas();
+        return true;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
     return false;
   }
 
@@ -1046,8 +1059,50 @@
   }
 
   /* =========================
-     Event Listeners
+     Cargar rutas desde Firebase (Montar Ruta + Corregir Ruta)
   ========================= */
+  function rutaCoordinatesFromGeojson(geojsonStr) {
+    if (!geojsonStr || typeof geojsonStr !== "string") return null;
+    try {
+      const parsed = JSON.parse(geojsonStr);
+      const geom = parsed && (parsed.geometry || parsed.features?.[0]?.geometry);
+      if (!geom || geom.type !== "LineString" || !Array.isArray(geom.coordinates) || geom.coordinates.length === 0) return null;
+      const coords = geom.coordinates;
+      const mid = Math.floor(coords.length / 2);
+      return coords[mid];
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function loadRutas() {
+    if (!window.FTTH_FIREBASE?.escucharRutas) return;
+    try {
+      window.FTTH_FIREBASE.escucharRutas((rutas) => {
+        clearSearchCache();
+        searchIndex.rutas = (rutas || []).map((r) => {
+          const coordinates = rutaCoordinatesFromGeojson(r.geojson);
+          const isCorreccion = (r.tipo || "").toLowerCase() === "corregir_ruta";
+          return {
+            id: r.id,
+            name: r.nombre || (isCorreccion ? "Corrección " + (r.molecula || r.central || "") : "Ruta sin nombre"),
+            type: isCorreccion ? "correccion" : "ruta",
+            coordinates: coordinates,
+            icon: isCorreccion ? "✏️" : "🛣️",
+            subtitle: [r.central, r.molecula].filter(Boolean).join(" · ") + (r.distancia ? " · " + (Number(r.distancia) >= 1000 ? (Number(r.distancia) / 1000).toFixed(1) + " km" : r.distancia + " m") : ""),
+            central: r.central || "",
+            molecula: r.molecula || "",
+            geojson: r.geojson,
+            distancia: r.distancia
+          };
+        }).filter((r) => r.coordinates != null);
+        if (searchIndex.rutas.length > 0) console.log("✅ Rutas en buscador: " + searchIndex.rutas.length);
+        if (currentSearch) performSearch(currentSearch);
+      });
+    } catch (err) {
+      console.warn("⚠️ No se pudieron cargar rutas:", err);
+    }
+  }
   function setupEventListeners() {
     // Input de búsqueda
     searchInput.addEventListener("input", (e) => {
@@ -1146,7 +1201,7 @@
     }
 
     // ✅ Si el índice está vacío, mostrar "Cargando..." y reintentar cuando haya datos
-    const totalItems = searchIndex.centrales.length + searchIndex.moleculas.length + searchIndex.cables.length + searchIndex.cierres.length + searchIndex.eventos.length;
+    const totalItems = searchIndex.centrales.length + searchIndex.moleculas.length + searchIndex.cables.length + searchIndex.cierres.length + searchIndex.eventos.length + searchIndex.rutas.length;
     if (totalItems === 0) {
       if (retryCount < SEARCH_MAX_RETRIES) {
         searchResults.innerHTML = `<div class="search-no-results"><i class="fas fa-spinner fa-spin"></i><div>Cargando índice de búsqueda...</div></div>`;
@@ -1201,6 +1256,29 @@
         allResults.push(evento);
       }
     });
+
+    // Buscar en rutas y correcciones (Firebase): por molécula, nombre, central
+    searchIndex.rutas.forEach(ruta => {
+      const searchText = `${ruta.name} ${ruta.central || ""} ${ruta.molecula || ""} ${ruta.subtitle || ""}`.toLowerCase();
+      if (searchText.includes(lowerQuery)) {
+        allResults.push(ruta);
+      }
+      if (ruta.molecula && ruta.molecula.toLowerCase() === lowerQuery.trim()) {
+        if (!allResults.some(r => r.type === ruta.type && r.id === ruta.id)) allResults.push(ruta);
+      }
+    });
+
+    // Al buscar por molécula (ej. SI05, CO36), incluir también rutas y correcciones de esa molécula
+    const molQuery = lowerQuery.trim().replace(/\s+/g, "");
+    if (/^[a-z]{2}\d+$/i.test(molQuery)) {
+      searchIndex.rutas.forEach(ruta => {
+        if (ruta.molecula && ruta.molecula.toUpperCase() === molQuery.toUpperCase()) {
+          if (!allResults.some(r => (r.type === "ruta" || r.type === "correccion") && r.id === ruta.id)) {
+            allResults.push(ruta);
+          }
+        }
+      });
+    }
 
     // Añadir cables de la misma molécula (relacionados)
     const cableResults = allResults.filter(function (r) { return r.type === "cable"; });
@@ -1261,7 +1339,11 @@
       <div class="search-results-list" role="listbox" aria-label="Resultados de búsqueda">
         ${allResults.map(result => {
           const displayName = result.type === "cable" ? cableNameForDisplay(result.layerId, result.name) : result.name;
-          const badge = result.type === "direccion" ? "dirección" : (result.type === "molecula" ? "molécula" : result.type);
+          let badge = result.type;
+          if (result.type === "direccion") badge = "dirección";
+          else if (result.type === "molecula") badge = "molécula";
+          else if (result.type === "correccion") badge = "corrección";
+          else if (result.type === "ruta") badge = "ruta";
           return `
           <div class="search-result-item" role="option" data-type="${result.type}" data-id="${result.id}">
             <div class="search-result-icon ${result.type}">
@@ -1361,7 +1443,7 @@
     }
 
     // Hacer zoom al resultado
-    const zoomLevel = result.type === "central" ? 15 : (result.type === "direccion" ? 17 : (result.type === "molecula" ? 16 : 17));
+    const zoomLevel = result.type === "central" ? 15 : (result.type === "direccion" ? 17 : (result.type === "molecula" ? 16 : (result.type === "ruta" || result.type === "correccion" ? 15 : 17)));
     App.map.flyTo({
       center: result.coordinates,
       zoom: zoomLevel,
@@ -1508,6 +1590,24 @@
       }
       const fe = document.getElementById("filterEventos");
       if (fe) fe.checked = true;
+    }
+
+    // Ruta o corrección: dibujar línea en el mapa y opcionalmente filtrar por molécula
+    if (result.type === "ruta" || result.type === "correccion") {
+      if (result.geojson && typeof window.drawSavedRoute === "function") {
+        try {
+          const parsed = typeof result.geojson === "string" ? JSON.parse(result.geojson) : result.geojson;
+          let feature = parsed.geometry
+            ? { type: "Feature", geometry: parsed.geometry, properties: parsed.properties || {}, id: result.id }
+            : (parsed.features?.[0] ? { ...parsed.features[0], id: result.id } : parsed);
+          if (feature.geometry) window.drawSavedRoute(feature);
+        } catch (e) {
+          console.warn("⚠️ No se pudo dibujar ruta en el mapa:", e);
+        }
+      }
+      if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
+        App.setSelectedMoleculaForPins(result.molecula, { keepCablesVisible: true });
+      }
     }
 
     const zoomLabel = result.type === "cable" ? cableNameForDisplay(result.layerId, result.name) : result.name;

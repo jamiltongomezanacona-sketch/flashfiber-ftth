@@ -80,6 +80,8 @@
         <button class="menu-item" data-action="eventos">📝 Reportar Evento</button>
         <button class="menu-item" data-action="cierres">🧱 Montar Cierre</button>
         <button class="menu-item" data-action="ruta">🛣️ Montar Ruta</button>
+        <button class="menu-item" data-action="corregirRuta">✏️ Corregir Ruta</button>
+        <button class="menu-item" id="btnGestionarRutas">📋 Gestionar rutas</button>
       </section>
 
       <section class="menu-section">
@@ -130,13 +132,14 @@
   <div id="map"></div>
 
   <div class="map-controls">
-    <button id="btnGPS" type="button" aria-label="Centrar en mi ubicación"><i class="fas fa-location-crosshairs" aria-hidden="true"></i></button>
+    <button id="btnGPS" type="button" title="Mi ubicación (toca de nuevo para seguir)" aria-label="Centrar en mi ubicación"><i class="fas fa-location-crosshairs" aria-hidden="true"></i></button>
     <button id="btnMedir" type="button" aria-label="Medir distancia"><i class="fas fa-ruler" aria-hidden="true"></i></button>
 
     <button id="btnRotate" type="button" title="Rotar mapa" aria-label="Rotar mapa"><i class="fas fa-sync-alt" aria-hidden="true"></i></button>
     <button id="btnRotateLeft" type="button" class="map-control-pc" title="Girar mapa a la izquierda" aria-label="Girar mapa a la izquierda"><i class="fas fa-rotate-left" aria-hidden="true"></i></button>
     <button id="btnRotateRight" type="button" class="map-control-pc" title="Girar mapa a la derecha" aria-label="Girar mapa a la derecha"><i class="fas fa-rotate-right" aria-hidden="true"></i></button>
     <button id="btnLimpiarMapa" type="button" title="Limpiar mapa" aria-label="Limpiar mapa"><i class="fas fa-broom" aria-hidden="true"></i></button>
+    <button id="btnFinalizarRuta" type="button" class="hidden" title="Listo: abrir formulario para guardar ruta" aria-label="Finalizar ruta"><i class="fas fa-check-double" aria-hidden="true"></i></button>
   </div>
 </main>
 
@@ -153,6 +156,26 @@
       <!-- Árbol dinámico -->
     </div>
 
+  </div>
+
+  <!-- 📋 PANEL GESTIÓN DE RUTAS -->
+  <div id="rutasPanel" class="panel panel-rutas hidden">
+    <div class="panel-header">
+      <span class="panel-title">🛣️ Rutas guardadas</span>
+      <button id="btnCloseRutasPanel" type="button" aria-label="Cerrar">✖</button>
+    </div>
+    <div class="panel-content panel-rutas-content">
+      <div class="rutas-actions">
+        <button type="button" id="btnNuevaRutaFromPanel" class="btn-ruta-primary"><i class="fas fa-plus"></i> Nueva ruta</button>
+      </div>
+      <div id="rutasListContainer" class="rutas-list">
+        <!-- Lista dinámica -->
+      </div>
+      <div id="rutasListEmpty" class="rutas-list-empty hidden">
+        <p>No hay rutas guardadas.</p>
+        <p class="rutas-list-empty-hint">Usa «Montar Ruta» o «Corregir Ruta» y guarda en Firebase.</p>
+      </div>
+    </div>
   </div>
 
   <!-- 🖼️ PANEL CREAR DISEÑO DE MAPA (exportar con márgenes y notas) -->
@@ -250,6 +273,84 @@
         <button class="route-btn danger" id="btnCancelRoute">Cancelar</button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ✏️ MODAL CORREGIR RUTA (Central + Molecula → Firebase) -->
+  <div id="corregirRutaModal" class="route-modal hidden">
+    <div class="route-card">
+      <div class="route-header">
+        <span>✏️ Corregir Ruta</span>
+        <button id="closeCorregirRutaModal" type="button" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="route-body">
+        <label>🏢 Central</label>
+        <select id="corregirRutaCentral">
+          <option value="">Seleccione Central</option>
+          <option value="BACHUE">Bachué</option>
+          <option value="CHICO">Chicó</option>
+          <option value="CUNI">Cuni</option>
+          <option value="FONTIBON">Fontibón</option>
+          <option value="GUAYMARAL">Guaymaral</option>
+          <option value="HOLANDA">Holanda</option>
+          <option value="MUZU">Muzú</option>
+          <option value="SANTA_INES">Santa Inés</option>
+          <option value="SUBA">Suba</option>
+          <option value="TOBERIN">Toberín</option>
+        </select>
+        <label>🧬 Molécula</label>
+        <select id="corregirRutaMolecula" disabled>
+          <option value="">Seleccione Molécula</option>
+        </select>
+        <label>📛 Nombre</label>
+        <input id="corregirRutaName" placeholder="Ej: Corrección troncal SI05">
+        <label>📝 Observaciones</label>
+        <textarea id="corregirRutaNotes" placeholder="Notas..."></textarea>
+        <p id="corregirRutaDistance">Distancia: 0 m</p>
+      </div>
+      <div class="route-actions">
+        <button class="route-btn primary" id="btnSaveCorregirRuta">💾 Guardar en Firebase</button>
+        <button class="route-btn danger" id="btnCancelCorregirRuta">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✏️ MODAL EDITAR RUTA (solo metadata) -->
+  <div id="editarRutaModal" class="route-modal hidden">
+    <div class="route-card">
+      <div class="route-header">
+        <span>✏️ Editar ruta</span>
+        <button id="closeEditarRutaModal" type="button" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="route-body">
+        <input type="hidden" id="editarRutaId" value="">
+        <label>📛 Nombre</label>
+        <input id="editarRutaNombre" placeholder="Nombre de la ruta">
+        <label>🏢 Central</label>
+        <select id="editarRutaCentral">
+          <option value="">Seleccione Central</option>
+          <option value="BACHUE">Bachué</option>
+          <option value="CHICO">Chicó</option>
+          <option value="CUNI">Cuni</option>
+          <option value="FONTIBON">Fontibón</option>
+          <option value="GUAYMARAL">Guaymaral</option>
+          <option value="HOLANDA">Holanda</option>
+          <option value="MUZU">Muzú</option>
+          <option value="SANTA_INES">Santa Inés</option>
+          <option value="SUBA">Suba</option>
+          <option value="TOBERIN">Toberín</option>
+        </select>
+        <label>🧬 Molécula</label>
+        <select id="editarRutaMolecula" disabled>
+          <option value="">Seleccione Molécula</option>
+        </select>
+        <label>📝 Observaciones</label>
+        <textarea id="editarRutaNotas" placeholder="Notas..."></textarea>
+      </div>
+      <div class="route-actions">
+        <button class="route-btn primary" id="btnSaveEditarRuta"><i class="fas fa-save"></i> Guardar cambios</button>
+        <button class="route-btn danger" id="btnCancelEditarRuta">Cancelar</button>
+      </div>
     </div>
   </div>
 
@@ -390,6 +491,7 @@
 
       <div class="modal-footer">
         <button id="btnSaveEvento" aria-label="Guardar evento">💾 Guardar</button>
+        <button id="btnCrearCierreDesdeEvento" type="button" class="btn-crear-cierre" aria-label="Ir a crear cierre">🧱 Crear cierre</button>
         <button id="btnDeleteEvento" aria-label="Eliminar evento">🗑️ Eliminar</button>
       </div>
 

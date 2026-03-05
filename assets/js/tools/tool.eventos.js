@@ -716,6 +716,12 @@
 
     btnClose?.addEventListener("click", closeModal);
 
+    const btnCrearCierre = document.getElementById("btnCrearCierreDesdeEvento");
+    btnCrearCierre?.addEventListener("click", () => {
+      closeModal();
+      window.dispatchEvent(new CustomEvent("ftth-switch-tool", { detail: { tool: "cierres" } }));
+    });
+
     function abrirEdicionEvento(evt) {
       // llenar campos
       elTipo.value = evt.tipo || "";

@@ -53,6 +53,7 @@
     active = false;
     points = [];
     isPanning = false;
+    if (typeof window !== "undefined") window.__CORREGIR_RUTA_MODE__ = false;
 
     if (App && App.map) {
       App.map.off("click", onClick);
@@ -85,7 +86,11 @@
     }
 
     const metros = calcLength(points);
-    window.openRouteModal?.(metros);
+    if (window.__CORREGIR_RUTA_MODE__) {
+      window.openCorregirRutaModal?.(metros);
+    } else {
+      window.openRouteModal?.(metros);
+    }
   }
 
   /* ============================
@@ -317,6 +322,116 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.openRouteModal = openRouteModal;
+
+  /* ---------- Modal Corregir Ruta ---------- */
+  const corregirRutaModal = document.getElementById("corregirRutaModal");
+  const corregirRutaDistance = document.getElementById("corregirRutaDistance");
+  const corregirRutaCentral = document.getElementById("corregirRutaCentral");
+  const corregirRutaMolecula = document.getElementById("corregirRutaMolecula");
+  const corregirRutaName = document.getElementById("corregirRutaName");
+  const corregirRutaNotes = document.getElementById("corregirRutaNotes");
+
+  function closeCorregirRutaModal() {
+    corregirRutaModal?.classList.add("hidden");
+  }
+
+  function openCorregirRutaModal(distanceMeters) {
+    if (!corregirRutaModal) return;
+    if (corregirRutaDistance) {
+      corregirRutaDistance.innerText = "Distancia: " + Number(distanceMeters).toFixed(0) + " m";
+    }
+    if (corregirRutaCentral) corregirRutaCentral.value = "";
+    if (corregirRutaMolecula) {
+      corregirRutaMolecula.disabled = true;
+      corregirRutaMolecula.innerHTML = "<option value=\"\">Seleccione Molécula</option>";
+    }
+    if (corregirRutaName) corregirRutaName.value = "";
+    if (corregirRutaNotes) corregirRutaNotes.value = "";
+    corregirRutaModal.classList.remove("hidden");
+  }
+  window.openCorregirRutaModal = openCorregirRutaModal;
+
+  if (corregirRutaCentral) {
+    corregirRutaCentral.addEventListener("change", () => {
+      const CENTRALES = window.__FTTH_CENTRALES__;
+      const selectMol = corregirRutaMolecula;
+      if (!selectMol) return;
+      selectMol.innerHTML = "<option value=\"\">Seleccione Molécula</option>";
+      const centralVal = corregirRutaCentral.value;
+      if (!centralVal || !CENTRALES?.CENTRAL_PREFIX?.[centralVal]) {
+        selectMol.disabled = true;
+        return;
+      }
+      const prefijo = CENTRALES.CENTRAL_PREFIX[centralVal];
+      const moleculas = CENTRALES.generarMoleculas(prefijo) || [];
+      moleculas.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        selectMol.appendChild(opt);
+      });
+      selectMol.disabled = false;
+    });
+  }
+
+  document.getElementById("btnSaveCorregirRuta")?.addEventListener("click", () => {
+    const rutasAPI = window.__FTTH_APP__?.tools?.rutas;
+    if (!rutasAPI) return;
+    const pts = rutasAPI.getPoints();
+    if (!pts || pts.length < 2) {
+      App?.ui?.notify?.("⚠️ No hay puntos suficientes.");
+      return;
+    }
+    const central = corregirRutaCentral?.value?.trim();
+    const molecula = corregirRutaMolecula?.value?.trim();
+    if (!central || !molecula) {
+      App?.ui?.notify?.("⚠️ Seleccione Central y Molécula.");
+      return;
+    }
+    const metros = rutasAPI.getLength();
+    const feature = {
+      type: "Feature",
+      id: "CORREGIR-" + Date.now(),
+      properties: {
+        nombre: corregirRutaName?.value?.trim() || "Corrección " + central + " " + molecula,
+        tipo: "corregir_ruta",
+        central: central,
+        molecula: molecula,
+        notas: corregirRutaNotes?.value?.trim() || "",
+        longitud_m: metros,
+        fecha: new Date().toISOString()
+      },
+      geometry: { type: "LineString", coordinates: [...pts] }
+    };
+    const payloadCloud = {
+      nombre: feature.properties.nombre,
+      tipo: "corregir_ruta",
+      central: central,
+      molecula: molecula,
+      notas: feature.properties.notas,
+      distancia: metros,
+      geojson: JSON.stringify({ type: "Feature", geometry: feature.geometry, properties: feature.properties })
+    };
+    if (!window.FTTH_FIREBASE?.guardarRuta) {
+      App?.ui?.notify?.("⚠️ Firebase no disponible.");
+      return;
+    }
+    window.FTTH_FIREBASE.guardarRuta(payloadCloud)
+      .then(() => {
+        App?.ui?.notify?.("✅ Ruta corregida guardada en Firebase");
+        rutasAPI.stop();
+        closeCorregirRutaModal();
+      })
+      .catch(err => {
+        console.error("❌ Error guardando corrección:", err);
+        App?.ui?.notify?.("⚠️ No se pudo guardar en Firebase");
+      });
+  });
+  document.getElementById("btnCancelCorregirRuta")?.addEventListener("click", () => {
+    window.__FTTH_APP__?.tools?.rutas?.stop();
+    closeCorregirRutaModal();
+  });
+  document.getElementById("closeCorregirRutaModal")?.addEventListener("click", closeCorregirRutaModal);
 
   function guardarRutaActual() {
     const rutasAPI = window.__FTTH_APP__?.tools?.rutas;

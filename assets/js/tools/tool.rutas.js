@@ -105,7 +105,7 @@
         id: LAYER_LINE,
         type: "line",
         source: SRC_LINE,
-        paint: { "line-color": "#00e5ff", "line-width": 4 }
+        paint: { "line-color": "#0d47a1", "line-width": 4 }
       });
     }
 
@@ -194,7 +194,7 @@
       type: "line",
       source: SAVED_ROUTES_SOURCE,
       paint: {
-        "line-color": "#00e5ff",
+        "line-color": "#0d47a1",
         "line-width": 3,
         "line-opacity": 0.8
       }

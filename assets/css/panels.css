@@ -1422,3 +1422,8 @@
   pointer-events: auto;
 }
 
+/* Ocultar bloque "Pines en mapa" en el sidebar (solo visual; la lógica sigue activa) */
+aside#sidebar .sidebar-filters {
+  display: none;
+}
+

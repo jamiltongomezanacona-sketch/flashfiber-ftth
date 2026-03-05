@@ -246,6 +246,7 @@
     const filterCentrales = document.getElementById("filterCentrales");
     const filterCierres = document.getElementById("filterCierres");
     const filterEventos = document.getElementById("filterEventos");
+    const filterOcultarPines = document.getElementById("filterOcultarPines");
     if (!filterCierres || !filterEventos) return;
 
     // Por defecto mostrar centrales, cierres y eventos cuando haya molécula seleccionada
@@ -264,7 +265,8 @@
 
     function applyPinsVisibility() {
       if (!App?.map) return;
-      const showPins = selectedMoleculaForPins != null;
+      const hideAllPins = filterOcultarPines?.checked === true;
+      const showPins = !hideAllPins && selectedMoleculaForPins != null;
       const filter = selectedMoleculaForPins ? ["==", ["get", "molecula"], selectedMoleculaForPins] : null;
       [LAYER_CIERRES, LAYER_EVENTOS].forEach((layerId, i) => {
         if (!App.map.getLayer(layerId)) return;
@@ -292,6 +294,7 @@
     if (filterCentrales) filterCentrales.addEventListener("change", setCentralesVisibility);
     filterCierres.addEventListener("change", applyPinsVisibility);
     filterEventos.addEventListener("change", applyPinsVisibility);
+    if (filterOcultarPines) filterOcultarPines.addEventListener("change", applyPinsVisibility);
     setCentralesVisibility();
   }
 
@@ -309,6 +312,7 @@
     selectedMoleculaForPins = moleculaOrNull || null;
     const filterCierres = document.getElementById("filterCierres");
     const filterEventos = document.getElementById("filterEventos");
+    const filterOcultarPines = document.getElementById("filterOcultarPines");
     const filterMolecula = document.getElementById("filterMolecula");
     if (filterMolecula) {
       filterMolecula.value = moleculaOrNull || "";
@@ -322,7 +326,8 @@
     if (App) App.__cablesExplicitlyVisible = !!opts?.keepCablesVisible;
     if (typeof App.enforceOnlyCentralesVisible === "function") App.enforceOnlyCentralesVisible();
     if (typeof App.syncTreeToSelectedMolecula === "function") App.syncTreeToSelectedMolecula(selectedMoleculaForPins);
-    const showPins = selectedMoleculaForPins != null;
+    const hideAllPins = filterOcultarPines?.checked === true;
+    const showPins = !hideAllPins && selectedMoleculaForPins != null;
     const filter = selectedMoleculaForPins ? ["==", ["get", "molecula"], selectedMoleculaForPins] : null;
     [LAYER_CIERRES, LAYER_EVENTOS].forEach((layerId, i) => {
       if (!App.map.getLayer(layerId)) return;

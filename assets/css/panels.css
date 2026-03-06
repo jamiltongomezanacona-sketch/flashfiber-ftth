@@ -610,9 +610,24 @@
   outline: none;
 }
 
+/* Iconos Font Awesome en ítems: mismo estilo y espaciado */
+.menu-item .fas,
+.menu-item .fa,
+.menu-item i[class^="fa"] {
+  margin-right: 8px;
+  width: 1em;
+  text-align: center;
+  opacity: 0.95;
+}
+
 .menu-item:hover {
   background: rgba(0, 229, 255, 0.12);
   transform: translateX(2px);
+}
+
+.menu-item.active {
+  background: rgba(30, 110, 119, 0.85);
+  border: 1px solid rgba(0, 229, 255, 0.25);
 }
 
 .menu-item:active {

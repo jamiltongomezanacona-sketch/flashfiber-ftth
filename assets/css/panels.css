@@ -1210,6 +1210,25 @@
   letter-spacing: 0.02em;
 }
 
+#eventoModal .modal-body label .fas,
+#eventoModal .modal-body label .fa,
+#eventoModal .modal-body label i[class^="fa"] {
+  margin-right: 6px;
+  opacity: 0.9;
+}
+
+#eventoModal .modal-header h3 .fas,
+#eventoModal .modal-header h3 .fa,
+#eventoModal .modal-header h3 i[class^="fa"] {
+  margin-right: 8px;
+}
+
+#eventoModal .modal-footer button .fas,
+#eventoModal .modal-footer button .fa,
+#eventoModal .modal-footer button i[class^="fa"] {
+  margin-right: 6px;
+}
+
 #eventoModal select,
 #eventoModal input,
 #eventoModal textarea {

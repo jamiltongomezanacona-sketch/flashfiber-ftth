@@ -97,43 +97,10 @@
     let cableNamesList = [];
     let eventoCableSearchTimeout = null;
 
-    // 📸 Input de fotos
-    const fotoInput     = document.getElementById("fotoInput");
-    const fotoPreview   = document.getElementById("fotoPreview");
-
-    // Buffer temporal de fotos
-    let fotos = [];
-
     if (!modal || !btnSave || !btnClose || !elTipo || !elAccion || !elEstado) {
       console.error("❌ Modal de eventos no encontrado. Revisa el HTML (eventoModal y campos).");
       return;
     }
-
-    /* ===============================
-       Fotos: preview y captura
-    =============================== */
-    function renderPreview(container, files) {
-      if (!container) return;
-      container.innerHTML = "";
-
-      (files || []).forEach(file => {
-        const img = document.createElement("img");
-        img.src = URL.createObjectURL(file);
-        img.title = file.name;
-        img.style.width = "72px";
-        img.style.height = "72px";
-        img.style.objectFit = "cover";
-        img.style.borderRadius = "8px";
-        img.style.border = "1px solid #2c3e50";
-        img.style.cursor = "pointer";
-        container.appendChild(img);
-      });
-    }
-
-    fotoInput?.addEventListener("change", (e) => {
-      fotos = Array.from(e.target.files || []);
-      renderPreview(fotoPreview, fotos);
-    });
 
     /* ===============================
        Map Layer (IDs desde config)
@@ -708,10 +675,6 @@
       }
       hideCableResults();
 
-      // ✅ limpiar fotos temporales
-      fotos = [];
-      if (fotoInput) fotoInput.value = "";
-      if (fotoPreview) fotoPreview.innerHTML = "";
     }
 
     btnClose?.addEventListener("click", closeModal);
@@ -936,52 +899,11 @@ btnSave?.addEventListener("click", async (e) => {
     if (!eventoId) {
       throw new Error("No se pudo obtener eventoId");
     }
-    
-    /* =========================
-       2️⃣ Subir fotos a Storage (con manejo de errores mejorado)
-    ========================= */
-    const fotosURLs = [];
-    
-    // ✅ Subir todas las fotos con Promise.allSettled para manejar errores individuales
-    if (fotos.length > 0) {
-      const uploadResults = await Promise.allSettled(
-        fotos.map(file => 
-          window.FTTH_STORAGE.subirFotoEvento(eventoId, "fotos", file)
-        )
-      );
-      
-      uploadResults.forEach((result, index) => {
-        if (result.status === "fulfilled" && result.value) {
-          fotosURLs.push(result.value);
-        } else {
-          const errorMsg = result.reason?.message || "Error desconocido";
-          console.warn(`⚠️ Error subiendo foto #${index + 1}:`, errorMsg);
-        }
-      });
-    }
-    
-    // ✅ Mostrar resumen si hubo errores
-    const totalFotos = fotos.length;
-    const fotosExitosas = fotosURLs.length;
-    const fotosFallidas = totalFotos - fotosExitosas;
-    
-    if (fotosFallidas > 0 && totalFotos > 0) {
-      console.warn(`⚠️ ${fotosFallidas} de ${totalFotos} fotos no se pudieron subir. El evento se guardó correctamente.`);
-    }
-    
-    /* =========================
-       3️⃣ Guardar URLs en Firestore
-    ========================= */
-    if (fotosURLs.length > 0) {
-      const actualizarFotos = isCorporativoEvento ? FB.actualizarEventoCorp : FB.actualizarEvento;
-      if (actualizarFotos) await actualizarFotos(eventoId, { fotos: fotosURLs });
-    }
-    
+
     // ✅ Agregar/actualizar evento en el mapa inmediatamente después de guardarlo
     const eventoCompleto = {
       id: eventoId,
-      ...evento,
-      fotos: fotosURLs.length > 0 ? fotosURLs : (editId ? undefined : [])
+      ...evento
     };
     addEventoToMap(eventoCompleto);
     
@@ -991,10 +913,10 @@ btnSave?.addEventListener("click", async (e) => {
   } catch (err) {
     if (window.ErrorHandler) {
       window.ErrorHandler.handle(err, "guardarEvento");
-      alert("❌ " + (window.ErrorHandler.getUserMessage(err) || "Error guardando evento o subiendo fotos"));
+      alert("❌ " + (window.ErrorHandler.getUserMessage(err) || "Error guardando evento"));
     } else {
-      console.error("❌ Error guardando evento con fotos:", err);
-      alert("❌ Error guardando evento o subiendo fotos");
+      console.error("❌ Error guardando evento:", err);
+      alert("❌ Error guardando evento");
     }
   }
 });

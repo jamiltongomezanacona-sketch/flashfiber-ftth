@@ -445,13 +445,13 @@
     <div class="modal-content">
 
       <div class="modal-header">
-        <h3>🚨 Registrar Evento</h3>
-        <button id="closeEventoModal" type="button" aria-label="Cerrar modal de evento">✖</button>
+        <h3><i class="fas fa-clipboard-list" aria-hidden="true"></i> Registrar Evento</h3>
+        <button id="closeEventoModal" type="button" aria-label="Cerrar modal de evento"><i class="fas fa-times" aria-hidden="true"></i></button>
       </div>
 
       <div class="modal-body">
 
-        <label>Tipo</label>
+        <label><i class="fas fa-tag" aria-hidden="true"></i> Tipo</label>
         <select id="eventoTipo">
           <option value="">Seleccione</option>
           <option>VANDALISMO</option>
@@ -460,7 +460,7 @@
           <option>MANTENIMIENTO</option>
         </select>
 
-        <label>Acción</label>
+        <label><i class="fas fa-bolt" aria-hidden="true"></i> Acción</label>
         <select id="eventoAccion">
           <option value="">Seleccione</option>
           <option>EMPALME_PROVISIONAL</option>
@@ -470,13 +470,13 @@
           <option>CABLE EN DAÑO</option>
         </select>
 
-        <label>Estado</label>
+        <label><i class="fas fa-flag" aria-hidden="true"></i> Estado</label>
         <select id="eventoEstado">
           <option>CRITICO</option>
           <option>PROVISIONAL</option>
           <option>RESUELTO</option>
         </select>
-        <label>Central</label>
+        <label><i class="fas fa-building" aria-hidden="true"></i> Central</label>
         <select id="eventoCentral">
           <option value="">Seleccione Central</option>
           <option value="BACHUE">Bachué</option>
@@ -491,28 +491,23 @@
           <option value="TOBERIN">Toberín</option>
         </select>
 
-        <label>Molécula</label>
+        <label><i class="fas fa-dna" aria-hidden="true"></i> Molécula</label>
         <select id="eventoMolecula" disabled>
           <option value="">Seleccione Molécula</option>
         </select>
 
-        <label>Técnico</label>
+        <label><i class="fas fa-user" aria-hidden="true"></i> Técnico</label>
         <input id="eventoTecnico" placeholder="Ej. Juan Pérez" aria-label="Nombre del técnico">
 
-        <!-- 📸 FOTOS DEL EVENTO -->
-        <label>📷 Fotos</label>
-        <input type="file" id="fotoInput" accept="image/*" capture="environment" multiple>
-        <div id="fotoPreview" class="foto-preview"></div>
-
-        <label>Notas</label>
+        <label><i class="fas fa-note-sticky" aria-hidden="true"></i> Notas</label>
         <textarea id="eventoNotas" class="evento-notas-box" rows="8" placeholder="Escribe aquí todas las notas del evento..."></textarea>
 
       </div>
 
       <div class="modal-footer">
-        <button id="btnSaveEvento" aria-label="Guardar evento">💾 Guardar</button>
-        <button id="btnCrearCierreDesdeEvento" type="button" class="btn-crear-cierre" aria-label="Ir a crear cierre">🧱 Crear cierre</button>
-        <button id="btnDeleteEvento" aria-label="Eliminar evento">🗑️ Eliminar</button>
+        <button id="btnSaveEvento" aria-label="Guardar evento"><i class="fas fa-save" aria-hidden="true"></i> Guardar</button>
+        <button id="btnCrearCierreDesdeEvento" type="button" class="btn-crear-cierre" aria-label="Ir a crear cierre"><i class="fas fa-cube" aria-hidden="true"></i> Crear cierre</button>
+        <button id="btnDeleteEvento" aria-label="Eliminar evento"><i class="fas fa-trash-alt" aria-hidden="true"></i> Eliminar</button>
       </div>
 
     </div>

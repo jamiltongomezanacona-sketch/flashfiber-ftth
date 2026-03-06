@@ -608,7 +608,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ☁️ Guardado en Firebase solo si la opción está habilitada
-    const saveToFirebase = document.getElementById("routeSaveFirebase")?.checked !== false;
     if (saveToFirebase && window.FTTH_FIREBASE?.guardarRuta) {
       const payloadCloud = {
         nombre: feature.properties.nombre,

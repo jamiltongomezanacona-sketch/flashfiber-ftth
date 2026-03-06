@@ -403,6 +403,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const inputName    = document.getElementById("routeName");
   const inputType    = document.getElementById("routeType");
   const inputCentral = document.getElementById("routeCentral");
+  const inputMolecula = document.getElementById("routeMolecula");
   const inputNotes   = document.getElementById("routeNotes");
 
   function closeRouteModal() {
@@ -414,10 +415,38 @@ document.addEventListener("DOMContentLoaded", () => {
     if (routeDistanceLabel) {
       routeDistanceLabel.innerText = `Distancia: ${Number(distanceMeters).toFixed(0)} m`;
     }
+    if (inputCentral) inputCentral.value = "";
+    if (inputMolecula) {
+      inputMolecula.disabled = true;
+      inputMolecula.innerHTML = "<option value=\"\">Seleccione Molécula</option>";
+    }
     routeModal.classList.remove("hidden");
   }
 
   window.openRouteModal = openRouteModal;
+
+  /* Populate routeMolecula when routeCentral changes (same as Corregir Ruta) */
+  if (inputCentral && inputMolecula) {
+    inputCentral.addEventListener("change", () => {
+      const CENTRALES = window.__FTTH_CENTRALES__;
+      const selectMol = inputMolecula;
+      selectMol.innerHTML = "<option value=\"\">Seleccione Molécula</option>";
+      const centralVal = inputCentral.value;
+      if (!centralVal || !CENTRALES?.CENTRAL_PREFIX?.[centralVal]) {
+        selectMol.disabled = true;
+        return;
+      }
+      const prefijo = CENTRALES.CENTRAL_PREFIX[centralVal];
+      const moleculas = CENTRALES.generarMoleculas(prefijo) || [];
+      moleculas.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        selectMol.appendChild(opt);
+      });
+      selectMol.disabled = false;
+    });
+  }
 
   /* ---------- Modal Corregir Ruta ---------- */
   const corregirRutaModal = document.getElementById("corregirRutaModal");
@@ -541,6 +570,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const metros = rutasAPI.getLength();
+    const saveToFirebase = document.getElementById("routeSaveFirebase")?.checked !== false;
+    const centralVal = inputCentral?.value?.trim();
+    const moleculaVal = inputMolecula?.value?.trim();
+
+    if (saveToFirebase && window.FTTH_FIREBASE?.guardarRuta) {
+      if (!centralVal || !moleculaVal) {
+        App?.ui?.notify?.("⚠️ Seleccione Central y Molécula para guardar en Firebase.");
+        return;
+      }
+    }
 
     const feature = {
       type: "Feature",
@@ -549,7 +588,7 @@ document.addEventListener("DOMContentLoaded", () => {
         nombre: inputName?.value?.trim() || "Ruta sin nombre",
         tipo: inputType?.value || "distribucion",
         central: inputCentral?.value?.trim() || "SIN-DEFINIR",
-        molecula: "",
+        molecula: inputMolecula?.value?.trim() || "",
         notas: inputNotes?.value?.trim() || "",
         tecnico: "Hamilton",
         fecha: new Date().toISOString(),

@@ -347,7 +347,7 @@
 
         <label><i class="fas fa-tag" aria-hidden="true"></i> Tipo</label>
         <select id="eventoTipo">
-          <option value="">Seleccione</option>
+          <option value="" class="evento-opt-placeholder">SELECCIONE</option>
           <option>VANDALISMO</option>
           <option>CORTE</option>
           <option>OBRAS</option>
@@ -356,7 +356,7 @@
 
         <label><i class="fas fa-bolt" aria-hidden="true"></i> Acción</label>
         <select id="eventoAccion">
-          <option value="">Seleccione</option>
+          <option value="" class="evento-opt-placeholder">SELECCIONE</option>
           <option>EMPALME_PROVISIONAL</option>
           <option>AJUSTE DE HILO</option>
           <option>RECONSTRUCCION</option>
@@ -367,7 +367,7 @@
         <label><i class="fas fa-flag" aria-hidden="true"></i> Estado</label>
         <select id="eventoEstado">
           <option>CRITICO</option>
-          <option>PROVISIONAL</option>
+          <option value="PROVISIONAL" selected class="evento-opt-verde">PROVISIONAL</option>
           <option>RESUELTO</option>
         </select>
 
@@ -386,9 +386,9 @@
       </div>
 
       <div class="modal-footer">
-        <button id="btnSaveEvento" aria-label="Guardar evento"><i class="fas fa-save" aria-hidden="true"></i> Guardar</button>
-        <button id="btnCrearCierreDesdeEvento" type="button" class="btn-crear-cierre" aria-label="Ir a crear cierre"><i class="fas fa-cube" aria-hidden="true"></i> Crear cierre</button>
-        <button id="btnDeleteEvento" aria-label="Eliminar evento"><i class="fas fa-trash-alt" aria-hidden="true"></i> Eliminar</button>
+        <button id="btnSaveEvento" aria-label="Guardar evento"><i class="fas fa-save" aria-hidden="true"></i> GUARDAR</button>
+        <button id="btnCrearCierreDesdeEvento" type="button" class="btn-crear-cierre" aria-label="Ir a crear cierre"><i class="fas fa-cube" aria-hidden="true"></i> CREAR CIERRE</button>
+        <button id="btnDeleteEvento" aria-label="Eliminar evento"><i class="fas fa-trash-alt" aria-hidden="true"></i> ELIMINAR</button>
       </div>
 
     </div>

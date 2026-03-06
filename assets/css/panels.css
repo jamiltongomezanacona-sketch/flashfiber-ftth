@@ -1317,6 +1317,11 @@
 #eventoModal select {
   text-transform: capitalize;
 }
+/* Opciones placeholder y PROVISIONAL en verde */
+#eventoModal select option.evento-opt-placeholder,
+#eventoModal select option.evento-opt-verde {
+  color: #22c55e;
+}
 
 #eventoModal input::placeholder,
 #eventoModal textarea::placeholder {

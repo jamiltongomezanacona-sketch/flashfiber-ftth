@@ -864,6 +864,24 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* Iconos Font Awesome en modales route-card (Nuevo Cierre, etc.) */
+.route-card .route-body label .fas,
+.route-card .route-body label .fa,
+.route-card .route-body label i[class^="fa"] {
+  margin-right: 6px;
+  opacity: 0.9;
+}
+.route-card .route-header span .fas,
+.route-card .route-header span .fa,
+.route-card .route-header span i[class^="fa"] {
+  margin-right: 8px;
+}
+.route-card .route-actions .route-btn .fas,
+.route-card .route-actions .route-btn .fa,
+.route-card .route-actions .route-btn i[class^="fa"] {
+  margin-right: 6px;
+}
+
 .route-option-firebase {
   display: flex;
   align-items: center;

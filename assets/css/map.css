@@ -114,12 +114,13 @@ main.map-wrapper {
   outline-offset: 2px;
 }
 
-/* Botón Reset: solo texto RESET en mayúscula, sin icono */
+/* Botón Reset: solo texto RESET en mayúscula, color verde, sin icono */
 .map-controls button.map-control-reset .map-control-reset-text {
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  color: #22c55e;
 }
 @media (max-width: 767px) {
   .map-controls button.map-control-reset .map-control-reset-text {

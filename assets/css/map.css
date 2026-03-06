@@ -224,6 +224,13 @@ main.map-wrapper {
   }
 }
 
+/* En celular y tablet: ocultar botón de activar giro y dejar el mapa girando por defecto */
+@media (max-width: 1023px) {
+  .map-controls button#btnRotate {
+    display: none !important;
+  }
+}
+
 .map-controls button.active {
   background: var(--accent-green);
   color: #003;

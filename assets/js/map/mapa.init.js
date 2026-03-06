@@ -47,13 +47,16 @@
     preserveDrawingBuffer: true
   });
 
-  /* ===============================
-     🔒 BLOQUEO INICIAL (CORRECTO)
-     =============================== */
-
+  /* 🔒 BLOQUEO INICIAL (CORRECTO) */
   map.dragRotate.disable();        // desktop
   map.touchZoomRotate.disableRotation();
   map.touchPitch.disable();
+
+  /* En celular y tablet: giro habilitado por defecto (sin botón) */
+  if (window.matchMedia("(max-width: 1023px)").matches) {
+    map.touchZoomRotate.enableRotation();
+    map.touchPitch.enable();
+  }
 
   // 🎛️ Controles nativos
   map.addControl(new mapboxgl.NavigationControl(), "top-right");

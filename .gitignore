@@ -39,3 +39,6 @@ secrets.js
 firebase-service-account.json
 .vercel
 .env*.local
+
+# Datos de trabajo (generado por scripts/data)
+datos_santa_ines.json

@@ -16,4 +16,4 @@ node scripts/data/crear_y_procesar.js
 | `import_santa_ines_data.js` | Alternativa de importación con índices extendidos |
 | `verificar_y_corregir.js` | Verifica la estructura de archivos e índices |
 
-Ver [GUIA_RAPIDA.md](../../GUIA_RAPIDA.md) y [README_PROCESAR_DATOS.md](../../README_PROCESAR_DATOS.md) en la raíz.
+Ver [GUIA_RAPIDA.md](../../docs/GUIA_RAPIDA.md) y [README_PROCESAR_DATOS.md](../../docs/README_PROCESAR_DATOS.md) en la carpeta `docs/`.

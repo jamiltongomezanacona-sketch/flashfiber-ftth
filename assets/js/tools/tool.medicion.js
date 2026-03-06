@@ -38,6 +38,13 @@
     const RESERVE_PERCENT = 20; // reserva fija 20%
     const RESERVE_FACTOR = 1 + RESERVE_PERCENT / 100;
 
+    // Capas de pines: si el clic cae sobre alguna, no se añade punto de medición (ignorar pin)
+    const PIN_LAYERS = [
+      CONFIG.LAYERS?.CIERRES || "cierres-layer",
+      CONFIG.LAYERS?.EVENTOS || "eventos-layer",
+      "geojson-points"
+    ].filter(Boolean);
+
     /* ===============================
        UI PANEL
     =============================== */
@@ -130,6 +137,14 @@
     =============================== */
     function onMapClick(e) {
       if (!active || isPanning || finishedMode) return;
+      // Ignorar clic si fue sobre un pin (mantener cruz, no añadir punto)
+      const pinLayersExist = PIN_LAYERS.filter(id => App.map.getLayer(id));
+      if (pinLayersExist.length > 0) {
+        try {
+          const hits = App.map.queryRenderedFeatures(e.point, { layers: pinLayersExist });
+          if (hits.length > 0) return;
+        } catch (err) {}
+      }
       const snapped = snapPoint(e.lngLat);
       points.push([snapped.lng, snapped.lat]);
       update();

@@ -466,10 +466,10 @@
         }, 0);
       };
       handlerMouseEnter = function () {
-        App.map.getCanvas().style.cursor = "pointer";
+        if (!App.tools.medicion?.isActive()) App.map.getCanvas().style.cursor = "pointer";
       };
       handlerMouseLeave = function () {
-        App.map.getCanvas().style.cursor = "";
+        if (!App.tools.medicion?.isActive()) App.map.getCanvas().style.cursor = "";
       };
 
       App.map.on("click", LAYER_ID, handlerClickLayer);

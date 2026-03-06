@@ -577,10 +577,10 @@
         }, 0);
       };
       handlerMouseEnter = function () {
-        if (App && App.map) App.map.getCanvas().style.cursor = "pointer";
+        if (App && App.map && !App.tools.medicion?.isActive()) App.map.getCanvas().style.cursor = "pointer";
       };
       handlerMouseLeave = function () {
-        if (App && App.map) App.map.getCanvas().style.cursor = "";
+        if (App && App.map && !App.tools.medicion?.isActive()) App.map.getCanvas().style.cursor = "";
       };
 
       App.map.on("click", LAYER_ID, handlerClickLayer);

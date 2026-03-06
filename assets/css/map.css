@@ -192,6 +192,16 @@ main.map-wrapper {
   }
 }
 
+/* Botón Rotar mapa: solo en tablet y celular; oculto en PC */
+.map-controls button.map-control-touch-only {
+  display: flex !important;
+}
+@media (min-width: 1024px) {
+  .map-controls button.map-control-touch-only {
+    display: none !important;
+  }
+}
+
 .map-controls button.active {
   background: var(--accent-green);
   color: #003;

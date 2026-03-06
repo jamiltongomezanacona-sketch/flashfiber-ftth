@@ -5,8 +5,11 @@
  * Ejecutar desde la raíz del proyecto: node scripts/build-cables-index.js
  */
 
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const GEOJSON_DIR = path.join(__dirname, "..", "geojson");
 const OUTPUT_FILE = path.join(GEOJSON_DIR, "cables-index.json");
@@ -33,6 +36,8 @@ function shortCableDisplayName(layerId, fallbackName) {
   if (matchTo) return matchTo[1];
   const matchGu = normalized.match(/(GU\d+FH\d+)/i);
   if (matchGu) return matchGu[1];
+  const matchMu = normalized.match(/(MU\d+FH\d+)/i);
+  if (matchMu) return matchMu[1];
   if (from.startsWith("FTTH_") && from.includes("_")) {
     const parts = from.split("_");
     if (parts.length >= 2) return parts.slice(-2).join("_");

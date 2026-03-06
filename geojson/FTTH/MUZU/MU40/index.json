@@ -2,7 +2,9 @@
     "children":  [
                      {
                          "id":  "cables",
-                         "label":  "Cables"
+                         "label":  "Cables",
+                         "type": "folder",
+                         "index": "cables/index.json"
                      },
                      {
                          "id":  "cierres",

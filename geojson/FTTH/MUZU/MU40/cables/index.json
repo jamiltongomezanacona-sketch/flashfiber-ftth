@@ -1,0 +1,16 @@
+{
+  "label": "Cables",
+  "children": [
+    {
+      "type": "layer",
+      "id": "FTTH_MUZU_MU40_MU40FH144",
+      "label": "MU40FH144",
+      "path": "MU40FH144.geojson",
+      "typeLayer": "line",
+      "paint": {
+        "line-color": "#b25454",
+        "line-width": 4
+      }
+    }
+  ]
+}

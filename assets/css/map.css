@@ -114,6 +114,27 @@ main.map-wrapper {
   outline-offset: 2px;
 }
 
+/* Botón Reset: solo texto RESET en mayúscula, sin icono */
+.map-controls button.map-control-reset .map-control-reset-text {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+@media (max-width: 767px) {
+  .map-controls button.map-control-reset .map-control-reset-text {
+    display: inline;
+  }
+}
+@media (min-width: 768px) {
+  .map-controls button.map-control-reset {
+    min-width: auto;
+    width: auto;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
 /* ✅ Asegurar visibilidad en móvil */
 @media (max-width: 767px) {
   .map-wrapper {

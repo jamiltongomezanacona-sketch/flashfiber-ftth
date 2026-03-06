@@ -20,8 +20,8 @@
     TOBERIN: "TO"
   };
 
-  /** Número de moléculas por central (CO01..CO40 = 40; CUNI CU01..CU45 = 45; resto MOLECULAS_DEFAULT_COUNT). */
-  var CENTRAL_MOLECULA_COUNT = { CO: 40, CU: 45 };
+  /** Número de moléculas por central (CO01..CO40 = 40; CUNI CU01..CU45 = 45; Muzú MU01..MU45 = 45; resto MOLECULAS_DEFAULT_COUNT). */
+  var CENTRAL_MOLECULA_COUNT = { CO: 40, CU: 45, MU: 45 };
   var MOLECULAS_DEFAULT_COUNT = 30;
 
   /**

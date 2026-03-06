@@ -57,7 +57,6 @@
       <div class="m-value r" id="mReserve" aria-live="polite">R 0 m</div>
       <div class="m-points" id="mPoints" aria-live="polite">0 puntos</div>
       <div class="m-actions">
-        <button id="btnCopy" type="button" title="Copiar medición" aria-label="Copiar medición al portapapeles">📋</button>
         <button id="btnUndo" type="button" title="Deshacer último punto" aria-label="Deshacer último punto">↩️</button>
         <button id="btnDone" type="button" title="Finalizar medición (mantener visible)" aria-label="Finalizar medición">✓</button>
         <button id="btnClear" type="button" title="Limpiar medición" aria-label="Limpiar medición">🗑️</button>
@@ -71,12 +70,10 @@
     const elReal    = panel.querySelector("#mReal");
     const elReserve = panel.querySelector("#mReserve");
     const elPoints  = panel.querySelector("#mPoints");
-    const btnCopy  = panel.querySelector("#btnCopy");
     const btnUndo  = panel.querySelector("#btnUndo");
     const btnDone  = panel.querySelector("#btnDone");
     const btnClear = panel.querySelector("#btnClear");
 
-    btnCopy.onclick  = copyToClipboard;
     btnUndo.onclick  = undoLast;
     btnDone.onclick  = toggleDone;
     btnClear.onclick = clearOrNewMeasurement;
@@ -342,38 +339,6 @@ function restoreAfterStyleChange() {
     /* ===============================
        ACTIONS
     =============================== */
-    function copyToClipboard() {
-      const meters = calculateDistance();
-      const reserve = meters * RESERVE_FACTOR;
-      let realStr = meters < 1000 ? `${Math.round(meters)} m` : `${(meters / 1000).toFixed(2)} km`;
-      let resStr = reserve < 1000 ? `${Math.round(reserve)} m` : `${(reserve / 1000).toFixed(2)} km`;
-      const text = `${realStr} (R ${resStr})`;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
-          if (btnCopy) { btnCopy.textContent = "✓"; btnCopy.title = "Copiado"; setTimeout(() => { btnCopy.textContent = "📋"; btnCopy.title = "Copiar medición"; }, 1500); }
-        }).catch(() => fallbackCopy(text));
-      } else {
-        fallbackCopy(text);
-      }
-    }
-
-    function fallbackCopy(text) {
-      try {
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-        if (btnCopy) { btnCopy.textContent = "✓"; btnCopy.title = "Copiado"; setTimeout(() => { btnCopy.textContent = "📋"; btnCopy.title = "Copiar medición"; }, 1500); }
-      } catch (e) {
-        if (window.__FTTH_APP__?.ui?.notify) window.__FTTH_APP__.ui.notify("📋 " + text);
-        else alert(text);
-      }
-    }
-
     function toggleDone() {
       if (points.length < 2) return;
       finishedMode = true;

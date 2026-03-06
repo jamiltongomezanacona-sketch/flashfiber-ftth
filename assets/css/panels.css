@@ -608,6 +608,7 @@
   transition: background-color 0.2s ease, transform 0.1s ease;
   position: relative;
   outline: none;
+  text-transform: uppercase;
 }
 
 /* Iconos Font Awesome en ítems: mismo estilo y espaciado */
@@ -650,6 +651,12 @@
 
 .filters-pines-header {
   margin-bottom: 8px;
+}
+
+.filters-pines-title,
+.filter-toggle-label,
+.filter-molecula-label {
+  text-transform: uppercase;
 }
 
 .filters-pines-title {

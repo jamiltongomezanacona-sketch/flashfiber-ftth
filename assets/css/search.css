@@ -122,7 +122,12 @@
 
 .search-filter-select:focus {
   outline: none;
-  border-color: var(--accent-cyan);
+  border-color: rgba(0, 229, 255, 0.25);
+  background: rgba(30, 110, 119, 0.85);
+}
+.search-filter-select:hover {
+  background: rgba(30, 110, 119, 0.35);
+  border-color: rgba(0, 229, 255, 0.15);
 }
 
 /* Resultados de búsqueda (translateZ(0) para composición GPU) */

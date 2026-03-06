@@ -740,7 +740,12 @@
 
 .sidebar-filter-select:focus {
   outline: none;
-  border-color: var(--accent-cyan);
+  border-color: rgba(0, 229, 255, 0.25);
+  background: rgba(30, 110, 119, 0.85);
+}
+.sidebar-filter-select:hover {
+  background: rgba(30, 110, 119, 0.35);
+  border-color: rgba(0, 229, 255, 0.15);
 }
 
 /* Buscador molécula */
@@ -807,8 +812,9 @@
 }
 .molecula-dropdown-item:hover,
 .molecula-dropdown-item[aria-selected="true"] {
-  background: rgba(0, 229, 255, 0.15);
-  color: var(--accent-cyan);
+  background: rgba(30, 110, 119, 0.85);
+  color: #fff;
+  border-left: 2px solid rgba(0, 229, 255, 0.4);
 }
 .molecula-dropdown-header {
   padding: 6px 12px;
@@ -1105,8 +1111,18 @@
 .route-body select:focus,
 .route-body textarea:focus {
   outline: none;
-  border-color: var(--accent-cyan);
+  border-color: rgba(0, 229, 255, 0.25);
   box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.15);
+}
+
+/* Desplegables (select): mismo color que ítem activo del sidebar */
+.route-body select:focus {
+  background: rgba(30, 110, 119, 0.85);
+  border-color: rgba(0, 229, 255, 0.25);
+}
+.route-body select:hover {
+  background: rgba(30, 110, 119, 0.35);
+  border-color: rgba(0, 229, 255, 0.15);
 }
 
 .route-body input::placeholder,
@@ -1279,13 +1295,22 @@
 #eventoModal textarea:hover {
   border-color: rgba(255,255,255,0.12);
 }
+#eventoModal select:hover {
+  background: rgba(30, 110, 119, 0.35);
+  border-color: rgba(0, 229, 255, 0.15);
+}
 
 #eventoModal select:focus,
 #eventoModal input:focus,
 #eventoModal textarea:focus {
   outline: none;
-  border-color: var(--accent-cyan);
+  border-color: rgba(0, 229, 255, 0.25);
   box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.15);
+}
+/* Desplegables: mismo color que ítem activo del sidebar */
+#eventoModal select:focus {
+  background: rgba(30, 110, 119, 0.85);
+  border-color: rgba(0, 229, 255, 0.25);
 }
 
 /* Opciones en formato legible (capitalize) */

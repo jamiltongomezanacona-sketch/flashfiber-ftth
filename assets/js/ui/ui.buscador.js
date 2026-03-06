@@ -76,6 +76,28 @@
     const trimmed = query.trim();
     if (!trimmed) return null;
 
+    // Formato "4.620694° N, 74.126016° W" (grados decimales + cardinal)
+    const decimalCardinalMatch = trimmed.match(/^(\d+\.?\d*)\s*°?\s*[,;\s]*\s*([NnSsEeWw])?\s*[,;\s]+\s*(\d+\.?\d*)\s*°?\s*[,;\s]*\s*([NnSsEeWw])?$/);
+    if (decimalCardinalMatch) {
+      const n1 = parseFloat(decimalCardinalMatch[1]);
+      const n2 = parseFloat(decimalCardinalMatch[3]);
+      const c1 = (decimalCardinalMatch[2] || "").toUpperCase();
+      const c2 = (decimalCardinalMatch[4] || "").toUpperCase();
+      let lat = null, lng = null;
+      if (c1 === "N") { lat = n1; } else if (c1 === "S") { lat = -n1; } else if (c1 === "E") { lng = n1; } else if (c1 === "W") { lng = -n1; }
+      if (c2 === "N") { lat = n2; } else if (c2 === "S") { lat = -n2; } else if (c2 === "E") { lng = n2; } else if (c2 === "W") { lng = -n2; }
+      if (lat == null || lng == null) {
+        if (lat == null && lng == null) {
+          if (Math.abs(n1) <= 90 && Math.abs(n2) <= 180) { lat = n1; lng = n2; } else if (Math.abs(n2) <= 90 && Math.abs(n1) <= 180) { lng = n1; lat = n2; } else return null;
+        } else {
+          if (lat == null) lat = n2;
+          if (lng == null) lng = n2;
+        }
+      }
+      if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) return [lng, lat];
+      return null;
+    }
+
     // Formato decimal: uno o dos números con coma o espacio (ej. "4.583832, -74.229158" o "-74.229158 4.583832")
     const decimalMatch = trimmed.match(/^(-?\d+\.?\d*)\s*[,;\s]\s*(-?\d+\.?\d*)$/);
     if (decimalMatch) {

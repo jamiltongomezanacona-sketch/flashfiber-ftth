@@ -179,15 +179,15 @@
     </div>
   </div>
 
-  <!-- ✏️ MODAL CORREGIR RUTA (Central + Molecula → Firebase) -->
+  <!-- MODAL CORREGIR RUTA (estilo unificado Font Awesome) -->
   <div id="corregirRutaModal" class="route-modal hidden">
     <div class="route-card">
       <div class="route-header">
-        <span>✏️ Corregir Ruta</span>
-        <button id="closeCorregirRutaModal" type="button" aria-label="Cerrar">✕</button>
+        <span><i class="fas fa-pen-to-square" aria-hidden="true"></i> Corregir Ruta</span>
+        <button id="closeCorregirRutaModal" type="button" aria-label="Cerrar"><i class="fas fa-times" aria-hidden="true"></i></button>
       </div>
       <div class="route-body">
-        <label>🏢 Central</label>
+        <label><i class="fas fa-building" aria-hidden="true"></i> Central</label>
         <select id="corregirRutaCentral">
           <option value="">Seleccione Central</option>
           <option value="BACHUE">Bachué</option>
@@ -201,18 +201,18 @@
           <option value="SUBA">Suba</option>
           <option value="TOBERIN">Toberín</option>
         </select>
-        <label>🧬 Molécula</label>
+        <label><i class="fas fa-dna" aria-hidden="true"></i> Molécula</label>
         <select id="corregirRutaMolecula" disabled>
           <option value="">Seleccione Molécula</option>
         </select>
-        <label>📛 Nombre</label>
+        <label><i class="fas fa-signature" aria-hidden="true"></i> Nombre</label>
         <input id="corregirRutaName" placeholder="Ej: Corrección troncal SI05">
-        <label>📝 Observaciones</label>
+        <label><i class="fas fa-note-sticky" aria-hidden="true"></i> Observaciones</label>
         <textarea id="corregirRutaNotes" placeholder="Notas..."></textarea>
         <p id="corregirRutaDistance">Distancia: 0 m</p>
       </div>
       <div class="route-actions">
-        <button class="route-btn primary" id="btnSaveCorregirRuta">💾 Guardar en Firebase</button>
+        <button class="route-btn primary" id="btnSaveCorregirRuta"><i class="fas fa-save" aria-hidden="true"></i> Guardar en Firebase</button>
         <button class="route-btn danger" id="btnCancelCorregirRuta">Cancelar</button>
       </div>
     </div>
@@ -283,24 +283,24 @@
 
   </div>
 
-  <!-- 🛣️ MODAL RUTA (Montar Ruta + opción Guardar en Firebase) -->
+  <!-- MODAL RUTA (estilo unificado Font Awesome) -->
   <div id="routeModal" class="route-modal hidden">
     <div class="route-card">
       <div class="route-header">
-        <span>🛣️ Nueva Ruta</span>
-        <button id="closeRouteModal">✕</button>
+        <span><i class="fas fa-route" aria-hidden="true"></i> Nueva Ruta</span>
+        <button id="closeRouteModal" type="button" aria-label="Cerrar"><i class="fas fa-times" aria-hidden="true"></i></button>
       </div>
       <div class="route-body">
-        <label>📛 Nombre</label>
+        <label><i class="fas fa-signature" aria-hidden="true"></i> Nombre</label>
         <input id="routeName" placeholder="Ej: Troncal BA01 Norte">
-        <label>🧱 Tipo</label>
+        <label><i class="fas fa-box" aria-hidden="true"></i> Tipo</label>
         <select id="routeType">
           <option value="troncal">Troncal</option>
           <option value="distribucion">Distribución</option>
           <option value="acometida">Acometida</option>
           <option value="mantenimiento">Mantenimiento</option>
         </select>
-        <label>🏢 Central</label>
+        <label><i class="fas fa-building" aria-hidden="true"></i> Central</label>
         <select id="routeCentral">
           <option value="">Seleccione Central</option>
           <option value="BACHUE">Bachué</option>
@@ -314,20 +314,20 @@
           <option value="SUBA">Suba</option>
           <option value="TOBERIN">Toberín</option>
         </select>
-        <label>🧬 Molécula</label>
+        <label><i class="fas fa-dna" aria-hidden="true"></i> Molécula</label>
         <select id="routeMolecula" disabled>
           <option value="">Seleccione Molécula</option>
         </select>
-        <label>📝 Observaciones</label>
+        <label><i class="fas fa-note-sticky" aria-hidden="true"></i> Observaciones</label>
         <textarea id="routeNotes" placeholder="Notas técnicas..."></textarea>
         <p id="routeDistance">Distancia: 0 m</p>
         <label class="route-option-firebase">
           <input type="checkbox" id="routeSaveFirebase" checked />
-          <span>☁️ Guardar en Firebase</span>
+          <span><i class="fas fa-cloud-arrow-up" aria-hidden="true"></i> Guardar en Firebase</span>
         </label>
       </div>
       <div class="route-actions">
-        <button class="route-btn primary" id="btnSaveRoute">💾 Guardar</button>
+        <button class="route-btn primary" id="btnSaveRoute"><i class="fas fa-save" aria-hidden="true"></i> Guardar</button>
         <button class="route-btn danger" id="btnCancelRoute">Cancelar</button>
       </div>
     </div>

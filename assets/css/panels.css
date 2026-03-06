@@ -881,6 +881,11 @@
 .route-card .route-actions .route-btn i[class^="fa"] {
   margin-right: 6px;
 }
+.route-option-firebase span .fas,
+.route-option-firebase span .fa,
+.route-option-firebase span i[class^="fa"] {
+  margin-right: 6px;
+}
 
 .route-option-firebase {
   display: flex;

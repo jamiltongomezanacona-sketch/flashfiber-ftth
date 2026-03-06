@@ -51,10 +51,10 @@
 - **Etiquetas en segmentos**: capa de símbolos con la distancia de cada segmento en el punto medio de la línea (metros o km según longitud).
 - **Puntos visibles**: capa de círculos en cada vértice (blanco con borde naranja), como en Montar Ruta.
 - **Modo “Listo”**: botón ✓ **Finalizar** (visible con 2+ puntos) deja de añadir puntos y mantiene la línea y el valor visibles; el botón 🗑️ pasa a **Nueva medición** para limpiar y volver a dibujar. Escape también limpia/reinicia.
-- **Ajuste de reserva**: selector **Reserva** con 15 %, 20 %, 25 % (por defecto 20 %). El factor se aplica en tiempo real.
+- **Ajuste de reserva**: la reserva está fija al **20 %**; se eliminó el selector desplegable (15 % / 20 % / 25 %) para simplificar el panel.
 
 ---
 
 ## Otras mejoras futuras (opcionales)
 
-- **Persistir % de reserva** en `localStorage` para la próxima sesión.
+- **Persistir % de reserva** en `localStorage` (actualmente la reserva está fija al 20 %).

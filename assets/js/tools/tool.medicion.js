@@ -35,8 +35,8 @@
     let labelsLayerId  = "medicion-labels-layer";
 
     const SNAP_DISTANCE_METERS = 12;
-    const DEFAULT_RESERVE_PERCENT = 20;
-    let reservePercent = DEFAULT_RESERVE_PERCENT; // 15, 20, 25 → factor 1.15, 1.20, 1.25
+    const RESERVE_PERCENT = 20; // reserva fija 20%
+    const RESERVE_FACTOR = 1 + RESERVE_PERCENT / 100;
 
     /* ===============================
        UI PANEL
@@ -49,14 +49,6 @@
       <div class="m-value" id="mReal" aria-live="polite">0 m</div>
       <div class="m-value r" id="mReserve" aria-live="polite">R 0 m</div>
       <div class="m-points" id="mPoints" aria-live="polite">0 puntos</div>
-      <div class="m-reserve-select-wrap">
-        <label class="m-reserve-label" for="mReservePercent">Reserva</label>
-        <select id="mReservePercent" title="Porcentaje de reserva" aria-label="Porcentaje de reserva">
-          <option value="15">15%</option>
-          <option value="20" selected>20%</option>
-          <option value="25">25%</option>
-        </select>
-      </div>
       <div class="m-actions">
         <button id="btnCopy" type="button" title="Copiar medición" aria-label="Copiar medición al portapapeles">📋</button>
         <button id="btnUndo" type="button" title="Deshacer último punto" aria-label="Deshacer último punto">↩️</button>
@@ -72,7 +64,6 @@
     const elReal    = panel.querySelector("#mReal");
     const elReserve = panel.querySelector("#mReserve");
     const elPoints  = panel.querySelector("#mPoints");
-    const elReserveSelect = panel.querySelector("#mReservePercent");
     const btnCopy  = panel.querySelector("#btnCopy");
     const btnUndo  = panel.querySelector("#btnUndo");
     const btnDone  = panel.querySelector("#btnDone");
@@ -82,10 +73,6 @@
     btnUndo.onclick  = undoLast;
     btnDone.onclick  = toggleDone;
     btnClear.onclick = clearOrNewMeasurement;
-    if (elReserveSelect) elReserveSelect.addEventListener("change", () => {
-      reservePercent = Math.max(15, Math.min(25, Number(elReserveSelect.value) || 20));
-      update();
-    });
 
     /* ===============================
        ACTIVAR TOOL
@@ -97,7 +84,6 @@
         isPanning = false;
         finishedMode = false;
         points = [];
-        reservePercent = Number(panel.querySelector("#mReservePercent")?.value) || DEFAULT_RESERVE_PERCENT;
         ensureLayer();
 
         panel.style.display = "block";
@@ -191,8 +177,7 @@
       drawSegmentLabels();
 
       const meters = calculateDistance();
-      const factor = 1 + reservePercent / 100;
-      const reserve = meters * factor;
+      const reserve = meters * RESERVE_FACTOR;
 
       if (meters < 1000) {
         elReal.textContent = `${Math.round(meters)} m`;
@@ -344,8 +329,7 @@ function restoreAfterStyleChange() {
     =============================== */
     function copyToClipboard() {
       const meters = calculateDistance();
-      const factor = 1 + reservePercent / 100;
-      const reserve = meters * factor;
+      const reserve = meters * RESERVE_FACTOR;
       let realStr = meters < 1000 ? `${Math.round(meters)} m` : `${(meters / 1000).toFixed(2)} km`;
       let resStr = reserve < 1000 ? `${Math.round(reserve)} m` : `${(reserve / 1000).toFixed(2)} km`;
       const text = `${realStr} (R ${resStr})`;
@@ -452,29 +436,6 @@ function restoreAfterStyleChange() {
           font-size: 11px;
           color: rgba(255,255,255,.6);
           margin-bottom: 8px;
-        }
-
-        #medicionPanel .m-reserve-select-wrap {
-          margin-bottom: 8px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          justify-content: center;
-        }
-
-        #medicionPanel .m-reserve-label {
-          font-size: 11px;
-          color: rgba(255,255,255,.7);
-        }
-
-        #medicionPanel #mReservePercent {
-          background: rgba(31,42,58,.9);
-          border: 1px solid rgba(255,255,255,.15);
-          border-radius: 6px;
-          color: #fff;
-          padding: 4px 8px;
-          font-size: 12px;
-          cursor: pointer;
         }
 
         #medicionPanel .m-actions {

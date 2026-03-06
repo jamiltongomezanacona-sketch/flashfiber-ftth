@@ -254,10 +254,19 @@ toolButtons.posteria?.addEventListener("click", () => toggleTool("posteria"));
     }
   });
 
-  // 🧹 Limpiar mapa: ocultar cables y pines, dejar solo centrales (según filtros)
+  // 🔄 Reset: mapa limpio, ninguna herramienta ni operación activa (como al inicio)
   btnLimpiarMapa?.addEventListener("click", () => {
     const App = window.__FTTH_APP__;
     if (!App) return;
+
+    // 1. Apagar todas las herramientas (GPS, Medir, Navegar, Ruta, Corregir Ruta, Cierres, Eventos, etc.)
+    Object.keys(toolState).forEach((tool) => {
+      if (toolState[tool]) apagarTool(tool);
+    });
+    document.getElementById("btnGPS")?.classList.remove("active");
+    document.getElementById("btnFinalizarRuta")?.classList.add("hidden");
+
+    // 2. Limpiar mapa: sin molécula, solo centrales visibles
     if (typeof App.setSelectedMoleculaForPins === "function") {
       App.setSelectedMoleculaForPins(null);
     }
@@ -267,11 +276,8 @@ toolButtons.posteria?.addEventListener("click", () => toggleTool("posteria"));
       }
     };
     if (App.map) {
-      if (App.map.isStyleLoaded()) {
-        runEnforce();
-      } else {
-        App.map.once("styledata", runEnforce);
-      }
+      if (App.map.isStyleLoaded()) runEnforce();
+      else App.map.once("styledata", runEnforce);
     } else {
       runEnforce();
     }
@@ -279,6 +285,28 @@ toolButtons.posteria?.addEventListener("click", () => toggleTool("posteria"));
     if (filterMolecula) filterMolecula.value = "";
     const filterMoleculaSearch = document.getElementById("filterMoleculaSearch");
     if (filterMoleculaSearch) filterMoleculaSearch.value = "";
+
+    // 3. Quitar pin de búsqueda (coordenadas/dirección) del mapa
+    try {
+      if (App.map?.getLayer("search-coordenadas-pin-layer")) App.map.removeLayer("search-coordenadas-pin-layer");
+      if (App.map?.getSource("search-coordenadas-pin")) App.map.removeSource("search-coordenadas-pin");
+    } catch (e) {}
+
+    // 4. Cerrar sidebar y overlay
+    if (sidebar) sidebar.classList.add("hidden");
+    if (sidebarOverlay) sidebarOverlay.classList.remove("active");
+
+    // 5. Cerrar paneles (Capas, Gestionar rutas)
+    document.getElementById("layersPanel")?.classList.add("hidden");
+    document.getElementById("rutasPanel")?.classList.add("hidden");
+
+    // 6. Ocultar resultados del buscador
+    document.getElementById("searchResults")?.classList.add("hidden");
+
+    // 7. Cerrar todos los modales
+    ["navModal", "routeModal", "corregirRutaModal", "editarRutaModal", "cierreModal", "eventoModal"].forEach((id) => {
+      document.getElementById(id)?.classList.add("hidden");
+    });
   });
 
 /* ===============================

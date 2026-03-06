@@ -72,6 +72,13 @@ function walkTree(node, dirPath) {
       console.warn("⚠️ No existe:", filePath);
       return;
     }
+    try {
+      if (!fs.statSync(filePath).isFile() || !(node.path || "").toLowerCase().endsWith(".geojson")) {
+        return;
+      }
+    } catch {
+      return;
+    }
 
     let geojson;
     try {

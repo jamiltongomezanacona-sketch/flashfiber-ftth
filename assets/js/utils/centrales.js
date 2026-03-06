@@ -42,4 +42,5 @@
     generarMoleculas: generarMoleculas
   };
 })();
+// Compatibilidad ESM para el bundler (entry-ftth.js); la API real está en window.__FTTH_CENTRALES__
 export {};

@@ -745,10 +745,7 @@
           return;
         }
 
-        // CUNI: siempre CU01..CU45 en Registrar Eventos (no depender de centrales.js)
-        let moleculas = prefijo === "CU"
-          ? Array.from({ length: 45 }, (_, i) => "CU" + String(i + 1).padStart(2, "0"))
-          : (generarMoleculas(prefijo) || []);
+        const moleculas = generarMoleculas(prefijo) || [];
 
         moleculas.forEach(mol => {
           const opt = document.createElement("option");

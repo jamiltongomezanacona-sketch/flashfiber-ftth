@@ -57,10 +57,10 @@ Tras cambiar las reglas, publicar en la consola. Si falta la regla de `rutas`, e
 Para **no superar la cuota gratuita** de Firestore (50.000 lecturas/día):
 
 1. **Límite por colección**  
-   En los servicios (`firebase.cierres.js`, `firebase.eventos.js`, `firebase.eventosCorp.js`, `firebase.rutas.js`) está definido `FIRESTORE_READ_LIMIT = 500`. Así, cada vez que se carga el mapa se leen como máximo 500 documentos por colección (4 colecciones ≈ 2.000 lecturas por carga). Con eso caben unas **25 cargas completas al día** dentro de los 50k gratuitos.
+   En los servicios (`firebase.cierres.js`, `firebase.eventos.js`, `firebase.eventosCorp.js`, `firebase.rutas.js`) está definido `FIRESTORE_READ_LIMIT = 250`. Así, cada vez que se carga el mapa se leen como máximo 250 documentos por colección (4 colecciones ≈ 1.000 lecturas por carga). Con la cuota gratuita de 50k lecturas/día caben unas **50 cargas completas al día** sin superar el plan gratuito.
 
 2. **Si necesitas más uso sin pagar**  
-   Puedes bajar el límite (p. ej. 250) para permitir más cargas/día, sabiendo que en el mapa solo se mostrarán los primeros N documentos de cada colección. Si subes el límite o pones `0` (sin límite), las lecturas pueden dispararse y superar el plan gratuito.
+   Puedes subir el límite (p. ej. 500) para permitir más documentos por colección; tendrás que vigilar no superar 50k lecturas/día. Si bajas el límite (p. ej. 100), las lecturas bajan más pero en el mapa solo se mostrarán los primeros N documentos de cada colección.
 
 3. **Plan Blaze (facturación)**  
    Si el proyecto está en Blaze, en Google Cloud → Facturación → Alertas de presupuesto puedes crear una alerta en **0 USD** para que te avisen antes de que se genere ningún cargo.

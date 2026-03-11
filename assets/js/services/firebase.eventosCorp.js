@@ -20,8 +20,8 @@ import {
 
 const EVENTOS_CORP_COLLECTION = "eventos_corporativo";
 
-/** Límite para no superar plan gratuito (50k lecturas/día). Ver firebase.cierres.js. */
-const FIRESTORE_READ_LIMIT = 500;
+/** Mismo límite que firebase.cierres.js (costo bajo). */
+const FIRESTORE_READ_LIMIT = 250;
 
 /* ===============================
    Guardar evento corporativo (CREAR)

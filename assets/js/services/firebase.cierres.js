@@ -16,8 +16,8 @@ import {
   limit
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-/** Límite para no superar plan gratuito (50k lecturas/día). 500 × 4 colecciones ≈ 2000 lecturas por carga; así caben ~25 cargas/día. */
-const FIRESTORE_READ_LIMIT = 500;
+/** Límite bajo para mantener costo mínimo (50k lecturas/día gratis). 250 × 4 colecciones = 1000 lecturas/carga → ~50 cargas/día dentro de gratis. */
+const FIRESTORE_READ_LIMIT = 250;
 
 /* =========================
    Guardar Cierre

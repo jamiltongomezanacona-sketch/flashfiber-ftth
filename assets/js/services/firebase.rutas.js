@@ -17,8 +17,8 @@ import {
 
 const RUTAS_COLLECTION = "rutas";
 
-/** Límite para no superar plan gratuito (50k lecturas/día). Ver firebase.cierres.js. */
-const FIRESTORE_READ_LIMIT = 500;
+/** Mismo límite que firebase.cierres.js (costo bajo). */
+const FIRESTORE_READ_LIMIT = 250;
 
 window.FTTH_FIREBASE = window.FTTH_FIREBASE || {};
 

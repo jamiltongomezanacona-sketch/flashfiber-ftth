@@ -8,8 +8,8 @@
 import { db } from "../services/firebase.db.js";
 import { collection, getDocs, query, limit } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-/** Máximo documentos por colección por carga (evitar superar plan gratuito). */
-const FIRESTORE_READ_LIMIT = 2000;
+/** Máximo documentos por colección por carga (costo bajo; 50k lecturas/día gratis). */
+const FIRESTORE_READ_LIMIT = 1000;
 
 /** Cache en memoria: una sola carga desde Firestore; "Filtrar" solo filtra aquí (0 lecturas extra). */
 let _eventosCache = null;

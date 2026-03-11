@@ -16,8 +16,8 @@ import {
   limit
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-/** Mismo límite que en firebase.cierres.js / firebase.eventos.js para no superar plan gratuito. */
-const FIRESTORE_READ_LIMIT = 500;
+/** Mismo límite que en firebase.cierres.js (costo bajo). */
+const FIRESTORE_READ_LIMIT = 250;
 
 // ✅ Re-exportar db para que otros módulos puedan importarlo desde aquí
 export { db };

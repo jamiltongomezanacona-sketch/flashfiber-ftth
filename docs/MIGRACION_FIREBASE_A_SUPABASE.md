@@ -117,13 +117,35 @@ Importante: mantener los mismos nombres de función y la misma forma de los dato
 
 ## Paso 5: Migrar datos existentes de Firestore a Supabase
 
-1. **Exportar desde Firebase:**  
-   Usar el script existente `scripts/backup-firebase-to-pc.js` (o Firebase Console → export) para obtener JSON de las colecciones `cierres`, `eventos`, `eventos_corporativo`, `rutas`, `usuarios`.
+1. **Exportar desde Firebase (backup local):**
+   ```bash
+   npm run backup:firebase
+   ```
+   Esto genera en `backup/firestore/YYYY-MM-DD/` los archivos: `cierres.json`, `eventos.json`, `eventos_corporativo.json`, `rutas.json`.  
+   (Requiere `firebase-service-account.json` en la raíz del proyecto.)
 
-2. **Importar a Supabase:**  
-   Crear un script (Node o SQL) que lea esos JSON y haga `INSERT` en las tablas de Supabase. Tener en cuenta:
-   - En Firestore los IDs son strings generados por Firebase; en PostgreSQL puedes usar `UUID` o mantener un campo `firebase_id` y usar `id` autogenerado.
-   - Fechas: convertir `createdAt`/`serverTime` al formato `TIMESTAMPTZ`.
+2. **Importar a Supabase con el script de migración:**
+   - Define las variables de entorno con la URL y la clave anon de tu proyecto Supabase:
+     ```bash
+     set SUPABASE_URL=https://TU_PROYECTO.supabase.co
+     set SUPABASE_ANON_KEY=tu_clave_anon_publica
+     ```
+     En PowerShell:
+     ```powershell
+     $env:SUPABASE_URL="https://TU_PROYECTO.supabase.co"
+     $env:SUPABASE_ANON_KEY="tu_clave_anon_publica"
+     ```
+   - Ejecuta el script (usa el backup más reciente en `backup/firestore/`):
+     ```bash
+     npm run migrate:firebase-to-supabase
+     ```
+   - Para usar una carpeta de backup concreta:
+     ```bash
+     node scripts/migrar-firebase-to-supabase.js --path=backup/firestore/2025-03-11
+     ```
+   - El script inserta en las tablas `cierres`, `eventos`, `eventos_corporativo` y `rutas`. Los **usuarios** hay que crearlos en Supabase Auth y en la tabla `usuarios` a mano (el script lo indica al final).
+
+3. **Comprobar:** En Supabase → Table Editor revisa que las tablas tengan los registros migrados.
 
 ---
 

@@ -40,5 +40,8 @@ firebase-service-account.json
 .vercel
 .env*.local
 
+# Backup Firebase (datos exportados, no subir a repo)
+backup/
+
 # Datos de trabajo (generado por scripts/data)
 datos_santa_ines.json

@@ -6,7 +6,13 @@
 ========================================================= */
 
 import { db } from "../services/firebase.db.js";
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+import { collection, getDocs, query, limit } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+/** Máximo documentos por colección por carga (evitar superar plan gratuito). */
+const FIRESTORE_READ_LIMIT = 2000;
+
+/** Cache en memoria: una sola carga desde Firestore; "Filtrar" solo filtra aquí (0 lecturas extra). */
+let _eventosCache = null;
 
 const CONFIG = window.__FTTH_CONFIG__ || {};
 const TOKEN = CONFIG.MAPBOX_TOKEN || "";
@@ -77,50 +83,59 @@ function toDateOnly(d) {
   return x.getTime();
 }
 
-async function fetchEventos(fechaDesde, fechaHasta, origenFilter) {
+async function fetchEventosFromFirestore() {
+  const list = [];
+
+  const refFtth = collection(db, EVENTOS_COLLECTION);
+  const qFtth = query(refFtth, limit(FIRESTORE_READ_LIMIT));
+  const snapFtth = await getDocs(qFtth);
+  snapFtth.forEach((doc) => {
+    const d = doc.data();
+    if (d.lat != null && d.lng != null) {
+      list.push({ id: `ftth-${doc.id}`, ...d, origen: "FTTH" });
+    }
+  });
+
+  const refCorp = collection(db, EVENTOS_CORP_COLLECTION);
+  const qCorp = query(refCorp, limit(FIRESTORE_READ_LIMIT));
+  const snapCorp = await getDocs(qCorp);
+  snapCorp.forEach((doc) => {
+    const d = doc.data();
+    if (d.lat != null && d.lng != null) {
+      list.push({ id: `corp-${doc.id}`, ...d, origen: "Corporativo" });
+    }
+  });
+
+  return list;
+}
+
+function filterEventosInMemory(cache, fechaDesde, fechaHasta, origenFilter) {
   const desde = toDateOnly(fechaDesde);
   const hasta = fechaHasta ? toDateOnly(fechaHasta) + 86400000 - 1 : null;
   const origen = origenFilter === "FTTH" || origenFilter === "Corporativo" ? origenFilter : "FTTH-Corporativo";
 
-  const list = [];
+  return cache.filter((e) => {
+    if (origen !== "FTTH-Corporativo" && e.origen !== origen) return false;
+    const createdAt = parseDate(e.createdAt);
+    const t = createdAt ? toDateOnly(createdAt) : null;
+    if (t == null) return false;
+    if (desde != null && t < desde) return false;
+    if (hasta != null && t > hasta) return false;
+    return true;
+  });
+}
 
-  if (origen === "FTTH" || origen === "FTTH-Corporativo") {
-    const snapFtth = await getDocs(collection(db, EVENTOS_COLLECTION));
-    snapFtth.forEach((doc) => {
-      const d = doc.data();
-      const createdAt = parseDate(d.createdAt);
-      const t = createdAt ? toDateOnly(createdAt) : null;
-      if (t != null && (desde == null || t >= desde) && (hasta == null || t <= hasta)) {
-        if (d.lat != null && d.lng != null) {
-          list.push({
-            id: `ftth-${doc.id}`,
-            ...d,
-            origen: "FTTH"
-          });
-        }
-      }
-    });
+/** Obtiene eventos: usa cache si existe; si no, carga una vez de Firestore y guarda en cache. */
+async function fetchEventos(fechaDesde, fechaHasta, origenFilter) {
+  if (_eventosCache === null) {
+    _eventosCache = await fetchEventosFromFirestore();
   }
+  return filterEventosInMemory(_eventosCache, fechaDesde, fechaHasta, origenFilter);
+}
 
-  if (origen === "Corporativo" || origen === "FTTH-Corporativo") {
-    const snapCorp = await getDocs(collection(db, EVENTOS_CORP_COLLECTION));
-    snapCorp.forEach((doc) => {
-      const d = doc.data();
-      const createdAt = parseDate(d.createdAt);
-      const t = createdAt ? toDateOnly(createdAt) : null;
-      if (t != null && (desde == null || t >= desde) && (hasta == null || t <= hasta)) {
-        if (d.lat != null && d.lng != null) {
-          list.push({
-            id: `corp-${doc.id}`,
-            ...d,
-            origen: "Corporativo"
-          });
-        }
-      }
-    });
-  }
-
-  return list;
+/** Fuerza recarga desde Firestore (botón "Actualizar"). */
+function clearEventosCache() {
+  _eventosCache = null;
 }
 
 function toGeoJSON(eventos) {
@@ -292,7 +307,14 @@ function runMapaEventos() {
     applyFilter(map, v.fechaDesde, v.fechaHasta, v.origen, totalEl, loadingEl);
   }
 
+  function onActualizar() {
+    clearEventosCache();
+    onFiltrar();
+  }
+
   document.getElementById("btnFiltrar").addEventListener("click", onFiltrar);
+  const btnActualizar = document.getElementById("btnActualizar");
+  if (btnActualizar) btnActualizar.addEventListener("click", onActualizar);
 
   map.once("load", async () => {
     const v = getFiltroValues();

@@ -41,6 +41,18 @@ Resumen de los límites actuales en el código y a partir de qué volumen de dat
 
 ## 4. Firebase (Firestore / Storage)
 
+### 4.1 Uso y costo (lecturas Firestore)
+
+Si en la consola de Firebase ves que se **superó la cuota gratuita de lecturas** (p. ej. "73k en los últimos 7 días") y aparece costo del proyecto:
+
+- **Causa:** La app usa `onSnapshot` en colecciones completas (cierres, eventos, eventos_corporativo, rutas). Cada vez que se abre el mapa o un panel que escucha una colección, Firestore cobra **1 lectura por documento** en la carga inicial. Varias pestañas o muchos usuarios multiplican las lecturas.
+- **Qué hacer:**
+  1. **Consola Firebase** → **Uso y facturación** → Revisar "Operaciones de lectura" y poner una **alerta de presupuesto** en Google Cloud (Cloud Billing → Alertas).
+  2. En los servicios Firebase (`firebase.cierres.js`, `firebase.eventos.js`, etc.) se puede usar un **límite por colección** (`FIRESTORE_READ_LIMIT`). Con límite (p. ej. 2000), la carga inicial de cada listener cobra como máximo esa cantidad de lecturas por colección.
+  3. Cerrar pestañas del mapa cuando no se usen y evitar muchas sesiones con listeners activos.
+
+### 4.2 Límites por colección
+
 | Dato | Límite | ¿Se bloquea? |
 |------|--------|----------------|
 | **Documentos en colección** | Límite de Firestore: 1 M de documentos por colección. En la app no hay paginación: se escucha la colección entera. | Con **miles** de documentos, cada cambio dispara un snapshot grande; el cuello de botella pasa a ser el **cliente** (procesar y pintar en mapa), no “bloqueo” de Firebase. |

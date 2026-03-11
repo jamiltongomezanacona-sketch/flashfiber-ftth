@@ -11,10 +11,15 @@ import {
   deleteDoc,
   doc,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
+  query,
+  limit
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 const EVENTOS_COLLECTION = "eventos";
+
+/** Límite para no superar plan gratuito (50k lecturas/día). Ver firebase.cierres.js. */
+const FIRESTORE_READ_LIMIT = 500;
 
 /* ===============================
    Guardar evento (CREAR)
@@ -70,9 +75,11 @@ export function escucharEventos(callback) {
   _eventosCallbacks.push(callback);
 
   if (!_eventosUnsubscribe) {
+    const ref = collection(db, EVENTOS_COLLECTION);
+    const q = FIRESTORE_READ_LIMIT > 0 ? query(ref, limit(FIRESTORE_READ_LIMIT)) : ref;
     console.log("👂 Escuchando eventos (singleton)...");
     _eventosUnsubscribe = onSnapshot(
-      collection(db, EVENTOS_COLLECTION),
+      q,
       (snapshot) => {
         snapshot.docChanges().forEach(change => {
           const data = change.doc.data();

@@ -13,10 +13,15 @@ import {
   deleteDoc,
   doc,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
+  query,
+  limit
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 const EVENTOS_CORP_COLLECTION = "eventos_corporativo";
+
+/** Límite para no superar plan gratuito (50k lecturas/día). Ver firebase.cierres.js. */
+const FIRESTORE_READ_LIMIT = 500;
 
 /* ===============================
    Guardar evento corporativo (CREAR)
@@ -66,8 +71,10 @@ export async function eliminarEventoCorp(id) {
    Escuchar eventos corporativos en tiempo real
 =============================== */
 export function escucharEventosCorp(callback) {
+  const ref = collection(db, EVENTOS_CORP_COLLECTION);
+  const q = FIRESTORE_READ_LIMIT > 0 ? query(ref, limit(FIRESTORE_READ_LIMIT)) : ref;
   return onSnapshot(
-    collection(db, EVENTOS_CORP_COLLECTION),
+    q,
     (snapshot) => {
       snapshot.docChanges().forEach(change => {
         const data = change.doc.data();

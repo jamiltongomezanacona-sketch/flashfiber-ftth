@@ -10,10 +10,15 @@ import {
   deleteDoc,
   doc,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
+  query,
+  limit
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 const RUTAS_COLLECTION = "rutas";
+
+/** Límite para no superar plan gratuito (50k lecturas/día). Ver firebase.cierres.js. */
+const FIRESTORE_READ_LIMIT = 500;
 
 window.FTTH_FIREBASE = window.FTTH_FIREBASE || {};
 
@@ -73,7 +78,9 @@ window.FTTH_FIREBASE.eliminarRuta = async function (id) {
 
 /** Escucha en tiempo real la colección rutas. callback(rutas[]) con { id, ...data } */
 window.FTTH_FIREBASE.escucharRutas = function (callback) {
-  return onSnapshot(collection(db, RUTAS_COLLECTION), (snapshot) => {
+  const ref = collection(db, RUTAS_COLLECTION);
+  const q = FIRESTORE_READ_LIMIT > 0 ? query(ref, limit(FIRESTORE_READ_LIMIT)) : ref;
+  return onSnapshot(q, (snapshot) => {
     const rutas = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
     callback(rutas);
   });

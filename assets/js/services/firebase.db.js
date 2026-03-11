@@ -11,8 +11,13 @@ import {
   doc,
   updateDoc,
   deleteDoc,
-  getDoc
+  getDoc,
+  query,
+  limit
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+/** Mismo límite que en firebase.cierres.js / firebase.eventos.js para no superar plan gratuito. */
+const FIRESTORE_READ_LIMIT = 500;
 
 // ✅ Re-exportar db para que otros módulos puedan importarlo desde aquí
 export { db };
@@ -48,7 +53,11 @@ export function escucharCierres(callback) {
     unsubscribeFunctions.cierres();
   }
 
-  const unsubscribe = onSnapshot(collection(db, CIERRES_COLLECTION), snap => {
+  const unsubscribe = onSnapshot(
+    FIRESTORE_READ_LIMIT > 0
+      ? query(collection(db, CIERRES_COLLECTION), limit(FIRESTORE_READ_LIMIT))
+      : collection(db, CIERRES_COLLECTION),
+    snap => {
     snap.forEach(d => callback({ id: d.id, ...d.data() }));
   });
 
@@ -89,7 +98,11 @@ export function escucharEventos(callback) {
     unsubscribeFunctions.eventos();
   }
 
-  const unsubscribe = onSnapshot(collection(db, EVENTOS_COLLECTION), snap => {
+  const unsubscribe = onSnapshot(
+    FIRESTORE_READ_LIMIT > 0
+      ? query(collection(db, EVENTOS_COLLECTION), limit(FIRESTORE_READ_LIMIT))
+      : collection(db, EVENTOS_COLLECTION),
+    snap => {
     snap.forEach(d => callback({ id: d.id, ...d.data() }));
   });
 

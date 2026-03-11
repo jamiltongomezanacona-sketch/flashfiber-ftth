@@ -11,8 +11,13 @@ import {
   serverTimestamp,
   doc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  query,
+  limit
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+/** Límite para no superar plan gratuito (50k lecturas/día). 500 × 4 colecciones ≈ 2000 lecturas por carga; así caben ~25 cargas/día. */
+const FIRESTORE_READ_LIMIT = 500;
 
 /* =========================
    Guardar Cierre
@@ -94,8 +99,9 @@ function escucharCierres(callback) {
 
   if (!_cierresUnsubscribe) {
     const ref = collection(db, "cierres");
+    const q = FIRESTORE_READ_LIMIT > 0 ? query(ref, limit(FIRESTORE_READ_LIMIT)) : ref;
     console.log("👂 Escuchando cierres (singleton)...");
-    _cierresUnsubscribe = onSnapshot(ref, snapshot => {
+    _cierresUnsubscribe = onSnapshot(q, snapshot => {
       snapshot.docChanges().forEach(change => {
         const payload =
           change.type === "removed"

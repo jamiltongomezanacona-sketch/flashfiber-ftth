@@ -15,7 +15,7 @@ class FTTHInitializer {
    */
   async init() {
     try {
-      // Esperar a que Firebase esté listo
+      // Esperar a que Supabase/Firebase esté listo
       await this.waitForFirebase();
       
       // Configurar alias
@@ -32,34 +32,30 @@ class FTTHInitializer {
   }
 
   /**
-   * Espera a que Firebase esté disponible
+   * Espera a que Supabase/Firebase esté disponible
    */
   async waitForFirebase(maxAttempts = null) {
     const attempts = maxAttempts || this.maxAttempts;
-    
+
     for (let i = 0; i < attempts; i++) {
-      // Verificar si Firebase está disponible
       const db = this.getFirebaseDB();
-      if (db) {
-        return db;
-      }
-      
-      // Esperar antes de intentar de nuevo
-      await new Promise(resolve => setTimeout(resolve, 100));
+      if (db) return db;
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
-    
-    throw new Error("Firebase no se inicializó a tiempo");
+
+    throw new Error("Supabase/Firebase no se inicializó a tiempo");
   }
 
   /**
-   * Obtiene la instancia de DB de Firebase
+   * Obtiene la instancia de DB (Supabase o Firebase)
    */
   getFirebaseDB() {
-    // Prioridad: alias global → objeto principal → core
-    return window.__FTTH_DB__ || 
-           window.FTTH_FIREBASE?.db || 
-           window.FTTH_CORE?.db || 
-           null;
+    return (
+      window.__FTTH_DB__ ||
+      window.FTTH_FIREBASE?.db ||
+      window.FTTH_CORE?.db ||
+      null
+    );
   }
 
   /**
@@ -68,7 +64,7 @@ class FTTHInitializer {
   setupAliases() {
     const db = this.getFirebaseDB();
     
-    // ✅ Crear alias __FTTH_DB__ si no existe
+    // ✅ Crear alias __FTTH_DB__ si no existe (Supabase o Firebase)
     if (db && !window.__FTTH_DB__) {
       window.__FTTH_DB__ = db;
       console.log("✅ Alias __FTTH_DB__ creado");

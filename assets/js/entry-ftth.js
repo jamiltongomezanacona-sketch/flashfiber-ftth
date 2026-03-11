@@ -15,14 +15,15 @@
 
 // Core
 import "./core/initializer.js";
-import "./services/firebase.js";
-import "./services/firebase.db.js";
+import "../../supabase.js";
+import "./services/supabase.core.js";
+import "./services/supabase.db.js";
 import "./core/auth.guard.js";
-import "./services/firebase.cierres.js";
-import "./services/firebase.eventos.js";
-import "./services/firebase.eventosCorp.js";
-import "./services/firebase.rutas.js";
-import "./services/firebase.storage.js";
+import "./services/supabase.cierres.js";
+import "./services/supabase.eventos.js";
+import "./services/supabase.eventosCorp.js";
+import "./services/supabase.rutas.js";
+import "./services/supabase.storage.js";
 
 // Utils (exponer para tools que no son ESM: cierres, eventos)
 import ErrorHandler from "./utils/errorHandler.js";

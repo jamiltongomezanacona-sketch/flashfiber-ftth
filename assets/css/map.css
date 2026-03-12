@@ -43,8 +43,11 @@ main.map-wrapper {
   overflow: visible !important;
 }
 
-/* ✅ En móvil, ajustar altura */
+/* ✅ En móvil, ajustar altura y reducir uso de memoria (will-change en desktop solo) */
 @media (max-width: 767px) {
+  #map {
+    will-change: auto;
+  }
   main.map-wrapper {
     height: calc(100svh - 56px) !important;
     min-height: calc(100svh - 56px) !important;

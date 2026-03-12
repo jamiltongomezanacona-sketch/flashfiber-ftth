@@ -41,6 +41,7 @@
   
   // 🎯 Cache global de iconos de pins (color|label|size → Promise<Image>) para evitar regenerar
   const pinIconCache = new Map();
+  const PIN_ICON_CACHE_MAX = 200; // Límite para no crecer sin control en sesiones largas
   const pinCacheKey = (color, label, size) => `${String(color)}|${String(label)}|${Number(size)}`;
 
   // 🎯 Handler global único para iconos faltantes (evita múltiples handlers)
@@ -106,6 +107,10 @@
     const key = pinCacheKey(color, label, size);
     const cached = pinIconCache.get(key);
     if (cached) return cached;
+    if (pinIconCache.size >= PIN_ICON_CACHE_MAX) {
+      const firstKey = pinIconCache.keys().next().value;
+      if (firstKey != null) pinIconCache.delete(firstKey);
+    }
     const p = createCentralPinIconUncached(color, label, size).then(
       (img) => { return img; },
       (err) => { pinIconCache.delete(key); throw err; }

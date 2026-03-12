@@ -11,7 +11,6 @@ const STATIC_ASSETS = [
 
   "/assets/css/theme.css",
   "/assets/css/layout.css",
-  "/assets/css/app-ui.css",
   "/assets/css/map.css",
   "/assets/css/panels.css",
   "/assets/css/mobile.css",

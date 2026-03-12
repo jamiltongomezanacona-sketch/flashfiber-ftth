@@ -1369,23 +1369,27 @@
       </div>
       <div class="search-results-list" role="listbox" aria-label="Resultados de búsqueda">
         ${allResults.map(result => {
-          const displayName = result.type === "cable" ? cableNameForDisplay(result.layerId, result.name) : result.name;
+          const rawName = result.type === "cable" ? cableNameForDisplay(result.layerId, result.name) : result.name;
+          const displayName = escapeHtml(rawName != null ? String(rawName) : "");
           let badge = result.type;
           if (result.type === "direccion") badge = "dirección";
           else if (result.type === "molecula") badge = "molécula";
           else if (result.type === "correccion") badge = "corrección";
           else if (result.type === "ruta") badge = "ruta";
+          const safeSubtitle = escapeHtml(result.subtitle != null ? String(result.subtitle) : "");
+          const titleHtml = result.type === "direccion" ? displayName : highlightMatch(displayName, currentSearch);
+          const safeId = escapeHtml(String(result.id != null ? result.id : ""));
           return `
-          <div class="search-result-item" role="option" data-type="${result.type}" data-id="${result.id}">
+          <div class="search-result-item" role="option" data-type="${result.type}" data-id="${safeId}">
             <div class="search-result-icon ${result.type}">
               ${result.icon}
             </div>
             <div class="search-result-content">
               <div class="search-result-title">
-                ${result.type === "direccion" ? displayName : highlightMatch(displayName, currentSearch)}
-                <span class="search-result-badge">${badge}</span>
+                ${titleHtml}
+                <span class="search-result-badge">${escapeHtml(badge)}</span>
               </div>
-              <div class="search-result-subtitle">${result.subtitle || ""}</div>
+              <div class="search-result-subtitle">${safeSubtitle}</div>
             </div>
             <input type="checkbox" class="search-result-btn-seleccionar" title="Ubicar en el mapa" aria-label="Seleccionar" unchecked />
           </div>
@@ -1654,11 +1658,22 @@
   }
 
   /* =========================
-     Utilidades
+     Utilidades (escape para evitar XSS en resultados de búsqueda)
   ========================= */
+  function escapeHtml(str) {
+    if (str == null) return "";
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+  function escapeRegex(str) {
+    if (str == null) return "";
+    return String(str).replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
+  }
   function highlightMatch(text, query) {
     if (!query) return text;
-    const regex = new RegExp(`(${query})`, "gi");
+    const safeQuery = escapeRegex(query);
+    const regex = new RegExp(`(${safeQuery})`, "gi");
     return text.replace(regex, "<mark>$1</mark>");
   }
 

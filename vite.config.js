@@ -1,11 +1,13 @@
 /** Vite: bundle JS para mapa FTTH (menos peticiones, mejor caché) */
 import { defineConfig } from "vite";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   root: ".",
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    sourcemap: mode !== "production",
+    minify: "esbuild",
     rollupOptions: {
       input: "assets/js/entry-ftth.js",
       output: {
@@ -13,7 +15,5 @@ export default defineConfig({
         format: "es",
       },
     },
-    sourcemap: true,
-    minify: "esbuild",
   },
-});
+}));

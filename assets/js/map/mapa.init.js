@@ -35,8 +35,8 @@
   mapboxgl.accessToken = token;
 
   // 🗺️ MAPA BASE – calles (estilo desde config)
-  // preserveDrawingBuffer: true necesario para exportar a PNG/PDF (Crear diseño de mapa).
-  // No se puede activar solo al exportar (atributo WebGL fijo); un segundo mapa no tendría nuestras capas.
+  // preserveDrawingBuffer: true necesario para getCanvas().toDataURL() en "Crear diseño de mapa" (PNG/PDF).
+  // Coste: más uso de GPU/memoria. Alternativa futura: mapa secundario oculto solo para export, o export vía servidor.
   const map = new mapboxgl.Map({
     container: "map",
     style: CONFIG.MAP.STYLES?.streets || CONFIG.MAP.STYLE_DEFAULT || "mapbox://styles/mapbox/streets-v12",

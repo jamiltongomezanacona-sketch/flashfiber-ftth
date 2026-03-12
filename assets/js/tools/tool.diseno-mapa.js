@@ -309,12 +309,17 @@
         return;
       }
       if (window.__jspdfLoading) {
-        var t = setInterval(function () {
+        var attempts = 0;
+        var maxAttempts = 50;
+        function checkReady() {
           if ((window.jspdf && window.jspdf.jsPDF) || window.jsPDF) {
-            clearInterval(t);
             callback();
+            return;
           }
-        }, 100);
+          attempts++;
+          if (attempts < maxAttempts) setTimeout(checkReady, 100);
+        }
+        setTimeout(checkReady, 100);
         return;
       }
       window.__jspdfLoading = true;

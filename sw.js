@@ -1,4 +1,4 @@
-const CACHE_NAME = "flashfiber-ftth-v7";
+const CACHE_NAME = "flashfiber-ftth-v8";
 const OFFLINE_URL = "/index.html"; // Fallback si no hay conexión
 
 const STATIC_ASSETS = [
@@ -17,6 +17,7 @@ const STATIC_ASSETS = [
   "/assets/css/mobile.css",
   "/assets/css/search.css",
 
+  "/ftth-bundle.js",
   "/assets/js/app.js",
   "/assets/js/config.js",
   "/assets/js/utils/errorHandler.js",

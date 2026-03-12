@@ -39,6 +39,10 @@
   // 🎯 Sistema global de registro de iconos por capa
   const layerIconRegistry = new Map(); // layerId → { iconMap, CENTRAL_COLOR }
   
+  // 🎯 Cache global de iconos de pins (color|label|size → Promise<Image>) para evitar regenerar
+  const pinIconCache = new Map();
+  const pinCacheKey = (color, label, size) => `${String(color)}|${String(label)}|${Number(size)}`;
+
   // 🎯 Handler global único para iconos faltantes (evita múltiples handlers)
   let globalImageMissingHandler = null;
   
@@ -97,8 +101,20 @@
   }
   
   // Función para crear pin directamente en Canvas (método más robusto y compatible)
-  // Evita problemas de decodificación SVG en Mapbox
+  // Evita problemas de decodificación SVG en Mapbox. Usa cache para no regenerar el mismo icono.
   function createCentralPinIcon(color, label = "", size = 50) {
+    const key = pinCacheKey(color, label, size);
+    const cached = pinIconCache.get(key);
+    if (cached) return cached;
+    const p = createCentralPinIconUncached(color, label, size).then(
+      (img) => { return img; },
+      (err) => { pinIconCache.delete(key); throw err; }
+    );
+    pinIconCache.set(key, p);
+    return p;
+  }
+
+  function createCentralPinIconUncached(color, label = "", size = 50) {
     return new Promise((resolve, reject) => {
       try {
         const pinHeight = size;

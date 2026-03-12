@@ -144,6 +144,34 @@
       padding-left: 2.75rem;
     }
 
+    .input-icon.input-icon-password .form-input {
+      padding-right: 2.75rem;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #7dd3fc;
+      opacity: 0.7;
+      cursor: pointer;
+      padding: 0.25rem;
+      font-size: 1rem;
+      line-height: 1;
+      transition: opacity 0.2s;
+    }
+
+    .password-toggle:hover {
+      opacity: 1;
+    }
+
+    .password-toggle:focus {
+      outline: none;
+    }
+
     .btn-login {
       width: 100%;
       padding: 1rem;
@@ -307,7 +335,7 @@
         <label class="form-label" for="password">
           <i class="fas fa-lock"></i> Contraseña
         </label>
-        <div class="input-icon">
+        <div class="input-icon input-icon-password">
           <i class="fas fa-lock"></i>
           <input
             type="password"
@@ -317,6 +345,9 @@
             required
             autocomplete="current-password"
           />
+          <button type="button" class="password-toggle" id="togglePassword" aria-label="Ver contraseña" title="Ver contraseña">
+            <i class="fas fa-eye" id="togglePasswordIcon"></i>
+          </button>
         </div>
       </div>
 
@@ -339,6 +370,28 @@
     </p>
   </div>
 
+  <!-- Config Supabase (generado en build en Vercel; en local puede no existir) -->
+  <script src="/supabase-env.js"></script>
+  <!-- Ver / Ocultar contraseña -->
+  <script>
+    document.getElementById("togglePassword")?.addEventListener("click", function () {
+      var input = document.getElementById("password");
+      var icon = document.getElementById("togglePasswordIcon");
+      if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+        this.setAttribute("aria-label", "Ocultar contraseña");
+        this.setAttribute("title", "Ocultar contraseña");
+      } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+        this.setAttribute("aria-label", "Ver contraseña");
+        this.setAttribute("title", "Ver contraseña");
+      }
+    });
+  </script>
   <!-- Supabase Core (Auth + DB) -->
   <script type="module" src="supabase.js"></script>
   <script type="module" src="assets/js/services/supabase.core.js"></script>

@@ -42,6 +42,8 @@ firebase-service-account.json
 
 # Backup Firebase (datos exportados, no subir a repo)
 backup/
+# Generado en build (credenciales Supabase)
+supabase-env.js
 
 # Datos de trabajo (generado por scripts/data)
 datos_santa_ines.json

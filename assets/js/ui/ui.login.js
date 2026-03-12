@@ -94,30 +94,17 @@
       } catch (error) {
         console.error("❌ Error en login:", error);
         
-        // Mostrar mensaje de error amigable
+        // Mensaje amigable (Supabase usa error.message; Firebase usaba error.code)
         let errorMsg = "Error al iniciar sesión";
-        
-        switch (error.code) {
-          case "auth/user-not-found":
-            errorMsg = "Usuario no encontrado";
-            break;
-          case "auth/wrong-password":
-            errorMsg = "Contraseña incorrecta";
-            break;
-          case "auth/invalid-email":
-            errorMsg = "Correo electrónico inválido";
-            break;
-          case "auth/user-disabled":
-            errorMsg = "Usuario deshabilitado";
-            break;
-          case "auth/too-many-requests":
-            errorMsg = "Demasiados intentos. Intenta más tarde";
-            break;
-          case "auth/network-request-failed":
-            errorMsg = "Error de conexión. Verifica tu internet";
-            break;
-          default:
-            errorMsg = error.message || "Error al iniciar sesión";
+        const msg = (error && error.message) ? String(error.message).toLowerCase() : "";
+        if (msg.includes("invalid login") || msg.includes("invalid_credentials")) {
+          errorMsg = "Correo o contraseña incorrectos";
+        } else if (msg.includes("email") && msg.includes("invalid")) {
+          errorMsg = "Correo electrónico inválido";
+        } else if (msg.includes("network") || msg.includes("fetch")) {
+          errorMsg = "Error de conexión. Verifica tu internet";
+        } else if (error?.message) {
+          errorMsg = error.message;
         }
         
         showError(errorMsg);
@@ -149,19 +136,16 @@
   }
 
   async function checkAuthState() {
-    // Verificar si ya hay un usuario autenticado
-    if (window.FTTH_CORE?.auth) {
-      const { onAuthStateChanged } = await import(
-        "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js"
-      );
-      
-      onAuthStateChanged(window.FTTH_CORE.auth, (user) => {
-        if (user) {
-          // Ya hay un usuario autenticado, redirigir
-          console.log("✅ Usuario ya autenticado, redirigiendo...");
-          window.location.href = "pages/home.html";
-        }
-      });
+    // Supabase: comprobar si ya hay sesión (sin usar Firebase)
+    if (!window.FTTH_CORE?.auth || !window.FTTH_CORE?.db) return;
+    try {
+      const { data: { session } } = await window.FTTH_CORE.db.auth.getSession();
+      if (session?.user) {
+        console.log("✅ Usuario ya autenticado, redirigiendo...");
+        window.location.href = "pages/home.html";
+      }
+    } catch (err) {
+      console.warn("checkAuthState:", err);
     }
   }
 })();

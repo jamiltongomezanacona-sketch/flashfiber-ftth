@@ -152,7 +152,7 @@
             if (navigator.clipboard && navigator.clipboard.writeText) {
               navigator.clipboard.writeText(text).then(function () {
                 btnCopy.textContent = "✓ Copiado";
-                setTimeout(function () { btnCopy.textContent = "📋 Copiar coordenada"; }, 1500);
+                setTimeout(function () { btnCopy.textContent = "📋 Copiar coordenada"; }, CONFIG.DEBOUNCE?.COPY_BUTTON_RESET_MS ?? 1500);
               }).catch(function () { fallbackCopy(text, btnCopy); });
             } else {
               fallbackCopy(text, btnCopy);
@@ -188,7 +188,7 @@
             document.execCommand("copy");
             document.body.removeChild(ta);
             button.textContent = "✓ Copiado";
-            setTimeout(function () { button.textContent = "📋 Copiar coordenada"; }, 1500);
+            setTimeout(function () { button.textContent = "📋 Copiar coordenada"; }, CONFIG.DEBOUNCE?.COPY_BUTTON_RESET_MS ?? 1500);
           } catch (err) {
             alert("Coordenadas: " + text);
           }

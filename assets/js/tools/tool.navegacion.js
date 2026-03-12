@@ -7,7 +7,9 @@
   "use strict";
 
   const App = window.__FTTH_APP__;
+  const CONFIG = window.__FTTH_CONFIG__;
   if (!App) return;
+  const copyResetMs = CONFIG?.DEBOUNCE?.COPY_BUTTON_RESET_MS ?? 1500;
 
   // ✅ Asegurar contenedor de herramientas
   App.tools = App.tools || {};
@@ -127,7 +129,7 @@
       navigator.clipboard.writeText(texto).then(() => {
         if (btnCopy) {
           btnCopy.textContent = "✓ Copiado";
-          setTimeout(() => { if (btnCopy) btnCopy.textContent = "📋 Copiar coordenada"; }, 2000);
+          setTimeout(() => { if (btnCopy) btnCopy.textContent = "📋 Copiar coordenada"; }, copyResetMs);
         }
       }).catch(() => fallbackCopiar(texto));
     } else {
@@ -147,7 +149,7 @@
       document.execCommand("copy");
       if (btnCopy) {
         btnCopy.textContent = "✓ Copiado";
-        setTimeout(() => { if (btnCopy) btnCopy.textContent = "📋 Copiar coordenada"; }, 2000);
+        setTimeout(() => { if (btnCopy) btnCopy.textContent = "📋 Copiar coordenada"; }, copyResetMs);
       }
     } catch (e) {}
     document.body.removeChild(input);

@@ -346,7 +346,7 @@
             if (navigator.clipboard && navigator.clipboard.writeText) {
               navigator.clipboard.writeText(text).then(() => {
                 btnCopyCoords.textContent = "✓ Copiado";
-                setTimeout(() => { btnCopyCoords.textContent = "📋 Copiar coordenadas"; }, 1500);
+                setTimeout(() => { btnCopyCoords.textContent = "📋 Copiar coordenadas"; }, (window.__FTTH_CONFIG__?.DEBOUNCE?.COPY_BUTTON_RESET_MS) ?? 1500);
               }).catch(() => { fallbackCopy(text, btnCopyCoords); });
             } else {
               fallbackCopy(text, btnCopyCoords);
@@ -364,7 +364,7 @@
             document.execCommand("copy");
             document.body.removeChild(ta);
             btn.textContent = "✓ Copiado";
-            setTimeout(() => { btn.textContent = "📋 Copiar coordenadas"; }, 1500);
+            setTimeout(() => { btn.textContent = "📋 Copiar coordenadas"; }, (window.__FTTH_CONFIG__?.DEBOUNCE?.COPY_BUTTON_RESET_MS) ?? 1500);
           } catch (err) {
             alert("Coordenadas: " + text);
           }

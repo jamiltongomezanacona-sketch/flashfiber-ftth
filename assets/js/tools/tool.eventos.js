@@ -8,6 +8,8 @@
 (function () {
   "use strict";
 
+  const log = window.__FTTH_LOG__;
+
   // ✅ Sistema de inicialización mejorado (sin setInterval)
   async function init() {
     // Esperar a que App y Firebase estén disponibles
@@ -28,22 +30,22 @@
           await new Promise(resolve => setTimeout(resolve, 100));
           continue;
         }
-        console.log("✅ tool.eventos: Dependencias disponibles después de", i + 1, "intentos");
+        if (log) log("log", "✅ tool.eventos: Dependencias disponibles después de", i + 1, "intentos");
         return true;
       }
 
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     
-    console.warn("⚠️ tool.eventos: Dependencias no disponibles después de esperar", maxAttempts, "intentos");
-    console.warn("💡 Reintentando en 2 segundos...");
+    if (log) log("warn", "⚠️ tool.eventos: Dependencias no disponibles después de esperar", maxAttempts, "intentos");
+    if (log) log("warn", "💡 Reintentando en 2 segundos...");
     
     setTimeout(() => {
       const App = window.__FTTH_APP__;
       const FB = window.FTTH_FIREBASE;
       const ok = App?.map && FB?.guardarEvento && FB?.escucharEventos && (!isCorporativo || FB?.escucharEventosCorp);
       if (ok) {
-        console.log("✅ tool.eventos: Dependencias disponibles en retry");
+        if (log) log("log", "✅ tool.eventos: Dependencias disponibles en retry");
         initializeTool();
       } else {
         console.error("❌ tool.eventos: Dependencias aún no disponibles después del retry");
@@ -188,7 +190,7 @@
         URL.revokeObjectURL(url);
       };
       img.onerror = () => {
-        console.warn(`⚠️ Error cargando icono de evento: ${iconId}`);
+        if (log) log("warn", "⚠️ Error cargando icono de evento:", iconId);
         URL.revokeObjectURL(url);
       };
       img.src = url;
@@ -213,7 +215,7 @@
           promoteId: "id"
         });
       } catch (err) {
-        console.warn("⚠️ tool.eventos: addSource falló (¿estilo no cargado?), reintentando en load:", err.message);
+        if (log) log("warn", "⚠️ tool.eventos: addSource falló (¿estilo no cargado?), reintentando en load:", err.message);
         App.map.once("load", () => initLayer());
         return;
       }
@@ -254,7 +256,7 @@
           }
         }, beforeId);
       } catch (err) {
-        console.warn("⚠️ tool.eventos: addLayer falló, reintentando en load:", err.message);
+        if (log) log("warn", "⚠️ tool.eventos: addLayer falló, reintentando en load:", err.message);
         App.map.once("load", () => initLayer());
         return;
       }
@@ -394,7 +396,7 @@
               if (eliminar && p.id) {
                 await eliminar(p.id);
                 popup.remove();
-                console.log("✅ Evento eliminado:", p.id);
+                if (log) log("log", "✅ Evento eliminado:", p.id);
               } else {
                 alert("❌ No se pudo eliminar el evento");
               }
@@ -444,7 +446,7 @@
       App.map.on("mouseenter", LAYER_ID, handlerMouseEnter);
       App.map.on("mouseleave", LAYER_ID, handlerMouseLeave);
 
-      console.log("✅ Capa eventos creada");
+      if (log) log("log", "✅ Capa eventos creada");
     }
 
     /* ===============================
@@ -518,7 +520,7 @@
 
     // 👉 Exponer recarga global para cambios de estilo
     App.reloadEventos = function () {
-      console.log("🔄 Recargando capa EVENTOS");
+      if (log) log("log", "🔄 Recargando capa EVENTOS");
 
       // Volver a crear source + layer si fueron destruidos
       initLayer();
@@ -554,7 +556,7 @@
       const FB = window.FTTH_FIREBASE;
       const escuchar = isCorporativoEvento ? FB?.escucharEventosCorp : FB?.escucharEventos;
       if (!escuchar) {
-        console.warn("⚠️ Listener de eventos no disponible aún");
+        if (log) log("warn", "⚠️ Listener de eventos no disponible aún");
         return false;
       }
 
@@ -570,7 +572,7 @@
           addEventoToMap(evt);
         }
       });
-      console.log(isCorporativoEvento ? "✅ Listener eventos corporativo activo" : "✅ Listener de eventos Firebase activo");
+      if (log) log("log", isCorporativoEvento ? "✅ Listener eventos corporativo activo" : "✅ Listener de eventos Firebase activo");
       return true;
     }
     
@@ -598,7 +600,7 @@
             .filter(Boolean);
         }
       } catch (e) {
-        console.warn("⚠️ No se pudieron cargar cables para evento:", e);
+        if (log) log("warn", "⚠️ No se pudieron cargar cables para evento:", e);
       }
     }
 
@@ -771,7 +773,7 @@
         document.addEventListener("click", onDocumentClickCloseCableResults);
       }
 
-      console.log("🚨 Montar Evento ACTIVADO");
+      if (log) log("log", "🚨 Montar Evento ACTIVADO");
     }
 
     function stop() {
@@ -789,7 +791,7 @@
         unsubscribeEventos = null;
       }
       
-      console.log("🛑 Montar Evento DESACTIVADO");
+      if (log) log("log", "🛑 Montar Evento DESACTIVADO");
     }
 
     function handleMapClick(e) {
@@ -904,7 +906,7 @@ btnSave?.addEventListener("click", async (e) => {
     };
     addEventoToMap(eventoCompleto);
     
-    console.log("✅ Evento agregado al mapa:", eventoId);
+    if (log) log("log", "✅ Evento agregado al mapa:", eventoId);
     
     closeModal();
   } catch (err) {
@@ -937,7 +939,7 @@ btnSave?.addEventListener("click", async (e) => {
         if (eliminar) {
           await eliminar(id);
         } else {
-          console.warn("⚠️ eliminarEvento no disponible");
+          if (log) log("warn", "⚠️ eliminarEvento no disponible");
         }
 
         removeEventoFromMap(id);
@@ -953,7 +955,7 @@ btnSave?.addEventListener("click", async (e) => {
     =============================== */
     App.tools.eventos = { start, stop };
 
-    console.log("🚀 tool.eventos listo (PRO)");
+    if (log) log("log", "🚀 tool.eventos listo (PRO)");
   }
 
   // ✅ Inicializar cuando el DOM esté listo

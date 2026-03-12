@@ -9,6 +9,7 @@
 
   const App = window.__FTTH_APP__;
   const CONFIG = window.__FTTH_CONFIG__ || {};
+  const log = window.__FTTH_LOG__;
   if (!App) {
     console.error("❌ App no disponible en mapa.layers.js");
     return;
@@ -247,7 +248,7 @@
       // Buscar en todos los registros de capas
       for (const [layerId, registry] of layerIconRegistry.entries()) {
         if (e.id.startsWith(`${layerId}-pin-`)) {
-          console.warn(`⚠️ Icono faltante detectado: ${e.id} (capa: ${layerId}), cargando bajo demanda...`);
+          if (log) log("warn", "⚠️ Icono faltante detectado:", e.id, "(capa:", layerId, "), cargando bajo demanda...");
           
           // Extraer el nombre de la central del iconId
           const match = e.id.match(new RegExp(`${layerId}-pin-(.+)`));
@@ -286,7 +287,7 @@
                   // Verificar nuevamente antes de agregar
                   if (!map.hasImage(e.id)) {
                     map.addImage(e.id, img);
-                    console.log(`✅ Icono cargado bajo demanda: ${e.id} para "${centralName}"`);
+                    if (log) log("log", "✅ Icono cargado bajo demanda:", e.id, "para", centralName);
                     
                   // Forzar actualización de la capa si existe (sin bloquear)
                   try {
@@ -307,7 +308,7 @@
                     // Ignorar errores de capa - no crítico
                   }
                   } else {
-                    console.log(`ℹ️ Icono ${e.id} ya existe (cargado por otro proceso)`);
+                    if (log) log("log", "ℹ️ Icono ya existe (cargado por otro proceso):", e.id);
                   }
                 } catch (addError) {
                   // Silenciar errores de iconos faltantes (404, etc.) - se usarán pins generados
@@ -330,7 +331,7 @@
     };
     
     map.on("styleimagemissing", globalImageMissingHandler);
-    console.log("✅ Handler global de iconos faltantes inicializado");
+    if (log) log("log", "✅ Handler global de iconos faltantes inicializado");
     */
   }
   
@@ -340,7 +341,7 @@
     if (map && globalImageMissingHandler) {
       map.off("styleimagemissing", globalImageMissingHandler);
       globalImageMissingHandler = null;
-      console.log("🧹 Handler global de iconos faltantes limpiado");
+      if (log) log("log", "🧹 Handler global de iconos faltantes limpiado");
     }
   }
 
@@ -363,7 +364,7 @@
     // Verificar que el mapa tenga dimensiones válidas
     const container = map.getContainer();
     if (!container || container.offsetWidth === 0 || container.offsetHeight === 0) {
-      console.warn("⚠️ Mapa sin dimensiones válidas, omitiendo zoom");
+      if (log) log("warn", "⚠️ Mapa sin dimensiones válidas, omitiendo zoom");
       return;
     }
 
@@ -411,7 +412,7 @@
         duration: 1000,
         maxZoom: 15 // Zoom más cercano para ver el sector en detalle
       });
-      console.log("🎯 Zoom a Santa Inés aplicado");
+      if (log) log("log", "🎯 Zoom a Santa Inés aplicado");
     } catch (error) {
       // Silenciar errores de zoom si el mapa no está completamente listo
       if (error.message?.includes('Invalid LngLat') || error.message?.includes('NaN')) {
@@ -441,7 +442,7 @@
         duration: 1000,
         maxZoom: 13
       });
-      console.log("🎯 Zoom a Bogotá aplicado");
+      if (log) log("log", "🎯 Zoom a Bogotá aplicado");
     }, 500);
   }
 
@@ -459,7 +460,7 @@
   =============================== */
   async function consolidateAllGeoJSON() {
     try {
-      console.log("📦 Consolidando SOLO CABLES y CIERRES E1...");
+      if (log) log("log", "📦 Consolidando SOLO CABLES y CIERRES E1...");
       const allFeatures = [];
       const loadedUrls = new Set(); // ✅ Cache para evitar cargar el mismo archivo múltiples veces
       
@@ -512,11 +513,11 @@
                             nodeIdLower.includes("centrales");
           
           if (isExcluded || (!isCable && !isCierre)) {
-            console.log(`⏭️ Omitiendo capa (solo cables y cierres): ${node.id}, path: ${fullPath}`);
+            if (log) log("log", "⏭️ Omitiendo capa (solo cables y cierres):", node.id, "path:", fullPath);
             return;
           }
           
-          console.log(`✅ Incluyendo capa: ${node.id}, tipo: ${isCable ? 'CABLE' : 'CIERRE'}, path: ${fullPath}`);
+          if (log) log("log", "✅ Incluyendo capa:", node.id, "tipo:", isCable ? "CABLE" : "CIERRE", "path:", fullPath);
           
           try {
             // ✅ Normalizar URL para evitar duplicados
@@ -532,14 +533,14 @@
             
             // ✅ Verificar si ya se cargó este archivo
             if (loadedUrls.has(url)) {
-              console.log(`⏭️ Archivo ya cargado (cache): ${url}`);
+              if (log) log("log", "⏭️ Archivo ya cargado (cache):", url);
               return;
             }
             loadedUrls.add(url);
             
             const res = await fetch(url, { cache: "default" });
             if (!res.ok) {
-              console.warn(`⚠️ No se pudo cargar: ${url}`);
+              if (log) log("warn", "⚠️ No se pudo cargar:", url);
               return;
             }
             const geojson = await res.json();
@@ -560,7 +561,7 @@
                 });
                 
                 if (cierreFeatures.length === 0) {
-                  console.log(`⏭️ Omitiendo cierres (ninguno E1/E0): ${node.id}`);
+                  if (log) log("log", "⏭️ Omitiendo cierres (ninguno E1/E0):", node.id);
                   return;
                 }
                 
@@ -576,7 +577,7 @@
                 });
                 
                 allFeatures.push(...cierreFeatures);
-                console.log(`✅ ${cierreFeatures.length} cierres (E1+E0) de ${node.id} (de ${geojson.features.length} totales)`);
+                if (log) log("log", "✅ Cierres (E1+E0):", cierreFeatures.length, "de", node.id, "de", geojson.features.length, "totales");
               } else {
                 // Es cable, incluir todos los features (y _molecula para filtrar como en Corporativo)
                 const moleculaMatch = (node.id || "").match(/([A-Z]{2}\d+)/);
@@ -591,11 +592,11 @@
                 });
                 
                 allFeatures.push(...geojson.features);
-                console.log(`✅ ${geojson.features.length} features de cable ${node.id}`);
+                if (log) log("log", "✅ Features de cable:", geojson.features.length, node.id);
               }
             }
           } catch (err) {
-            console.warn(`⚠️ Error cargando ${node.id}:`, err);
+            if (log) log("warn", "⚠️ Error cargando:", node.id, err);
           }
           return;
         }
@@ -622,7 +623,7 @@
                     const updatedPath = newPath + (json.label ? "/" + json.label : "");
                     await collectGeoJSON(json, nextBase, updatedPath);
                   } catch (err) {
-                    console.warn(`⚠️ No se pudo cargar: ${child.index}`);
+                    if (log) log("warn", "⚠️ No se pudo cargar:", child.index);
                   }
                 })()
               );
@@ -662,11 +663,11 @@
               allFeatures.push(feature);
               muzuCount++;
             });
-            if (muzuCount > 0) console.log(`✅ MUZU en consolidado: ${muzuCount} cables (mismo método que resto de centrales)`);
+            if (muzuCount > 0 && log) log("log", "✅ MUZU en consolidado:", muzuCount, "cables (mismo método que resto de centrales)");
           }
         }
       } catch (e) {
-        console.warn("⚠️ MUZU no incorporado al consolidado:", e.message || e);
+        if (log) log("warn", "⚠️ MUZU no incorporado al consolidado:", e.message || e);
       }
       
       // Crear FeatureCollection consolidado
@@ -675,7 +676,7 @@
         features: allFeatures
       };
       
-      console.log(`✅ GeoJSON consolidado: ${allFeatures.length} features (SOLO CABLES y CIERRES E1)`);
+      if (log) log("log", "✅ GeoJSON consolidado:", allFeatures.length, "features (SOLO CABLES y CIERRES E1)");
       return consolidated;
     } catch (err) {
       console.error("❌ Error consolidando GeoJSON", err);
@@ -689,13 +690,13 @@
   async function loadConsolidatedGeoJSONToBaseMap() {
     const map = App?.map;
     if (!map) {
-      console.warn("⚠️ Mapa no disponible para cargar GeoJSON consolidado");
+      if (log) log("warn", "⚠️ Mapa no disponible para cargar GeoJSON consolidado");
       return;
     }
     
     // ✅ Esperar a que el estilo esté completamente cargado
     if (!map.isStyleLoaded()) {
-      console.log("⏳ Esperando a que el estilo del mapa se cargue...");
+      if (log) log("log", "⏳ Esperando a que el estilo del mapa se cargue...");
       map.once("style.load", () => {
         setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), 100);
       });
@@ -710,7 +711,7 @@
           const pre = await res.json();
           if (pre && pre.type === "FeatureCollection" && Array.isArray(pre.features) && pre.features.length > 0) {
             consolidated = pre;
-            console.log("✅ Consolidado cargado desde archivo pre-generado:", pre.features.length, "features");
+            if (log) log("log", "✅ Consolidado cargado desde archivo pre-generado:", pre.features.length, "features");
           }
         }
       } catch (_) { /* fallback a consolidar en runtime */ }
@@ -718,13 +719,13 @@
         consolidated = await consolidateAllGeoJSON();
       }
       if (!consolidated.features || consolidated.features.length === 0) {
-        console.warn("⚠️ No hay features para cargar en mapa base");
+        if (log) log("warn", "⚠️ No hay features para cargar en mapa base");
         return;
       }
       
       // Verificar si el source ya existe
       if (map.getSource("geojson-consolidado")) {
-        console.log("🔄 Actualizando GeoJSON consolidado existente");
+        if (log) log("log", "🔄 Actualizando GeoJSON consolidado existente");
         map.getSource("geojson-consolidado").setData(consolidated);
       } else {
         // Crear source consolidado
@@ -733,7 +734,7 @@
           data: consolidated,
           promoteId: "__id"
         });
-        console.log("✅ Source consolidado creado");
+        if (log) log("log", "✅ Source consolidado creado");
       }
       
       // Separar features por tipo de geometría
@@ -764,7 +765,7 @@
             "line-opacity": 0.8
           }
         }, beforeId);
-        console.log(`✅ Capa de líneas creada: ${lineFeatures.length} features`);
+        if (log) log("log", "✅ Capa de líneas creada:", lineFeatures.length, "features");
         
         // ✅ Registrar en el sistema de capas FTTH
         if (!App.__ftthLayerIds) {
@@ -772,7 +773,7 @@
         }
         if (!App.__ftthLayerIds.includes("geojson-lines")) {
           App.__ftthLayerIds.push("geojson-lines");
-          console.log(`✅ Capa geojson-lines registrada en sistema FTTH`);
+          if (log) log("log", "✅ Capa geojson-lines registrada en sistema FTTH");
         }
       }
       
@@ -798,7 +799,7 @@
           }
         }, beforeId);
         if (!App.__ftthLayerIds.includes("geojson-points")) App.__ftthLayerIds.push("geojson-points");
-        console.log(`✅ Capa de puntos creada: ${pointFeatures.length} features (oculta por defecto)`);
+        if (log) log("log", "✅ Capa de puntos creada:", pointFeatures.length, "features (oculta por defecto)");
       }
       
       // Capa de polígonos (oculta por defecto; solo visible desde árbol de capas o buscador)
@@ -828,10 +829,10 @@
           }
         }, beforeId);
         if (!App.__ftthLayerIds.includes("geojson-polygons-outline")) App.__ftthLayerIds.push("geojson-polygons-outline");
-        console.log(`✅ Capa de polígonos creada: ${polygonFeatures.length} features (oculta por defecto)`);
+        if (log) log("log", "✅ Capa de polígonos creada:", polygonFeatures.length, "features (oculta por defecto)");
       }
       
-      console.log(`✅ GeoJSON consolidado cargado en mapa base: ${consolidated.features.length} features totales`);
+      if (log) log("log", "✅ GeoJSON consolidado cargado en mapa base:", consolidated.features.length, "features totales");
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("ftth-consolidated-layers-ready"));
       }
@@ -847,24 +848,24 @@
   async function loadFTTHTree() {
     // ✅ GIS FTTH: misma estructura que Corporativo = una sola capa consolidada (geojson-lines); no crear N capas
     if (!window.__GEOJSON_INDEX__) {
-      console.log("📂 FTTH: uso de capa única consolidada (geojson-lines), omitiendo carga de árbol de capas");
+      if (log) log("log", "📂 FTTH: uso de capa única consolidada (geojson-lines), omitiendo carga de árbol de capas");
       return;
     }
     // ✅ Evitar cargas duplicadas simultáneas
     if (loadingTree) {
-      console.log("⚠️ loadFTTHTree ya está en ejecución, omitiendo llamada duplicada");
+      if (log) log("log", "⚠️ loadFTTHTree ya está en ejecución, omitiendo llamada duplicada");
       return;
     }
     
     loadingTree = true;
     try {
-      console.log("📂 Cargando árbol FTTH...");
+      if (log) log("log", "📂 Cargando árbol FTTH...");
       const res = await fetch(ROOT_INDEX, { cache: "default" });
       const root = await res.json();
 
       await walkNode(root, "../geojson/");
 
-      console.log("🌳 Árbol FTTH procesado");
+      if (log) log("log", "🌳 Árbol FTTH procesado");
       // Forzar que solo centrales queden visibles tras cargar capas
       setTimeout(enforceOnlyCentralesVisible, 150);
     } catch (err) {
@@ -914,7 +915,7 @@
             await walkNode(json, nextBase);
 
           } catch (err) {
-            console.warn("⚠️ No se pudo cargar:", child.index);
+            if (log) log("warn", "⚠️ No se pudo cargar:", child.index);
           }
         }
       }
@@ -939,7 +940,7 @@
     const centralesLayerId = CONFIG.LAYERS?.CENTRALES || "CORPORATIVO_CENTRALES_ETB";
     if (id === centralesLayerId ||
         id?.toLowerCase().includes("centrales") && id?.toLowerCase().includes("corporativo")) {
-      console.log("ℹ️ Centrales se cargan de forma fija, omitiendo carga desde árbol");
+      if (log) log("log", "ℹ️ Centrales se cargan de forma fija, omitiendo carga desde árbol");
       return;
     }
     // ✅ Construir URL correcta - normalizar rutas para que funcionen en dominio
@@ -961,14 +962,14 @@
     // ✅ PERMITIR cargar todas las capas individuales (cables, cierres, eventos)
     // Esto permite control granular desde el árbol de capas
     
-    console.log(`🔍 Creando capa: ${id}, URL: ${url}, basePath: ${basePath}, path: ${layer.path}`);
+    if (log) log("log", "🔍 Creando capa:", id, "URL:", url, "basePath:", basePath, "path:", layer.path);
 
     // ✅ Verificar si el source o la layer ya existen (evitar duplicados)
     if (map.getSource(id)) {
-      console.log(`⚠️ Source ${id} ya existe, omitiendo creación`);
+      if (log) log("log", "⚠️ Source ya existe, omitiendo creación:", id);
       // Si el source existe pero la layer no, crear la layer
       if (!map.getLayer(id)) {
-        console.log(`⚠️ Source existe pero layer no, creando layer: ${id}`);
+        if (log) log("log", "⚠️ Source existe pero layer no, creando layer:", id);
         // Continuar para crear la layer
       } else {
         return; // Ambos existen, omitir completamente
@@ -977,28 +978,28 @@
     
     // ✅ Verificar si la layer ya existe
     if (map.getLayer(id)) {
-      console.log(`⚠️ Layer ${id} ya existe, omitiendo`);
+      if (log) log("log", "⚠️ Layer ya existe, omitiendo:", id);
       return;
     }
 
     try {
-      console.log(`📥 Fetching GeoJSON desde: ${url}`);
+      if (log) log("log", "📥 Fetching GeoJSON desde:", url);
       const res = await fetch(url, { cache: "default" });
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       }
       const geojson = await res.json();
-      console.log(`✅ GeoJSON cargado: ${geojson.features?.length || 0} features`);
+      if (log) log("log", "✅ GeoJSON cargado:", geojson.features?.length || 0, "features");
 
       // ✅ Validar que el GeoJSON tenga datos
       if (!geojson || !geojson.features || geojson.features.length === 0) {
-        console.warn("⚠️ GeoJSON vacío, omitiendo:", id);
+        if (log) log("warn", "⚠️ GeoJSON vacío, omitiendo:", id);
         return;
       }
 
       // ✅ Validar estructura GeoJSON
       if (geojson.type !== "FeatureCollection") {
-        console.warn("⚠️ GeoJSON inválido (no es FeatureCollection):", id);
+        if (log) log("warn", "⚠️ GeoJSON inválido (no es FeatureCollection):", id);
         return;
       }
 
@@ -1019,7 +1020,7 @@
             centralNames.add(normalizedName);
           }
         });
-        console.log(`📋 Centrales encontradas: ${Array.from(centralNames).join(", ")}`);
+        if (log) log("log", "📋 Centrales encontradas:", Array.from(centralNames).join(", "));
 
         const iconMap = new Map(); // nombre central → ID de icono
         const customIconIds = new Set();
@@ -1031,7 +1032,7 @@
         });
         
         // Generar pins SVG para cada central
-        console.log(`📌 Generando pins para ${centralNames.size} centrales únicas`);
+        if (log) log("log", "📌 Generando pins para", centralNames.size, "centrales únicas");
         const iconPromises = [];
         
         for (const centralName of centralNames) {
@@ -1055,13 +1056,13 @@
                 if (!map.hasImage(iconId)) {
                   try {
                     map.addImage(iconId, img);
-                    console.log(`✅ Pin agregado: ${iconId} para "${centralName}"`);
+                    if (log) log("log", "✅ Pin agregado:", iconId, "para", centralName);
                   } catch (addError) {
                     console.error(`❌ Error agregando imagen ${iconId}:`, addError);
                     throw addError;
                   }
                 } else {
-                  console.log(`ℹ️ Pin ya existe: ${iconId}`);
+                  if (log) log("log", "ℹ️ Pin ya existe:", iconId);
                 }
                 
                 return true;
@@ -1073,7 +1074,7 @@
             
             iconPromises.push(iconPromise);
           } else {
-            console.log(`ℹ️ Pin ya existe en mapa: ${iconId}`);
+            if (log) log("log", "ℹ️ Pin ya existe en mapa:", iconId);
           }
         }
         
@@ -1090,11 +1091,11 @@
           const results = await loadPromise.catch(() => []);
           const successful = results.filter(r => r.status === 'fulfilled' && r.value === true).length;
           const failed = results.filter(r => r.status === 'rejected').length;
-          console.log(`✅ Iconos: ${successful} cargados, ${failed} fallidos de ${iconPromises.length} totales`);
+          if (log) log("log", "✅ Iconos:", successful, "cargados,", failed, "fallidos de", iconPromises.length, "totales");
           
           // NO VERIFICAR iconos faltantes - confiar en el handler de styleimagemissing
           // El handler global cargará los iconos bajo demanda cuando el mapa los necesite
-          console.log(`ℹ️ Los iconos faltantes se cargarán automáticamente cuando el mapa los necesite`);
+          if (log) log("log", "ℹ️ Los iconos faltantes se cargarán automáticamente cuando el mapa los necesite");
           
         } catch (err) {
           // Silenciar advertencias de iconos faltantes - se usarán pins generados automáticamente
@@ -1138,22 +1139,22 @@
             featuresWithIcons++;
           }
         });
-        console.log(`✅ ${featuresWithIcons} de ${geojson.features.length} features tienen iconId asignado (carga bajo demanda activa)`);
+        if (log) log("log", "✅ Features con iconId:", featuresWithIcons, "de", geojson.features.length, "(carga bajo demanda activa)");
         
         // Crear source DESPUÉS de cargar todos los iconos y asignar iconId
         // El mapa ya está verificado al inicio de la función
-        console.log(`📦 Creando source para ${id} con ${geojson.features.length} features`);
+        if (log) log("log", "📦 Creando source para", id, "con", geojson.features.length, "features");
         try {
           // Verificar que el source no exista ya
           if (map.getSource(id)) {
-            console.log(`⚠️ Source ${id} ya existe, omitiendo creación`);
+            if (log) log("log", "⚠️ Source ya existe, omitiendo creación:", id);
           } else {
             map.addSource(id, {
               type: "geojson",
               data: geojson,
               promoteId: "name"
             });
-            console.log(`✅ Source ${id} creado con datos actualizados`);
+            if (log) log("log", "✅ Source creado con datos actualizados:", id);
           }
         } catch (sourceError) {
           console.error(`❌ Error creando source ${id}:`, sourceError);
@@ -1166,10 +1167,10 @@
         // Verificar que los iconId están en las features
         const sampleFeature = geojson.features[0];
         if (sampleFeature?.properties?.iconId) {
-          console.log(`✅ Verificación: Feature de ejemplo tiene iconId: ${sampleFeature.properties.iconId}`);
+          if (log) log("log", "✅ Verificación: Feature de ejemplo tiene iconId:", sampleFeature.properties.iconId);
         } else {
           console.error(`❌ ERROR: Feature de ejemplo NO tiene iconId`);
-          console.log(`   Propiedades disponibles:`, Object.keys(sampleFeature?.properties || {}));
+          if (log) log("log", "   Propiedades disponibles:", Object.keys(sampleFeature?.properties || {}));
         }
 
         // Configurar layout para símbolos SOLO CON TEXTO (sin iconos)
@@ -1218,10 +1219,10 @@
         try {
           // Verificar que la capa no exista ya
           if (map.getLayer(id)) {
-            console.log(`⚠️ Capa ${id} ya existe, omitiendo`);
+            if (log) log("log", "⚠️ Capa ya existe, omitiendo:", id);
           } else {
             map.addLayer(layerConfig, getBeforeIdForDataLayers(map));
-            console.log(`✅ Capa symbol agregada: ${id} con ${geojson.features.length} features`);
+            if (log) log("log", "✅ Capa symbol agregada:", id, "con", geojson.features.length, "features");
           }
           
           // Verificar que la capa se creó correctamente
@@ -1229,18 +1230,18 @@
             const visibility = map.getLayoutProperty(id, "visibility");
             const textFieldExpr = map.getLayoutProperty(id, "text-field");
             const textColor = map.getPaintProperty(id, "text-color");
-            console.log(`✅ Verificación: Capa ${id} existe, visibilidad: ${visibility}`);
-            console.log(`   Expresión text-field:`, JSON.stringify(textFieldExpr));
-            console.log(`   Color del texto: ${textColor}`);
+            if (log) log("log", "✅ Verificación: Capa existe, visibilidad:", id, visibility);
+            if (log) log("log", "   Expresión text-field:", JSON.stringify(textFieldExpr));
+            if (log) log("log", "   Color del texto:", textColor);
             
             // Verificar que el source tiene datos
             const source = map.getSource(id);
             if (source && source._data) {
               const sourceFeatures = source._data.features || [];
               const featuresWithName = sourceFeatures.filter(f => f.properties?.name);
-              console.log(`   Source tiene ${sourceFeatures.length} features, ${featuresWithName.length} con nombre`);
+              if (log) log("log", "   Source tiene", sourceFeatures.length, "features,", featuresWithName.length, "con nombre");
               if (featuresWithName.length > 0) {
-                console.log(`   Ejemplo nombre: ${featuresWithName[0].properties.name}`);
+                if (log) log("log", "   Ejemplo nombre:", featuresWithName[0].properties.name);
               }
             }
           } else {
@@ -1261,7 +1262,7 @@
             promoteId: "name"
           });
         } else {
-          console.log(`⚠️ Source ${id} ya existe al intentar agregar, usando existente`);
+          if (log) log("log", "⚠️ Source ya existe al intentar agregar, usando existente:", id);
           // Actualizar datos del source existente
           const source = map.getSource(id);
           if (source && source.setData) {
@@ -1298,7 +1299,7 @@
         if (!map.getLayer(id)) {
           map.addLayer(layerConfig, getBeforeIdForDataLayers(map));
         } else {
-          console.log(`⚠️ Layer ${id} ya existe, omitiendo agregar`);
+          if (log) log("log", "⚠️ Layer ya existe, omitiendo agregar:", id);
         }
       }
       
@@ -1308,7 +1309,7 @@
       }
 
       const visibility = map.getLayoutProperty(id, "visibility");
-      console.log(`✅ Capa cargada: ${id} (${geojson.features.length} features, tipo: ${layerType}, visibilidad: ${visibility})`);
+      if (log) log("log", "✅ Capa cargada:", id, "(" + geojson.features.length + " features, tipo:", layerType, "visibilidad:", visibility + ")");
 
       // 🎯 Zoom a Santa Inés después de cargar la primera capa importante
       // Solo hacer zoom una vez cuando se carga la capa de centrales
@@ -1412,7 +1413,7 @@
         } catch (e2) {}
       }
     });
-    if (enforced > 0) console.log(`🔒 enforceOnlyCentralesVisible: ${enforced} capas forzadas a oculto`);
+    if (enforced > 0 && log) log("log", "🔒 enforceOnlyCentralesVisible:", enforced, "capas forzadas a oculto");
   }
 
   /* ===============================
@@ -1422,7 +1423,7 @@
     if (restoring) return;
     restoring = true;
 
-    console.log("🔄 Restaurando capas FTTH...");
+    if (log) log("log", "🔄 Restaurando capas FTTH...");
     
     // Limpiar registro de iconos de capas anteriores
     layerIconRegistry.clear();
@@ -1444,7 +1445,7 @@
     const MAX_RETRIES = 5;
     
     if (!map) {
-      console.warn("⚠️ Mapa no disponible, reintentando...", retryCount);
+      if (log) log("warn", "⚠️ Mapa no disponible, reintentando...", retryCount);
       if (retryCount < MAX_RETRIES) {
         setTimeout(() => loadCentralesFijas(retryCount + 1), 500);
       }
@@ -1453,7 +1454,7 @@
     
     // Esperar a que el estilo esté cargado
     if (!map.isStyleLoaded()) {
-      console.log("⏳ Esperando que el estilo del mapa esté cargado...", retryCount);
+      if (log) log("log", "⏳ Esperando que el estilo del mapa esté cargado...", retryCount);
       if (retryCount < MAX_RETRIES) {
         map.once("style.load", () => {
           setTimeout(() => loadCentralesFijas(0), 200);
@@ -1474,12 +1475,12 @@
     // Si ya está cargado, asegurar que esté visible
     if (map.getLayer(CENTRALES_ID)) {
       map.setLayoutProperty(CENTRALES_ID, "visibility", "visible");
-      console.log("✅ Centrales ya cargadas, asegurando visibilidad");
+      if (log) log("log", "✅ Centrales ya cargadas, asegurando visibilidad");
       return;
     }
     
     try {
-      console.log("🏢 Cargando centrales ETB (fijas)...");
+      if (log) log("log", "🏢 Cargando centrales ETB (fijas)...");
       
       // Cargar GeoJSON de centrales
       const res = await fetch("../geojson/CORPORATIVO/centrales-etb.geojson", { cache: "default" });
@@ -1489,11 +1490,11 @@
       const geojson = await res.json();
       
       if (!geojson || !geojson.features || geojson.features.length === 0) {
-        console.warn("⚠️ No hay centrales para cargar");
+        if (log) log("warn", "⚠️ No hay centrales para cargar");
         return;
       }
       
-      console.log(`📊 GeoJSON cargado: ${geojson.features.length} centrales`);
+      if (log) log("log", "📊 GeoJSON cargado:", geojson.features.length, "centrales");
       
       // Crear source si no existe
       if (!map.getSource(CENTRALES_SOURCE)) {
@@ -1503,11 +1504,11 @@
             data: geojson,
             promoteId: "name"
           });
-          console.log("✅ Source creado:", CENTRALES_SOURCE);
+          if (log) log("log", "✅ Source creado:", CENTRALES_SOURCE);
         } catch (err) {
           // Si el source ya existe, actualizar datos
           if (err.message && err.message.includes("already exists")) {
-            console.log("⚠️ Source ya existe, actualizando datos...");
+            if (log) log("log", "⚠️ Source ya existe, actualizando datos...");
             map.getSource(CENTRALES_SOURCE).setData(geojson);
           } else {
             throw err;
@@ -1516,7 +1517,7 @@
       } else {
         // Actualizar datos si el source ya existe
         map.getSource(CENTRALES_SOURCE).setData(geojson);
-        console.log("✅ Source actualizado:", CENTRALES_SOURCE);
+        if (log) log("log", "✅ Source actualizado:", CENTRALES_SOURCE);
       }
       
       // Crear layer si no existe (solo texto, sin iconos); debajo de etiquetas del estilo
@@ -1544,7 +1545,7 @@
             }
           }, getBeforeIdForDataLayers(map));
           
-          console.log("✅ Layer creado:", CENTRALES_ID);
+          if (log) log("log", "✅ Layer creado:", CENTRALES_ID);
           
           // Registrar en el sistema
           if (!App.__ftthLayerIds.includes(CENTRALES_ID)) {
@@ -1560,16 +1561,16 @@
       } else {
         // Asegurar que esté visible
         map.setLayoutProperty(CENTRALES_ID, "visibility", "visible");
-        console.log("✅ Layer ya existe, asegurando visibilidad");
+        if (log) log("log", "✅ Layer ya existe, asegurando visibilidad");
       }
       
       // Verificar que el layer esté visible
       const layer = map.getLayer(CENTRALES_ID);
       if (layer) {
         const visibility = map.getLayoutProperty(CENTRALES_ID, "visibility");
-        console.log(`✅ Centrales ETB cargadas (fijas): ${geojson.features.length} centrales, visibilidad: ${visibility}`);
+        if (log) log("log", "✅ Centrales ETB cargadas (fijas):", geojson.features.length, "centrales, visibilidad:", visibility);
       } else {
-        console.warn("⚠️ Layer no encontrado después de crearlo");
+        if (log) log("warn", "⚠️ Layer no encontrado después de crearlo");
       }
       
       // Zoom a Santa Inés después de cargar centrales (solo la primera vez)
@@ -1585,7 +1586,7 @@
       console.error("❌ Error cargando centrales fijas:", err);
       // Reintentar si no se ha excedido el límite
       if (retryCount < MAX_RETRIES) {
-        console.log(`🔄 Reintentando carga de centrales... (${retryCount + 1}/${MAX_RETRIES})`);
+        if (log) log("log", "🔄 Reintentando carga de centrales...", retryCount + 1, "/", MAX_RETRIES);
         setTimeout(() => loadCentralesFijas(retryCount + 1), 1000);
       }
     }

@@ -82,7 +82,7 @@ if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
       .register("/sw.js")
-      .then(() => console.log("📱 PWA activa"))
+      .then(() => { const l = window.__FTTH_LOG__; if (l) l("log", "📱 PWA activa"); else console.log("📱 PWA activa"); })
       .catch(err => console.error("❌ Error SW", err));
   });
 }

@@ -13,9 +13,10 @@
     document.addEventListener("ftth-map-ready", fn, { once: true });
   }
 
+  const log = window.__FTTH_LOG__;
   whenMapReady(() => {
     const App = window.__FTTH_APP__;
-    console.log("🧩 FTTH loader listo");
+    if (log) log("log", "🧩 FTTH loader listo");
     loadFTTHLayers();
     App.reloadFTTH = loadFTTHLayers;
   });
@@ -29,7 +30,7 @@
     // Evitar duplicar
     if (map.getSource("ftth-src")) return;
 
-    console.log("📡 Cargando FTTH GeoJSON...");
+    if (log) log("log", "📡 Cargando FTTH GeoJSON...");
 
     map.addSource("ftth-src", {
       type: "geojson",
@@ -81,18 +82,18 @@
       }
       if (!App.__ftthLayerIds.includes("ftth-cables")) {
         App.__ftthLayerIds.push("ftth-cables");
-        console.log(`✅ Capa ftth-cables registrada en sistema FTTH`);
+        if (log) log("log", "✅ Capa ftth-cables registrada en sistema FTTH");
       }
       if (!App.__ftthLayerIds.includes("ftth-puntos")) {
         App.__ftthLayerIds.push("ftth-puntos");
-        console.log(`✅ Capa ftth-puntos registrada en sistema FTTH`);
+        if (log) log("log", "✅ Capa ftth-puntos registrada en sistema FTTH");
       }
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("ftth-consolidated-layers-ready"));
       }
     }
 
-    console.log("✅ Capas FTTH cargadas");
+    if (log) log("log", "✅ Capas FTTH cargadas");
   }
 
 })();

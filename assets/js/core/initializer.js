@@ -25,7 +25,7 @@ class FTTHInitializer {
       this.ready = true;
       this.notifyListeners();
       
-      console.log("✅ FTTH Initializer: Sistema inicializado");
+      if (window.__FTTH_LOG__) window.__FTTH_LOG__("log", "✅ FTTH Initializer: Sistema inicializado");
     } catch (error) {
       console.error("❌ FTTH Initializer: Error inicializando", error);
     }
@@ -67,7 +67,7 @@ class FTTHInitializer {
     // ✅ Crear alias __FTTH_DB__ si no existe (Supabase o Firebase)
     if (db && !window.__FTTH_DB__) {
       window.__FTTH_DB__ = db;
-      console.log("✅ Alias __FTTH_DB__ creado");
+      if (window.__FTTH_LOG__) window.__FTTH_LOG__("log", "✅ Alias __FTTH_DB__ creado");
     }
   }
 

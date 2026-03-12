@@ -6,10 +6,11 @@
 (() => {
   "use strict";
 
-  console.log("🧪 mapa.init.js cargado");
-
   const App = window.__FTTH_APP__;
   const CONFIG = window.__FTTH_CONFIG__;
+  const log = window.__FTTH_LOG__;
+
+  if (log) log("log", "🧪 mapa.init.js cargado");
 
   if (!App || !CONFIG) {
     console.error("❌ App o FTTH_CONFIG no disponibles");
@@ -24,7 +25,7 @@
   // En producción no usar token por defecto en código; debe venir de variables de entorno.
   var token = (CONFIG.MAPBOX_TOKEN && String(CONFIG.MAPBOX_TOKEN).trim()) || "";
   if (!token) {
-    console.warn("❌ MAPBOX_TOKEN no configurado. En producción usa variables de entorno (ej. Vercel). En desarrollo: config.local.js.");
+    if (log) log("warn", "❌ MAPBOX_TOKEN no configurado. En producción usa variables de entorno (ej. Vercel). En desarrollo: config.local.js.");
     var el = document.getElementById("map");
     if (el) el.innerHTML = "<div style=\"padding:2rem;text-align:center;color:#a3d5ff;font-family:Inter,sans-serif;\">" +
       "<p><strong>⚠️ Configuración requerida</strong></p>" +
@@ -76,7 +77,7 @@
      MAPA LISTO
      =============================== */
   map.on("load", () => {
-    console.log("🗺️ MAPA CARGADO CORRECTAMENTE");
+    if (log) log("log", "🗺️ MAPA CARGADO CORRECTAMENTE");
 
     // ✅ Capas de pines (cierres/eventos) se crean cuando el estilo está listo
     if (App.reloadCierres) App.reloadCierres();
@@ -104,9 +105,9 @@
         }
       });
 
-      console.log("📦 Rutas cargadas:", rutas.length);
+      if (log) log("log", "📦 Rutas cargadas:", rutas.length);
     } catch (e) {
-      console.warn("⚠️ Error cargando rutas:", e);
+      if (log) log("warn", "⚠️ Error cargando rutas:", e);
     }
 
     // 🧭 CONTROLES (rotación ON / OFF)
@@ -227,7 +228,7 @@
             const lngLat = map.unproject([x, y]);
             showCopyCoordsPopup(lngLat);
           } catch (err) {
-            console.warn("Long-press coords:", err);
+            if (log) log("warn", "Long-press coords:", err);
           }
           touchStartPoint = null;
           e.preventDefault();

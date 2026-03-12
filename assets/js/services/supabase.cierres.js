@@ -40,8 +40,12 @@ async function guardarCierre(cierre) {
     created_at: cierre.createdAt ?? new Date().toISOString(),
     created_by: cierre.createdBy ?? ""
   };
-
-  const { data, error } = await supabase.from(TABLE).insert(payload).select("*").single();
+  // Seleccionar solo columnas existentes en la tabla (snake_case) para evitar error de schema cache
+  const { data, error } = await supabase
+    .from(TABLE)
+    .insert(payload)
+    .select("id, codigo, tipo, central, molecula, notas, lat, lng, created_at, created_by, updated_at, server_time")
+    .single();
   if (error) throw error;
   const doc = rowToDoc(data);
   if (doc) _cierresCallbacks.forEach((cb) => cb(doc));

@@ -39,7 +39,7 @@
 
       // 🔄 Cuando cambia el estilo del mapa (debounce resize para evitar llamadas seguidas)
       var resizeTimeout = null;
-      var RESIZE_DEBOUNCE_MS = 150;
+      var delayMs = CONFIG.DEBOUNCE?.RESIZE_MAP_MS ?? 150;
       this.map.on("style.load", () => {
         this.log("🎨 Estilo recargado → resize + capas");
         if (resizeTimeout) clearTimeout(resizeTimeout);
@@ -47,7 +47,7 @@
           resizeTimeout = null;
           this.map.resize();
           this.reloadAllLayers?.();
-        }, RESIZE_DEBOUNCE_MS);
+        }, delayMs);
       });
 
     },

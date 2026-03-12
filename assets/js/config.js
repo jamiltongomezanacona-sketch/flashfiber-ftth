@@ -17,6 +17,12 @@ window.__FTTH_CONFIG__ = {
 
   DEBUG: !!SECRETS.DEBUG,
 
+  // Tiempos de debounce/throttle (ms) centralizados
+  DEBOUNCE: {
+    RESIZE_MAP_MS: 150,   // estilo del mapa recargado → resize
+    COPY_BUTTON_RESET_MS: 1500  // texto "Copiar coordenada" vuelve al original
+  },
+
   MAP: {
     STYLE_DEFAULT: "mapbox://styles/mapbox/dark-v11",
     // Estilos disponibles para el botón de base (panel)

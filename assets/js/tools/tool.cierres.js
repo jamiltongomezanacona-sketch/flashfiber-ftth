@@ -966,9 +966,12 @@
 
       try {
         const FB = window.FTTH_FIREBASE;
-
-        if (editId) await FB?.actualizarCierre?.(editId, cierre);
-        else await FB?.guardarCierre?.(cierre);
+        if (!FB?.guardarCierre) {
+          alert("❌ Supabase no está listo. Recargue la página e inicie sesión de nuevo.");
+          return;
+        }
+        if (editId) await FB.actualizarCierre(editId, cierre);
+        else await FB.guardarCierre(cierre);
 
         closeModal();
       } catch (err) {

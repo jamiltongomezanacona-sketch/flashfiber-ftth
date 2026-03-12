@@ -24,20 +24,27 @@ function rowToDoc(row) {
 }
 
 async function guardarCierre(cierre) {
+  const lat = Number(cierre.lat);
+  const lng = Number(cierre.lng);
+  if (Number.isNaN(lat) || Number.isNaN(lng)) {
+    throw new Error("Coordenadas inválidas (lat/lng)");
+  }
   const payload = {
     codigo: cierre.codigo ?? "",
     tipo: cierre.tipo ?? "",
     central: cierre.central ?? "",
     molecula: cierre.molecula ?? "",
     notas: cierre.notas ?? "",
-    lat: Number(cierre.lat),
-    lng: Number(cierre.lng),
+    lat,
+    lng,
     created_at: cierre.createdAt ?? new Date().toISOString(),
     created_by: cierre.createdBy ?? ""
   };
 
-  const { data, error } = await supabase.from(TABLE).insert(payload).select("id").single();
+  const { data, error } = await supabase.from(TABLE).insert(payload).select("*").single();
   if (error) throw error;
+  const doc = rowToDoc(data);
+  if (doc) _cierresCallbacks.forEach((cb) => cb(doc));
   console.log("☁️ Cierre guardado:", data.id);
   return data.id;
 }

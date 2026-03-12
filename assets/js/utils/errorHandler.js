@@ -103,23 +103,24 @@ class ErrorHandler {
    * @returns {string} Mensaje amigable
    */
   static getUserMessage(error) {
+    const msg = (error && (error.message || error.msg)) || "";
     const errorMessages = {
       "NetworkError": "Error de conexión. Verifica tu internet.",
       "QuotaExceededError": "Se ha excedido el límite de almacenamiento.",
       "PermissionDenied": "No tienes permisos para realizar esta acción.",
       "NotFound": "El recurso solicitado no existe.",
-      "InvalidArgument": "Los datos proporcionados son inválidos."
+      "InvalidArgument": "Los datos proporcionados son inválidos.",
+      "row-level security": "No tienes permiso para guardar (política de seguridad).",
+      "violates row-level security": "No tienes permiso para guardar (política de seguridad).",
+      "JWT": "Sesión expirada. Cierra sesión y vuelve a entrar.",
+      "invalid JWT": "Sesión expirada. Cierra sesión y vuelve a entrar."
     };
 
-    // Buscar mensaje específico
     for (const [key, message] of Object.entries(errorMessages)) {
-      if (error.message.includes(key) || error.name === key) {
-        return message;
-      }
+      if (msg.includes(key)) return message;
     }
 
-    // Mensaje genérico
-    return "Ocurrió un error inesperado. Por favor, intenta nuevamente.";
+    return msg.trim() || "Ocurrió un error inesperado. Por favor, intenta nuevamente.";
   }
 }
 

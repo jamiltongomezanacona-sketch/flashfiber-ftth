@@ -20,6 +20,7 @@ const copies = [
   ["manifest.json", "manifest.json"],
   ["assets", "assets"],
   ["pages", "pages"],
+  ["geojson", "geojson"],
 ];
 
 for (const [src, dest] of copies) {

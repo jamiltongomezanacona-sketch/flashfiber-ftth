@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/write-supabase-env.js && npm run build:js && npm run build:geojson && node scripts/write-config-production.js",
+    "build": "npm run build:js && node scripts/copy-static-to-dist.js && node scripts/write-supabase-env.js && npm run build:geojson && node scripts/write-config-production.js",
     "build:js": "npx vite build",
     "build:geojson": "node scripts/build-consolidado-geojson.js",
     "backup:firebase": "node scripts/backup-firebase-to-pc.js",

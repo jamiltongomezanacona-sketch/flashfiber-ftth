@@ -9,8 +9,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const root = path.join(__dirname, "..");
+const distDir = path.join(root, "dist");
 const token = (process.env.MAPBOX_TOKEN || "").trim();
-const outPath = path.join(__dirname, "..", "config.production.js");
+const outPath = fs.existsSync(distDir)
+  ? path.join(distDir, "config.production.js")
+  : path.join(root, "config.production.js");
 const content =
   "/* Generado en build. Token desde MAPBOX_TOKEN (Vercel/host). */\n" +
   "window.__FTTH_MAPBOX_TOKEN__ = " +

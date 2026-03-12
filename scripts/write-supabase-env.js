@@ -2,7 +2,7 @@
  * Genera supabase-env.js con URL y clave desde variables de entorno.
  * Se ejecuta en el build de Vercel; el archivo no se sube a git.
  */
-import { writeFileSync } from "fs";
+import { writeFileSync, mkdirSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
 
@@ -21,7 +21,13 @@ window.__FTTH_SUPABASE_URL__ = ${JSON.stringify(url)};
 window.__FTTH_SUPABASE_ANON_KEY__ = ${JSON.stringify(key)};
 `;
 
-const outPath = path.join(root, "supabase-env.js");
+const outPath = path.join(root, "dist", "supabase-env.js");
+const distDir = path.join(root, "dist");
+try {
+  if (!existsSync(distDir)) {
+    mkdirSync(distDir, { recursive: true });
+  }
+} catch (_) {}
 writeFileSync(outPath, content, "utf8");
 console.log("✅ supabase-env.js generado con URL de Supabase");
 process.exit(0);

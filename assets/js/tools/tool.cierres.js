@@ -10,6 +10,8 @@
 (function () {
   "use strict";
 
+  const log = window.__FTTH_LOG__;
+
   // ✅ Sistema de inicialización mejorado
   async function init() {
     await waitForDependencies();
@@ -20,19 +22,19 @@
     for (let i = 0; i < maxAttempts; i++) {
       const App = window.__FTTH_APP__;
       if (App?.map) {
-        console.log("✅ tool.cierres: Dependencias disponibles después de", i + 1, "intentos");
+        if (log) log("log", "✅ tool.cierres: Dependencias disponibles después de", i + 1, "intentos");
         return true;
       }
       await new Promise(resolve => setTimeout(resolve, 100));
     }
-    console.warn("⚠️ tool.cierres: App.map no disponible después de esperar", maxAttempts, "intentos");
-    console.warn("💡 Reintentando en 2 segundos...");
+    if (log) log("warn", "⚠️ tool.cierres: App.map no disponible después de esperar", maxAttempts, "intentos");
+    if (log) log("warn", "💡 Reintentando en 2 segundos...");
     
     // ✅ Retry después de 2 segundos (igual que eventos)
     setTimeout(async () => {
       const App = window.__FTTH_APP__;
       if (App?.map) {
-        console.log("✅ tool.cierres: Dependencias disponibles en retry");
+        if (log) log("log", "✅ tool.cierres: Dependencias disponibles en retry");
         initializeTool();
       } else {
         console.error("❌ tool.cierres: Dependencias aún no disponibles después del retry");
@@ -292,7 +294,7 @@
           };
           
           img.onerror = (err) => {
-            console.warn("⚠️ Error cargando icono SVG de cierre:", err);
+            if (log) log("warn", "⚠️ Error cargando icono SVG de cierre:", err);
             URL.revokeObjectURL(url);
             reject(new Error(`Error creando imagen desde SVG: ${err}`));
           };
@@ -332,7 +334,7 @@
         URL.revokeObjectURL(url);
       };
       img.onerror = () => {
-        console.warn(`⚠️ Error cargando icono de cierre: ${iconId}`);
+        if (log) log("warn", "⚠️ Error cargando icono de cierre:", iconId);
         URL.revokeObjectURL(url);
       };
       img.src = url;
@@ -366,7 +368,7 @@
           promoteId: "id"
         });
       } catch (err) {
-        console.warn("⚠️ tool.cierres: addSource falló (¿estilo no cargado?), reintentando en load:", err.message);
+        if (log) log("warn", "⚠️ tool.cierres: addSource falló (¿estilo no cargado?), reintentando en load:", err.message);
         App.map.once("load", () => initLayer());
         return;
       }
@@ -402,7 +404,7 @@
           }
         }, beforeId);
       } catch (err) {
-        console.warn("⚠️ tool.cierres: addLayer falló, reintentando en load:", err.message);
+        if (log) log("warn", "⚠️ tool.cierres: addLayer falló, reintentando en load:", err.message);
         App.map.once("load", () => initLayer());
         return;
       }
@@ -537,7 +539,7 @@
               if (FB?.eliminarCierre && id) {
                 await FB.eliminarCierre(id);
                 popup.remove();
-                console.log("✅ Cierre eliminado:", id);
+                if (log) log("log", "✅ Cierre eliminado:", id);
               } else {
                 alert("❌ No se pudo eliminar el cierre");
               }
@@ -588,7 +590,7 @@
       App.map.on("mouseenter", LAYER_ID, handlerMouseEnter);
       App.map.on("mouseleave", LAYER_ID, handlerMouseLeave);
 
-      console.log("✅ Capa cierres creada (estilo Google Maps)");
+      if (log) log("log", "✅ Capa cierres creada (estilo Google Maps)");
     }
 
     var _refreshCierresTimeout = null;
@@ -614,7 +616,7 @@
     function addCierreToMap(cierre) {
       if (!cierre?.lng || !cierre?.lat) {
         if (window.ErrorHandler) window.ErrorHandler.handle(new Error("Cierre sin coordenadas"), "addCierreToMap", { codigo: cierre?.codigo, id: cierre?.id });
-        else console.warn("⚠️ Cierre sin coordenadas:", cierre.codigo || cierre.id);
+        else if (log) log("warn", "⚠️ Cierre sin coordenadas:", cierre.codigo || cierre.id);
         return;
       }
 
@@ -625,11 +627,11 @@
         const res = validators.coordenadas(lng, lat);
         if (!res.valid) {
           if (window.ErrorHandler) window.ErrorHandler.handle(new Error(res.error), "addCierreToMap", { codigo: cierre?.codigo });
-          else console.warn("⚠️ Coordenadas inválidas:", res.error);
+          else if (log) log("warn", "⚠️ Coordenadas inválidas:", res.error);
           return;
         }
       } else if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
-        console.warn("⚠️ Coordenadas inválidas:", cierre.codigo || cierre.id, lng, lat);
+        if (log) log("warn", "⚠️ Coordenadas inválidas:", cierre.codigo || cierre.id, lng, lat);
         return;
       }
 
@@ -639,7 +641,7 @@
       const labelShort = label.substring(0, 2).toUpperCase() || "";
       const iconId = `cierre-${tipo}-${labelShort || 'default'}`;
       
-      console.log("🎨 Cargando icono para cierre:", cierre.codigo, "iconId:", iconId);
+      if (log) log("log", "🎨 Cargando icono para cierre:", cierre.codigo, "iconId:", iconId);
       loadCierreIconSync(tipo, labelShort);
 
       const index = App.data.cierres.findIndex(c => c.id === cierre.id);
@@ -656,10 +658,10 @@
 
       if (index >= 0) {
         App.data.cierres[index] = feature;
-        console.log("🔄 Cierre actualizado en mapa:", cierre.codigo);
+        if (log) log("log", "🔄 Cierre actualizado en mapa:", cierre.codigo);
       } else {
         App.data.cierres.push(feature);
-        console.log("✅ Cierre agregado al mapa:", cierre.codigo, "Total cierres:", App.data.cierres.length);
+        if (log) log("log", "✅ Cierre agregado al mapa:", cierre.codigo, "Total cierres:", App.data.cierres.length);
       }
 
       refreshLayer();
@@ -691,19 +693,19 @@
     function setupFirebaseListener() {
       const FB = window.FTTH_FIREBASE;
       if (!FB?.escucharCierres) {
-        console.warn("⚠️ Firebase cierres no disponible");
+        if (log) log("warn", "⚠️ Firebase cierres no disponible");
         return;
       }
 
-      console.log("✅ Firebase cierres conectado");
+      if (log) log("log", "✅ Firebase cierres conectado");
       unsubscribeCierres = FB.escucharCierres((cierre) => {
-        console.log("🔔 Cierre recibido de Firebase:", cierre.codigo || cierre.id, cierre);
+        if (log) log("log", "🔔 Cierre recibido de Firebase:", cierre.codigo || cierre.id, cierre);
         if (cierre._deleted) {
           // Si el cierre fue eliminado, removerlo del mapa
           removeCierreFromMap(cierre.id);
         } else {
           // Agregar o actualizar cierre en el mapa
-          console.log("📍 Agregando cierre al mapa:", cierre.codigo, "Coords:", cierre.lng, cierre.lat);
+          if (log) log("log", "📍 Agregando cierre al mapa:", cierre.codigo, "Coords:", cierre.lng, cierre.lat);
           addCierreToMap(cierre);
         }
       });
@@ -713,12 +715,12 @@
       for (let i = 0; i < maxAttempts; i++) {
         const FB = window.FTTH_FIREBASE;
         if (FB?.escucharCierres) {
-          console.log("✅ Firebase cierres disponible después de", i + 1, "intentos");
+          if (log) log("log", "✅ Firebase cierres disponible después de", i + 1, "intentos");
           return true;
         }
         await new Promise(resolve => setTimeout(resolve, 100));
       }
-      console.warn("⚠️ Firebase cierres no disponible después de esperar", maxAttempts, "intentos");
+      if (log) log("warn", "⚠️ Firebase cierres no disponible después de esperar", maxAttempts, "intentos");
       return false;
     }
 
@@ -742,7 +744,7 @@
     setTimeout(() => {
       const FB = window.FTTH_FIREBASE;
       if (!unsubscribeCierres && FB?.escucharCierres) {
-        console.log("🔄 Reintentando conexión Firebase cierres...");
+        if (log) log("log", "🔄 Reintentando conexión Firebase cierres...");
         setupFirebaseListener();
       }
     }, 2000);
@@ -865,12 +867,12 @@
       App.map.off("click", handleMapClick); // Remover si existe para evitar duplicados
       App.map.on("click", handleMapClick);
 
-      console.log("📦 Montar Cierre ACTIVADO");
-      console.log("✅ Listener de click registrado, active:", active);
+      if (log) log("log", "📦 Montar Cierre ACTIVADO");
+      if (log) log("log", "✅ Listener de click registrado, active:", active);
       
       // ✅ Test: verificar que el listener está registrado
       const listeners = App.map._listeners?.click || [];
-      console.log("🔍 Listeners de click registrados:", listeners.length);
+      if (log) log("log", "🔍 Listeners de click registrados:", listeners.length);
     }
 
     function stop() {
@@ -1025,7 +1027,7 @@
     =============================== */
     if (!App.reloadCierres) {
       App.reloadCierres = function () {
-        console.log("🔄 Recargando capa CIERRES");
+        if (log) log("log", "🔄 Recargando capa CIERRES");
         initLayer();
         refreshLayer();
       };
@@ -1038,7 +1040,7 @@
     =============================== */
     App.tools.cierres = { start, stop };
 
-    console.log("🚀 tool.cierres listo (estable)");
+    if (log) log("log", "🚀 tool.cierres listo (estable)");
   }
 
   // ✅ Auto-inicializar

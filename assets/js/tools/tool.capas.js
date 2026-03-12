@@ -6,6 +6,7 @@
 (() => {
   "use strict";
 
+  const log = window.__FTTH_LOG__;
   const INDEX_URL = "../geojson/FTTH/index.json";
 
   function init() {
@@ -18,11 +19,11 @@
     const tree  = document.getElementById("layersTree");
 
     if (!panel || !tree) {
-      console.warn("❌ Panel capas no encontrado");
+      if (log) log("warn", "❌ Panel capas no encontrado");
       return;
     }
 
-    console.log("🌳 Cargando índice FTTH...");
+    if (log) log("log", "🌳 Cargando índice FTTH...");
 
     let dataCache = null;
 
@@ -70,7 +71,7 @@
         const json = await resp.json();
         dataCache = json;
 
-        console.log("✅ Índice FTTH cargado:", json);
+        if (log) log("log", "✅ Índice FTTH cargado:", json);
         return json;
 
       } catch (err) {

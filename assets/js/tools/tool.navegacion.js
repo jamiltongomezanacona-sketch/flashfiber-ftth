@@ -10,6 +10,7 @@
   const CONFIG = window.__FTTH_CONFIG__;
   if (!App) return;
   const copyResetMs = CONFIG?.DEBOUNCE?.COPY_BUTTON_RESET_MS ?? 1500;
+  const log = window.__FTTH_LOG__;
 
   // ✅ Asegurar contenedor de herramientas
   App.tools = App.tools || {};
@@ -58,7 +59,7 @@
     App.map.off("click", clickHandler);
     App.map.on("click", clickHandler);
 
-    console.log("🧭 Navegación activa");
+    if (log) log("log", "🧭 Navegación activa");
   }
 
   function stop() {
@@ -163,7 +164,7 @@
   // ✅ Registro seguro
   App.tools.navegacion = { start, stop };
 
-  console.log("✅ tool.navegacion registrado correctamente");
+  if (log) log("log", "✅ tool.navegacion registrado correctamente");
 
 })();
 export {};

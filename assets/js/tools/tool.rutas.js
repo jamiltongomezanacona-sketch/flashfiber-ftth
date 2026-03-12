@@ -225,10 +225,10 @@
   App.applySavedRoutesMoleculaFilter = applySavedRoutesMoleculaFilter;
 
   /**
-   * Sincroniza la lista de rutas de Firebase al mapa: reemplaza la capa con esas rutas
+   * Sincroniza la lista de rutas de la nube al mapa: reemplaza la capa con esas rutas
    * y asegura properties.molecula en cada feature para que el filtro por molécula funcione.
    */
-  function syncFirebaseRutasToMap(rutas) {
+  function syncRutasToMap(rutas) {
     if (!App?.map || !Array.isArray(rutas)) return;
     if (!App.map.getSource(SAVED_ROUTES_SOURCE)) return;
     savedRoutes.clear();
@@ -264,18 +264,18 @@
     applySavedRoutesMoleculaFilter(App._lastSavedRoutesMoleculaFilter ?? null);
   }
 
-  App.syncFirebaseRutasToMap = syncFirebaseRutasToMap;
+  App.syncRutasToMap = syncRutasToMap;
 
-  function startFirebaseRutasSync() {
+  function startRutasSync() {
     if (!window.FTTH_FIREBASE?.escucharRutas || !App?.map?.getLayer?.(SAVED_ROUTES_LAYER)) return;
-    if (App._firebaseRutasUnsubscribe) return;
+    if (App._rutasUnsubscribe) return;
     try {
-      App._firebaseRutasUnsubscribe = window.FTTH_FIREBASE.escucharRutas((rutas) => {
-        syncFirebaseRutasToMap(rutas || []);
+      App._rutasUnsubscribe = window.FTTH_FIREBASE.escucharRutas((rutas) => {
+        syncRutasToMap(rutas || []);
       });
-      console.log("🛣️ Rutas Firebase sincronizadas al mapa (filtro por molécula activo)");
+      console.log("🛣️ Rutas sincronizadas al mapa (filtro por molécula activo)");
     } catch (e) {
-      console.warn("⚠️ No se pudo suscribir a rutas Firebase:", e);
+      console.warn("⚠️ No se pudo suscribir a rutas:", e);
     }
   }
 
@@ -354,12 +354,12 @@
   // Inicializar capa al cargar
   if (App.map && App.map.isStyleLoaded()) {
     initSavedRoutesLayer();
-    setTimeout(startFirebaseRutasSync, 800);
+    setTimeout(startRutasSync, 800);
   } else if (App.map) {
     App.map.once("load", () => {
       initSavedRoutesLayer();
       App.reloadRutas();
-      setTimeout(startFirebaseRutasSync, 800);
+      setTimeout(startRutasSync, 800);
     });
   }
 
@@ -368,7 +368,7 @@
     App.map.on("style.load", () => {
       initSavedRoutesLayer();
       App.reloadRutas();
-      setTimeout(startFirebaseRutasSync, 500);
+      setTimeout(startRutasSync, 500);
     });
   }
 
@@ -538,19 +538,19 @@ document.addEventListener("DOMContentLoaded", () => {
       geojson: JSON.stringify({ type: "Feature", geometry: feature.geometry, properties: feature.properties })
     };
     if (!window.FTTH_FIREBASE?.guardarRuta) {
-      App?.ui?.notify?.("⚠️ Firebase no disponible.");
+      App?.ui?.notify?.("⚠️ Supabase no disponible.");
       return;
     }
     window.FTTH_FIREBASE.guardarRuta(payloadCloud)
       .then(() => {
         if (window.drawSavedRoute) window.drawSavedRoute(feature);
-        App?.ui?.notify?.("✅ Ruta corregida guardada en Firebase");
+        App?.ui?.notify?.("✅ Ruta corregida guardada en la nube");
         rutasAPI.stop();
         closeCorregirRutaModal();
       })
       .catch(err => {
         console.error("❌ Error guardando corrección:", err);
-        App?.ui?.notify?.("⚠️ No se pudo guardar en Firebase");
+        App?.ui?.notify?.("⚠️ No se pudo guardar en la nube");
       });
   });
   document.getElementById("btnCancelCorregirRuta")?.addEventListener("click", () => {
@@ -576,7 +576,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (saveToFirebase && window.FTTH_FIREBASE?.guardarRuta) {
       if (!centralVal || !moleculaVal) {
-        App?.ui?.notify?.("⚠️ Seleccione Central y Molécula para guardar en Firebase.");
+        App?.ui?.notify?.("⚠️ Seleccione Central y Molécula para guardar en la nube.");
         return;
       }
     }
@@ -607,7 +607,7 @@ document.addEventListener("DOMContentLoaded", () => {
       window.drawSavedRoute(feature);
     }
 
-    // ☁️ Guardado en Firebase solo si la opción está habilitada
+    // ☁️ Guardado en la nube solo si la opción está habilitada
     if (saveToFirebase && window.FTTH_FIREBASE?.guardarRuta) {
       const payloadCloud = {
         nombre: feature.properties.nombre,
@@ -625,20 +625,20 @@ document.addEventListener("DOMContentLoaded", () => {
         })
       };
 
-      console.log("☁️ Enviando a Firebase:", payloadCloud);
+      console.log("☁️ Enviando a la nube:", payloadCloud);
 
       // ✅ Mejorar manejo de errores
       window.FTTH_FIREBASE.guardarRuta(payloadCloud)
         .then(id => {
           console.log("✅ Ruta sincronizada:", id);
-          // Actualizar feature con ID de Firebase si es necesario
+          // Actualizar feature con ID de la nube si es necesario
           if (id && feature.id) {
             feature.id = id;
           }
         })
         .catch(err => {
-          console.error("❌ Error Firebase al guardar ruta:", err);
-          App?.ui?.notify?.("⚠️ Ruta guardada localmente, pero no se pudo sincronizar con Firebase");
+          console.error("❌ Error al guardar ruta en la nube:", err);
+          App?.ui?.notify?.("⚠️ Ruta guardada localmente, pero no se pudo sincronizar con la nube");
         });
     }
 

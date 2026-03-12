@@ -3,7 +3,7 @@
 ## 1. Resumen del proyecto
 
 - **Tipo:** PWA (Progressive Web App) con mapas GIS para FTTH y red corporativa.
-- **Stack:** HTML/CSS/JS vanilla, Mapbox GL, Firebase (Auth, Firestore, Storage), sin bundler.
+- **Stack:** HTML/CSS/JS vanilla, Mapbox GL, Supabase (Auth, DB, Storage), Vite para bundle del mapa.
 - **Estructura:** Múltiples páginas (`index` login, `home`, `mapa-ftth`, `mapa-corporativo`, `configuracion`), assets en `assets/`, datos GeoJSON en `geojson/`, scripts de procesamiento en raíz y en `scripts/`.
 
 ---
@@ -12,7 +12,7 @@
 
 | Componente | Uso |
 |------------|-----|
-| `index.html` | Login; carga Firebase + ui.login.js |
+| `index.html` | Login; carga Supabase + ui.login.js |
 | `pages/home.html` | Panel principal tras login |
 | `pages/mapa-ftth.html` | Mapa FTTH (capas, cierres, eventos, rutas, buscador) |
 | `pages/mapa-corporativo.html` | Mapa corporativo (centrales, eventos corp) |
@@ -21,7 +21,7 @@
 | `assets/js/app.js` | Estado global, recarga de capas, PWA SW |
 | `assets/js/core/initializer.js` | Orden de carga y alias |
 | `assets/js/core/auth.guard.js` | Protección de rutas por sesión |
-| `assets/js/services/firebase*.js` | Firebase Auth, DB, Storage, cierres, eventos, rutas |
+| `assets/js/services/supabase*.js` | Supabase Auth, DB, Storage, cierres, eventos, rutas |
 | `assets/js/map/mapa.*.js` | Inicialización, controles, capas, estilos, lógica FTTH |
 | `assets/js/tools/tool.*.js` | GPS, medir, navegar, capas, cierres, eventos, rutas |
 | `assets/js/ui/ui.*.js` | Menú, panel, buscador, capas, modales, notificaciones, login |
@@ -49,7 +49,7 @@
 ### 4.1 Código y mantenibilidad
 
 - **Centralizar constantes:** `CENTRAL_PREFIX`, `generarMoleculas`, IDs de capas (`LAYER_CIERRES`, `LAYER_EVENTOS`, etc.) están duplicados en varios archivos. Crear (o ampliar) un módulo compartido, p. ej. `assets/js/constants.js` o en `config.js`, y usarlo en tools y UI.
-- **Uso de ErrorHandler y validators:** Aún se usa mucho `try/catch` + `console`; en operaciones async críticas (Firebase, fetch, capas) usar `ErrorHandler.handle()` / `ErrorHandler.safeAsync()` y validadores antes de guardar (coordenadas, formularios).
+- **Uso de ErrorHandler y validators:** Aún se usa mucho `try/catch` + `console`; en operaciones async críticas (Supabase, fetch, capas) usar `ErrorHandler.handle()` / `ErrorHandler.safeAsync()` y validadores antes de guardar (coordenadas, formularios).
 - **Magic numbers:** Llevar a config o constantes: debounce de búsqueda, retries, número de moléculas, resultados máximos, duración de flyTo, etc.
 - **Token Mapbox:** En producción no dejar token por defecto en código; si no hay `config.local.js` o variable de entorno, mostrar mensaje claro y no inicializar el mapa (o pantalla “Configuración requerida”).
 
@@ -79,8 +79,8 @@
 
 ### 4.7 Despliegue y seguridad
 
-- En Vercel/Netlify usar variables de entorno para Mapbox y Firebase; no subir `config.local.js`.
-- Revisar reglas de Firestore para `eventos` y `eventos_corporativo` (solo usuarios autenticados si aplica).
+- En Vercel/Netlify usar variables de entorno para Mapbox y Supabase; no subir `config.local.js`.
+- Revisar políticas RLS en Supabase para `eventos` y `eventos_corporativo` (solo usuarios autenticados si aplica).
 
 ---
 

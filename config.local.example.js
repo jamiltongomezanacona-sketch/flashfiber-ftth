@@ -17,13 +17,6 @@ window.__FTTH_SECRETS__ = {
   // Código para permitir eliminar pines (cierres/eventos). Por defecto "7431"
   // DELETE_PIN: "7431",
 
-  // 🔥 Configuración de Firebase
-  FIREBASE: {
-    apiKey: "AIzaSyD3BNTIERRCZy5jRwN-KcIIQLeXFyg9gY4",
-    authDomain: "flashfiber-ftth.firebaseapp.com",
-    projectId: "flashfiber-ftth",
-    storageBucket: "flashfiber-ftth.firebasestorage.app",
-    messagingSenderId: "970573359420",
-    appId: "1:970573359420:web:1254e4024920aeeff7d639"
-  }
+  // Supabase se configura con variables de entorno (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
+  // o en producción con supabase-env.js generado en el build. Ver docs/MIGRACION_FIREBASE_A_SUPABASE.md
 };

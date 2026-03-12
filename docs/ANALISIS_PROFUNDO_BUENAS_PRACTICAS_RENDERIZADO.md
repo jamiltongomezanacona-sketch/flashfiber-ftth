@@ -26,7 +26,7 @@ Documento generado a partir del análisis del código, la documentación existen
 | 2.3 | Un solo fetch del consolidado cuando sea posible | ✅ Hecho | `loadConsolidatedGeoJSONToBaseMap()` intenta `consolidado-ftth.geojson`; fallback a `consolidateAllGeoJSON()` |
 | 2.4 | Cola de carga con `map.once("idle")` en lugar de solo setTimeout | ✅ Hecho | `mapa.init.js`: centrales y consolidado tras `idle`; evita tiempos arbitrarios encadenados |
 | 2.5 | Throttle de `setData` en cierres y eventos | ✅ Hecho | `tool.cierres.js`, `tool.eventos.js`: 400 ms (`SETDATA_THROTTLE_MS`) para evitar rachas de actualizaciones |
-| 2.6 | Un solo listener de Firebase por colección (cierres/eventos) | ✅ Hecho | `firebase.cierres.js`, `firebase.eventos.js`: array de callbacks; un solo `onSnapshot` por colección |
+| 2.6 | Un solo listener de Supabase por colección (cierres/eventos) | ✅ Hecho | `supabase.cierres.js`, `supabase.eventos.js`: Realtime; un solo canal por colección |
 | 2.7 | Documentar por qué `preserveDrawingBuffer: true` | ✅ Hecho | `mapa.init.js`: necesario para exportar PNG/PDF; no se puede cambiar después de crear el mapa |
 
 ### 3. CSS y layout
@@ -84,7 +84,7 @@ Documento generado a partir del análisis del código, la documentación existen
 | B.1 | Eliminar o condicionar listener global del buscador | En `ui.buscador.js` se usa `document.addEventListener("click", onDocumentClickCloseBuscadorPanels)` sin `removeEventListener`. Registrar solo cuando el buscador esté abierto/activo y quitarlo al cerrar o al desmontar la vista. | Medio | `ui.buscador.js` |
 | B.2 | Un solo `flyTo` a la vez / cola de animaciones | Ya se evita solapar en el buscador; centralizar en un helper (ej. `App.flyToQueued(options)`) para que cualquier módulo que llame a `map.flyTo` use la misma cola y se cancele la anterior si aplica. | Bajo | `mapa.controls.js` o nuevo `mapa.flyTo.js`, `ui.buscador.js` |
 | B.3 | Tiempos de espera en mapa.layers como constantes | Reemplazar números mágicos (100, 500, 1000, 1500, 2000, 2800 ms) por constantes con nombre al inicio del módulo (ej. `LOAD_RETRY_DELAY_MS`, `ENFORCE_VISIBILITY_DELAY_MS`) para facilitar ajuste y lectura. | Bajo | `mapa.layers.js` |
-| B.4 | Sustituir setTimeout por evento “map ready” en tool.rutas | En `tool.rutas.js` se usa `setTimeout(startFirebaseRutasSync, 800)` y 500 ms. Si existe `ftth-map-ready` (u otro), suscribirse a él para ejecutar la sincronización cuando el mapa esté listo en lugar de depender de tiempos fijos. | Bajo | `tool.rutas.js`, `mapa.init.js` (confirmar evento) |
+| B.4 | Sustituir setTimeout por evento “map ready” en tool.rutas | En `tool.rutas.js` se usa `setTimeout(startRutasSync, 800)` y 500 ms. Si existe `ftth-map-ready` (u otro), suscribirse a él para ejecutar la sincronización cuando el mapa esté listo en lugar de depender de tiempos fijos. | Bajo | `tool.rutas.js`, `mapa.init.js` (confirmar evento) |
 | B.5 | Límite o virtualización en resultados del buscador | Si en el futuro se muestran >100 resultados, limitar a ~50 en vista y “Cargar más” o virtualización (solo renderizar ítems visibles) para no crear cientos de nodos DOM (RECOMENDACIONES_RENDERIZADO 7.1). | Medio | `ui.buscador.js` |
 | B.6 | Subset de Font Awesome o self-host | Reducir tamaño y dependencia externa; solo los iconos usados (RECOMENDACIONES_RENDERIZADO 5.2). | Medio | Build o script de assets, HTML donde se carga FA |
 
@@ -104,7 +104,7 @@ Documento generado a partir del análisis del código, la documentación existen
 - **Buscador:** Caché 50 entradas; resultados mostrados ~20–50. Con miles de ítems en el índice el filtrado puede tardar ~100–300 ms; debounce 300 ms mitiga.
 - **Cierres/eventos en mapa:** Sin tope en código. ~500–1000 puntos → cada `setData` puede tardar 50–200 ms. ~2000–5000+ → riesgo de tirones. Throttle 400 ms ya aplicado.
 - **GeoJSON consolidado:** Sin tope. ~5000–10000+ features → carga y primer render pueden tardar varios segundos.
-- **Firebase:** Límites de servicio altos; el cuello de botella es el cliente (mapa + UI), no el número de documentos.
+- **Supabase:** Límites de servicio altos; el cuello de botella es el cliente (mapa + UI), no el número de filas.
 
 Documento de referencia: `docs/LIMITES_Y_UMBRALES.md`.
 

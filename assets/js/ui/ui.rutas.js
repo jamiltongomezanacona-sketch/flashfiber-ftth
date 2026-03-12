@@ -1,6 +1,6 @@
 /* =========================================================
    FlashFiber FTTH | ui.rutas.js
-   Panel moderno: Guardar, Editar, Borrar rutas (Firebase)
+   Panel moderno: Guardar, Editar, Borrar rutas (Supabase)
 ========================================================= */
 
 (function () {

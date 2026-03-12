@@ -32,8 +32,11 @@ function onUserChange(callback) {
 onUserChange(async (user) => {
   if (!user) {
     window.__USER__ = null;
+    if (window.FTTH_CORE?.auth) window.FTTH_CORE.auth.currentUser = null;
     return;
   }
+
+  if (window.FTTH_CORE?.auth) window.FTTH_CORE.auth.currentUser = user;
 
   let perfil = null;
   if (window.FTTH_FIREBASE?.obtenerPerfilUsuario) {

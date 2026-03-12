@@ -3,7 +3,7 @@
  *
  * Orden de carga (respetar dependencias):
  * 1. config (externo: config.js) → __FTTH_CONFIG__, __FTTH_SECRETS__
- * 2. initializer → Firebase → auth → servicios
+ * 2. initializer → Supabase → auth → servicios
  * 3. app → storage → utils (centrales)
  * 4. mapa (init → controls → layers → ftth)
  * 5. tools (medicion, gps, navegacion, capas, rutas, cierres, eventos, diseno-mapa)

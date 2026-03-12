@@ -1,17 +1,31 @@
 /* =========================================================
    FlashFiber FTTH | Mapa unificado de eventos (FTTH + Corporativo)
-   - Carga eventos y eventos_corporativo con getDocs
+   - Carga eventos y eventos_corporativo desde Supabase
    - Filtro por rango de fechas (createdAt)
    - Pinta pines en un solo mapa con total
 ========================================================= */
 
-import { db } from "../services/firebase.db.js";
-import { collection, getDocs, query, limit } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+/** Máximo documentos por colección por carga. */
+const READ_LIMIT = 1000;
 
-/** Máximo documentos por colección por carga (costo bajo; 50k lecturas/día gratis). */
-const FIRESTORE_READ_LIMIT = 1000;
+/** Obtener cliente Supabase (misma API que Firebase). */
+function getSupabase() {
+  return window.FTTH_FIREBASE?.db || window.FTTH_CORE?.db;
+}
 
-/** Cache en memoria: una sola carga desde Firestore; "Filtrar" solo filtra aquí (0 lecturas extra). */
+function rowToEvento(row, prefix) {
+  const created = row.created_at ?? row.createdAt;
+  return {
+    id: `${prefix}-${row.id}`,
+    ...row,
+    createdAt: created,
+    created_at: created,
+    createdBy: row.created_by ?? row.createdBy,
+    origen: prefix === "ftth" ? "FTTH" : "Corporativo"
+  };
+}
+
+/** Cache en memoria: una sola carga desde Supabase; "Filtrar" solo filtra aquí. */
 let _eventosCache = null;
 
 const CONFIG = window.__FTTH_CONFIG__ || {};
@@ -83,26 +97,36 @@ function toDateOnly(d) {
   return x.getTime();
 }
 
-async function fetchEventosFromFirestore() {
+async function fetchEventosFromSupabase() {
+  const supabase = getSupabase();
+  if (!supabase) {
+    console.warn("⚠️ Supabase no disponible");
+    return [];
+  }
+
   const list = [];
 
-  const refFtth = collection(db, EVENTOS_COLLECTION);
-  const qFtth = query(refFtth, limit(FIRESTORE_READ_LIMIT));
-  const snapFtth = await getDocs(qFtth);
-  snapFtth.forEach((doc) => {
-    const d = doc.data();
-    if (d.lat != null && d.lng != null) {
-      list.push({ id: `ftth-${doc.id}`, ...d, origen: "FTTH" });
+  const { data: ftthRows } = await supabase
+    .from(EVENTOS_COLLECTION)
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(READ_LIMIT);
+
+  (ftthRows || []).forEach((row) => {
+    if (row.lat != null && row.lng != null) {
+      list.push(rowToEvento(row, "ftth"));
     }
   });
 
-  const refCorp = collection(db, EVENTOS_CORP_COLLECTION);
-  const qCorp = query(refCorp, limit(FIRESTORE_READ_LIMIT));
-  const snapCorp = await getDocs(qCorp);
-  snapCorp.forEach((doc) => {
-    const d = doc.data();
-    if (d.lat != null && d.lng != null) {
-      list.push({ id: `corp-${doc.id}`, ...d, origen: "Corporativo" });
+  const { data: corpRows } = await supabase
+    .from(EVENTOS_CORP_COLLECTION)
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(READ_LIMIT);
+
+  (corpRows || []).forEach((row) => {
+    if (row.lat != null && row.lng != null) {
+      list.push(rowToEvento(row, "corp"));
     }
   });
 
@@ -125,15 +149,15 @@ function filterEventosInMemory(cache, fechaDesde, fechaHasta, origenFilter) {
   });
 }
 
-/** Obtiene eventos: usa cache si existe; si no, carga una vez de Firestore y guarda en cache. */
+/** Obtiene eventos: usa cache si existe; si no, carga una vez de Supabase y guarda en cache. */
 async function fetchEventos(fechaDesde, fechaHasta, origenFilter) {
   if (_eventosCache === null) {
-    _eventosCache = await fetchEventosFromFirestore();
+    _eventosCache = await fetchEventosFromSupabase();
   }
   return filterEventosInMemory(_eventosCache, fechaDesde, fechaHasta, origenFilter);
 }
 
-/** Fuerza recarga desde Firestore (botón "Actualizar"). */
+/** Fuerza recarga desde Supabase (botón "Actualizar"). */
 function clearEventosCache() {
   _eventosCache = null;
 }

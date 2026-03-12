@@ -5,7 +5,7 @@
 (() => {
   "use strict";
 
-  // Esperar a que Firebase esté listo
+  // Esperar a que Supabase/Firebase esté listo
   const waitForFirebase = setInterval(() => {
     if (window.FTTH_CORE?.auth) {
       clearInterval(waitForFirebase);

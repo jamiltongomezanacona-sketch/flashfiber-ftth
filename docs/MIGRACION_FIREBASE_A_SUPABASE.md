@@ -248,6 +248,34 @@ Si algo falla, revisa la consola del navegador (errores de Supabase, 401, 403) y
 
 ---
 
+## Verificación post-migración (correcciones realizadas)
+
+Tras revisar todo el proyecto se detectaron y corrigieron estos puntos:
+
+### 1. **`assets/js/pages/mapa-eventos.js`** (fallo crítico)
+- **Problema:** Seguía importando Firebase (`firebase.db.js`, `getDocs`, `collection`, `query`, `limit`) y llamaba a `fetchEventosFromFirestore()`. La página Mapa de eventos fallaba al cargar.
+- **Solución:** Se reescribió para usar Supabase: `getSupabase()` desde `window.FTTH_FIREBASE?.db`, `fetchEventosFromSupabase()` con `supabase.from('eventos')` y `supabase.from('eventos_corporativo')`, mapeo de `created_at`/`created_by` a `createdAt`/`createdBy` para el filtro y el popup.
+
+### 2. **`assets/js/services/supabase.core.js`** – compatibilidad con `auth.currentUser`
+- **Problema:** Código como `tool.cierres.js` usa `window.FTTH_CORE?.auth?.currentUser`. En Supabase Auth no existe `currentUser` síncrono.
+- **Solución:** En el callback de `onUserChange` se asigna `window.FTTH_CORE.auth.currentUser = user` (o `null` al cerrar sesión) para mantener la misma API.
+
+### 3. **Textos y comentarios Firebase → Supabase**
+- **auth.guard.js**, **ui.login.js**: comentarios "Firebase" sustituidos por "Supabase".
+- **pages/home.html**: comentario "Firebase Core" → "Supabase Core".
+- **pages/configuracion.html**: etiqueta "Firebase" → "Supabase", meta "Auth, Firestore, Storage" → "Auth, DB, Storage"; instrucciones del modal de usuarios actualizadas a Supabase Dashboard y tabla `usuarios`.
+- **pages/mapa-eventos.html**, **pages/mapa-corporativo.html**: textos de botones "Firebase" → "Supabase" / "la nube".
+- **assets/js/ui/ui.rutas.js**: mensaje "Firebase no disponible" → "Supabase no disponible".
+- **assets/js/entry-ftth.js**: comentario de orden de carga actualizado a Supabase.
+
+### Archivos que siguen mencionando Firebase (sin impacto funcional)
+- **Scripts de migración/backup:** `scripts/migrar-firebase-to-supabase.js`, `scripts/backup-firebase-to-pc.js` (usan Firebase por diseño).
+- **Servicios Firebase antiguos:** `firebase.*.js` siguen en el repo pero la app ya no los carga; se pueden eliminar cuando se confirme que todo funciona con Supabase.
+- **tool.rutas.js**, **tool.cierres.js**: mensajes tipo "guardado en Firebase" / "Firebase no disponible"; la lógica usa `window.FTTH_FIREBASE`, que ahora es la API de Supabase. Opcional: cambiar los textos a "nube" o "Supabase".
+- **config.local.example.js**: sigue con ejemplo de configuración Firebase; útil si se mantiene el script de backup.
+
+---
+
 ## Orden sugerido de implementación
 
 1. Paso 1 y 2 (Supabase proyecto, tablas, Storage).  

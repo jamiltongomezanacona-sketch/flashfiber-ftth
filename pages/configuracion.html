@@ -488,8 +488,8 @@
           </div>
           <div class="config-row">
             <div>
-              <div class="config-row-label">Firebase</div>
-              <div class="config-row-meta">Auth, Firestore, Storage</div>
+              <div class="config-row-label">Supabase</div>
+              <div class="config-row-meta">Auth, DB, Storage</div>
             </div>
             <span class="config-card-badge" id="badgeFirebase">—</span>
           </div>
@@ -526,8 +526,8 @@
 
       <div class="config-modal-section">
         <div class="config-modal-section-title">Añadir usuarios</div>
-        <p class="config-modal-desc">Cada usuario debe existir en Firebase Authentication y tener un documento en Firestore (colección <code>usuarios</code>) con <code>activo: true</code>, <code>email</code> y <code>nombre</code>. Consulta la documentación del proyecto para los pasos detallados.</p>
-        <div class="config-modal-instructions">Firebase Console → Authentication (crear usuario) → Firestore → colección <strong>usuarios</strong> (documento con UID del usuario, campos: activo, email, nombre).</div>
+        <p class="config-modal-desc">Cada usuario debe existir en Supabase Authentication y tener una fila en la tabla <code>usuarios</code> con <code>activo: true</code>, <code>email</code> y <code>nombre</code>. Consulta la documentación del proyecto para los pasos detallados.</p>
+        <div class="config-modal-instructions">Supabase Dashboard → Authentication (crear usuario) → Table Editor → tabla <strong>usuarios</strong> (fila con el mismo id del usuario, columnas: activo, email, nombre).</div>
       </div>
 
       <button type="button" class="config-modal-close" id="btnCerrarModalUsuarios">Cerrar</button>

@@ -5,7 +5,7 @@
 (() => {
   "use strict";
 
-  // Esperar a que Firebase esté listo
+  // Esperar a que Supabase/Firebase esté listo
   const waitForFirebase = setInterval(() => {
     if (window.FTTH_CORE?.login) {
       clearInterval(waitForFirebase);
@@ -84,10 +84,10 @@
       loginButtonText.innerHTML = '<span class="loading"></span>Iniciando sesión...';
 
       try {
-        // Intentar login con Firebase
+        // Intentar login con Supabase
         await window.FTTH_CORE.login(email, password);
         
-        // El onAuthStateChanged en firebase.js manejará la redirección
+        // El onAuthStateChange en supabase.core.js manejará la redirección
         // Si llegamos aquí, el login fue exitoso
         console.log("✅ Login exitoso");
         

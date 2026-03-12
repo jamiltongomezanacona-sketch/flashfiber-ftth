@@ -164,7 +164,7 @@
       return;
     }
     if (!window.FTTH_FIREBASE?.eliminarRuta) {
-      App?.ui?.notify?.("⚠️ Firebase no disponible.");
+      App?.ui?.notify?.("⚠️ Supabase no disponible.");
       return;
     }
     window.FTTH_FIREBASE.eliminarRuta(ruta.id)

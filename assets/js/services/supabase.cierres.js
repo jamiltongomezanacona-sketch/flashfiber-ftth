@@ -54,20 +54,23 @@ async function guardarCierre(cierre) {
 }
 
 async function actualizarCierre(id, data) {
-  const map = {
-    codigo: "codigo",
-    tipo: "tipo",
-    central: "central",
-    molecula: "molecula",
-    notas: "notas",
-    lat: "lat",
-    lng: "lng",
-    updatedAt: "updated_at"
+  // Solo columnas snake_case que existen en la tabla. Nunca enviar createdAt/createdBy en
+  // camelCase: PostgREST espera created_at/created_by y falla con "Could not find createdAt".
+  const lat = data.lat != null ? Number(data.lat) : undefined;
+  const lng = data.lng != null ? Number(data.lng) : undefined;
+  const clean = {
+    codigo: data.codigo,
+    tipo: data.tipo,
+    central: data.central,
+    molecula: data.molecula,
+    notas: data.notas,
+    updated_at: new Date().toISOString()
   };
-  const clean = {};
-  for (const [k, v] of Object.entries({ ...data, updatedAt: new Date().toISOString() })) {
-    if (v !== undefined) clean[map[k] || k] = v;
-  }
+  if (!Number.isNaN(lat)) clean.lat = lat;
+  if (!Number.isNaN(lng)) clean.lng = lng;
+  // Quitar undefined para no sobrescribir con null
+  Object.keys(clean).forEach((k) => clean[k] === undefined && delete clean[k]);
+
   const { error } = await supabase.from(TABLE).update(clean).eq("id", id);
   if (error) throw error;
   console.log("✏️ Cierre actualizado:", id);

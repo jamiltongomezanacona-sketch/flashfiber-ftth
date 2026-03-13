@@ -427,9 +427,7 @@
           overlay.classList.add("hidden");
           overlay.setAttribute("aria-hidden", "true");
         }
-        if (contentEl) {
-          setTimeout(function () { contentEl.innerHTML = ""; }, 320);
-        }
+        if (contentEl) contentEl.innerHTML = "";
       }
 
       // Función única para mostrar popup (Nombre, Fecha creación, Creado por, Editar)

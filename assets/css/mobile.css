@@ -271,6 +271,97 @@ button,
     right: 4px !important;
     top: 4px !important;
   }
+
+  /* Bottom sheet propiedades del pin (solo móvil): centrado, poco espacio */
+  .pin-bottomsheet-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 12px 24px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .pin-bottomsheet-overlay:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+  }
+  .pin-bottomsheet-overlay.hidden {
+    pointer-events: none;
+  }
+  .pin-bottomsheet {
+    position: relative;
+    width: 100%;
+    max-width: min(360px, calc(100vw - 24px));
+    max-height: 70vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(168deg, rgba(24, 32, 55, 0.98) 0%, rgba(18, 24, 42, 0.98) 50%, rgba(14, 20, 38, 0.99) 100%);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+  .pin-bottomsheet-grip {
+    flex-shrink: 0;
+    width: 40px;
+    height: 5px;
+    margin: 10px auto 6px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+  }
+  .pin-bottomsheet-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .pin-bottomsheet-close:hover {
+    background: rgba(255, 255, 255, 0.18);
+  }
+  #pinBottomSheetContent {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 0 12px;
+  }
+  #pinBottomSheetContent .pin-popup-card {
+    border-radius: 0;
+    box-shadow: none;
+  }
+  #pinBottomSheetContent .pin-popup-header {
+    padding: 10px 14px 8px 14px;
+  }
+  #pinBottomSheetContent .pin-popup-body {
+    max-height: 28vh;
+    padding: 8px 14px 10px;
+  }
+  #pinBottomSheetContent .pin-popup-actions {
+    padding: 8px 14px 12px;
+    gap: 6px;
+  }
+  #pinBottomSheetContent .pin-popup-btn {
+    min-height: 36px;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
 }
 
 /* Tablet: popup un poco más ancho pero sin ocupar toda la pantalla */

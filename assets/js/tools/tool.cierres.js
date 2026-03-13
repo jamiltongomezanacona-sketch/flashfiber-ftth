@@ -416,6 +416,18 @@
         return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
       }
 
+      function isMobile() {
+        return typeof window !== "undefined" && window.innerWidth <= 767;
+      }
+
+      function closePinBottomSheet() {
+        const overlay = document.getElementById("pinBottomSheetOverlay");
+        const contentEl = document.getElementById("pinBottomSheetContent");
+        if (overlay) overlay.classList.add("hidden");
+        if (overlay) overlay.setAttribute("aria-hidden", "true");
+        if (contentEl) contentEl.innerHTML = "";
+      }
+
       // Función única para mostrar popup (Nombre, Fecha creación, Creado por, Editar)
       function showCierrePopup(f, lngLat) {
         if (!f || !lngLat) return;
@@ -475,6 +487,101 @@
         wrap.innerHTML = html.trim();
         const content = wrap.firstElementChild;
 
+        function fallbackCopy(text, btn) {
+          try {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+            btn.textContent = "✓ Copiado";
+            setTimeout(() => { btn.textContent = "📋 Copiar coordenadas"; }, (window.__FTTH_CONFIG__?.DEBOUNCE?.COPY_BUTTON_RESET_MS) ?? 1500);
+          } catch (err) {
+            alert("Coordenadas: " + text);
+          }
+        }
+
+        const overlay = document.getElementById("pinBottomSheetOverlay");
+        const useBottomSheet = isMobile() && overlay;
+
+        if (useBottomSheet) {
+          closePinBottomSheet();
+          const contentEl = document.getElementById("pinBottomSheetContent");
+          if (contentEl) contentEl.appendChild(content);
+          overlay.classList.remove("hidden");
+          overlay.setAttribute("aria-hidden", "false");
+
+          function closeSheet() {
+            closePinBottomSheet();
+          }
+          overlay.addEventListener("click", function onOverlayClick(e) {
+            if (e.target === overlay) {
+              closeSheet();
+              overlay.removeEventListener("click", onOverlayClick);
+            }
+          });
+          const closeBtn = overlay.querySelector(".pin-bottomsheet-close");
+          if (closeBtn) closeBtn.addEventListener("click", function () { closeSheet(); });
+
+          const btnCopyCoords = content.querySelector('[data-pin-action="copy-coords"]');
+          const btnEdit = content.querySelector('[data-pin-action="edit"]');
+          const btnDelete = content.querySelector('[data-pin-action="delete"]');
+          if (btnCopyCoords && coordsText !== "—") {
+            btnCopyCoords.addEventListener("click", function (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              const text = coordsText;
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                  btnCopyCoords.textContent = "✓ Copiado";
+                  setTimeout(() => { btnCopyCoords.textContent = "📋 Copiar coordenadas"; }, (window.__FTTH_CONFIG__?.DEBOUNCE?.COPY_BUTTON_RESET_MS) ?? 1500);
+                }).catch(() => { fallbackCopy(text, btnCopyCoords); });
+              } else {
+                fallbackCopy(text, btnCopyCoords);
+              }
+            });
+          }
+          if (btnEdit) {
+            btnEdit.addEventListener("click", function (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              closeSheet();
+              abrirEdicionCierre(p);
+            });
+          }
+          if (btnDelete) {
+            btnDelete.addEventListener("click", async function (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              const codigo = window.prompt("Código para eliminar:");
+              const esperado = (window.__FTTH_CONFIG__ && window.__FTTH_CONFIG__.DELETE_PIN) || "7431";
+              if (codigo !== esperado) {
+                alert("Código incorrecto");
+                return;
+              }
+              if (!confirm("¿Eliminar este cierre?")) return;
+              try {
+                const FB = window.FTTH_FIREBASE;
+                const id = p.id || idStr;
+                if (FB?.eliminarCierre && id) {
+                  await FB.eliminarCierre(id);
+                  closeSheet();
+                  if (log) log("log", "✅ Cierre eliminado:", id);
+                } else {
+                  alert("❌ No se pudo eliminar el cierre");
+                }
+              } catch (err) {
+                console.error("❌ Error eliminando cierre:", err);
+                alert("❌ Error al eliminar el cierre");
+              }
+            });
+          }
+          return;
+        }
+
         const popup = new mapboxgl.Popup({ closeButton: true, closeOnClick: true })
           .setLngLat(lngLat)
           .setDOMContent(content)
@@ -497,22 +604,6 @@
               fallbackCopy(text, btnCopyCoords);
             }
           });
-        }
-        function fallbackCopy(text, btn) {
-          try {
-            const ta = document.createElement("textarea");
-            ta.value = text;
-            ta.style.position = "fixed";
-            ta.style.opacity = "0";
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand("copy");
-            document.body.removeChild(ta);
-            btn.textContent = "✓ Copiado";
-            setTimeout(() => { btn.textContent = "📋 Copiar coordenadas"; }, (window.__FTTH_CONFIG__?.DEBOUNCE?.COPY_BUTTON_RESET_MS) ?? 1500);
-          } catch (err) {
-            alert("Coordenadas: " + text);
-          }
         }
         if (btnEdit) {
           btnEdit.addEventListener("click", function (e) {

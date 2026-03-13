@@ -272,7 +272,7 @@ button,
     top: 4px !important;
   }
 
-  /* Bottom sheet propiedades del pin (solo móvil): centrado, poco espacio */
+  /* Bottom sheet propiedades del pin (solo móvil): animado, centrado */
   .pin-bottomsheet-overlay {
     position: fixed;
     inset: 0;
@@ -282,14 +282,15 @@ button,
     justify-content: center;
     padding: 0 12px 24px;
     box-sizing: border-box;
-    background: rgba(0, 0, 0, 0.45);
+    background: rgba(0, 0, 0, 0);
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
+    transition: opacity 0.25s ease, visibility 0.25s ease, background 0.25s ease;
   }
   .pin-bottomsheet-overlay:not(.hidden) {
     opacity: 1;
     visibility: visible;
+    background: rgba(0, 0, 0, 0.45);
   }
   .pin-bottomsheet-overlay.hidden {
     pointer-events: none;
@@ -305,6 +306,11 @@ button,
     background: linear-gradient(168deg, rgba(24, 32, 55, 0.98) 0%, rgba(18, 24, 42, 0.98) 50%, rgba(14, 20, 38, 0.99) 100%);
     border-radius: 20px 20px 0 0;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.3s ease;
+  }
+  .pin-bottomsheet-overlay:not(.hidden) .pin-bottomsheet {
+    transform: translateY(0);
   }
   .pin-bottomsheet-grip {
     flex-shrink: 0;

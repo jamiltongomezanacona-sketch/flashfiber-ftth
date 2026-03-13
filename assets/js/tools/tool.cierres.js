@@ -423,9 +423,13 @@
       function closePinBottomSheet() {
         const overlay = document.getElementById("pinBottomSheetOverlay");
         const contentEl = document.getElementById("pinBottomSheetContent");
-        if (overlay) overlay.classList.add("hidden");
-        if (overlay) overlay.setAttribute("aria-hidden", "true");
-        if (contentEl) contentEl.innerHTML = "";
+        if (overlay) {
+          overlay.classList.add("hidden");
+          overlay.setAttribute("aria-hidden", "true");
+        }
+        if (contentEl) {
+          setTimeout(function () { contentEl.innerHTML = ""; }, 320);
+        }
       }
 
       // Función única para mostrar popup (Nombre, Fecha creación, Creado por, Editar)

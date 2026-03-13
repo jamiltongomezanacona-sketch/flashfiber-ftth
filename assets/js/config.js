@@ -62,7 +62,13 @@ window.__FTTH_CONFIG__ = {
   DELETE_PIN: SECRETS.DELETE_PIN || "7431",
 
   // Clave de acceso al Mapa de eventos (FTTH + Corporativo). Override con __FTTH_SECRETS__.MAPA_EVENTOS_PIN
-  MAPA_EVENTOS_PIN: SECRETS.MAPA_EVENTOS_PIN || "7431"
+  MAPA_EVENTOS_PIN: SECRETS.MAPA_EVENTOS_PIN || "7431",
+
+  // Recordar última pantalla de trabajo (localStorage)
+  LAST_WORK: {
+    KEY_PATH: "ftth_last_work_path",
+    KEY_MAP_VIEW: "ftth_map_view"
+  }
 };
 
 // Aviso solo si no hay token
@@ -75,5 +81,37 @@ window.__FTTH_LOG__ = function (level, ...args) {
   if (window.__FTTH_CONFIG__?.DEBUG) {
     var fn = typeof console !== "undefined" && console[level];
     if (fn) fn.apply(console, args);
+  }
+};
+
+// Recordar última ruta al salir / al cargar (mapa, config, reflectometría, etc.)
+(function () {
+  var KEY = window.__FTTH_CONFIG__?.LAST_WORK?.KEY_PATH || "ftth_last_work_path";
+  var WORK_RE = /mapa-ftth|mapa-corporativo|configuracion|reflectometria|mapa-eventos|pages\/home/i;
+  function savePath() {
+    try {
+      var p = location.pathname + (location.search || "");
+      if (!WORK_RE.test(p) || /index\.html?$/i.test(p)) return;
+      if (p.indexOf("file:") === 0) return;
+      localStorage.setItem(KEY, p.charAt(0) === "/" ? p : "/" + p);
+    } catch (e) {}
+  }
+  window.addEventListener("beforeunload", savePath);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", savePath);
+  else savePath();
+})();
+
+/** Tras login: redirigir a la última pantalla donde trabajó el usuario, o home */
+window.__FTTH_REDIRECT_AFTER_LOGIN__ = function () {
+  var KEY = window.__FTTH_CONFIG__?.LAST_WORK?.KEY_PATH || "ftth_last_work_path";
+  var fallback = "pages/home.html";
+  try {
+    var s = localStorage.getItem(KEY);
+    if (!s) return fallback;
+    if (!/mapa-ftth|mapa-corporativo|configuracion|reflectometria|mapa-eventos|home/i.test(s)) return fallback;
+    if (s.charAt(0) === "/") return s;
+    return s.indexOf("pages/") === 0 ? s : fallback;
+  } catch (e) {
+    return fallback;
   }
 };

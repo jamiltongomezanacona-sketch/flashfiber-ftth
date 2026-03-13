@@ -130,7 +130,7 @@
       if (user && window.__USER__) {
         // Usuario autenticado y perfil cargado
         console.log("✅ Usuario autenticado, redirigiendo...");
-        window.location.href = "pages/home.html";
+        window.location.href = (typeof window.__FTTH_REDIRECT_AFTER_LOGIN__ === "function" && window.__FTTH_REDIRECT_AFTER_LOGIN__()) || "pages/home.html";
       }
     });
   }
@@ -142,7 +142,7 @@
       const { data: { session } } = await window.FTTH_CORE.db.auth.getSession();
       if (session?.user) {
         console.log("✅ Usuario ya autenticado, redirigiendo...");
-        window.location.href = "pages/home.html";
+        window.location.href = (typeof window.__FTTH_REDIRECT_AFTER_LOGIN__ === "function" && window.__FTTH_REDIRECT_AFTER_LOGIN__()) || "pages/home.html";
       }
     } catch (err) {
       console.warn("checkAuthState:", err);

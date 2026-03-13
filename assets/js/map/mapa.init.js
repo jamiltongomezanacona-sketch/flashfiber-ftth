@@ -38,14 +38,44 @@
   // 🗺️ MAPA BASE – calles (estilo desde config)
   // preserveDrawingBuffer: true necesario para getCanvas().toDataURL() en "Crear diseño de mapa" (PNG/PDF).
   // Coste: más uso de GPU/memoria. Alternativa futura: mapa secundario oculto solo para export, o export vía servidor.
-  const map = new mapboxgl.Map({
+  var MAP_VIEW_KEY = CONFIG.LAST_WORK?.KEY_MAP_VIEW || "ftth_map_view";
+  var mapOpts = {
     container: "map",
     style: CONFIG.MAP.STYLES?.streets || CONFIG.MAP.STYLE_DEFAULT || "mapbox://styles/mapbox/streets-v12",
-    center: [-74.088195, 4.562537], // Central Santa Inés
+    center: [-74.088195, 4.562537],
     zoom: 14,
     bearing: 0,
     pitch: 30,
     preserveDrawingBuffer: true
+  };
+  try {
+    var saved = JSON.parse(localStorage.getItem(MAP_VIEW_KEY));
+    if (saved && Array.isArray(saved.center) && saved.center.length === 2 &&
+        typeof saved.center[0] === "number" && typeof saved.center[1] === "number") {
+      mapOpts.center = saved.center;
+      if (typeof saved.zoom === "number" && saved.zoom >= 0 && saved.zoom <= 22) mapOpts.zoom = saved.zoom;
+      if (typeof saved.bearing === "number") mapOpts.bearing = saved.bearing;
+      if (typeof saved.pitch === "number") mapOpts.pitch = saved.pitch;
+    }
+  } catch (e) {}
+  const map = new mapboxgl.Map(mapOpts);
+
+  // Guardar vista al mover/zoom (debounce para no escribir en cada frame)
+  var _saveViewT = null;
+  function persistMapView() {
+    try {
+      var c = map.getCenter();
+      localStorage.setItem(MAP_VIEW_KEY, JSON.stringify({
+        center: [c.lng, c.lat],
+        zoom: map.getZoom(),
+        bearing: map.getBearing(),
+        pitch: map.getPitch()
+      }));
+    } catch (e) {}
+  }
+  map.on("moveend", function () {
+    if (_saveViewT) clearTimeout(_saveViewT);
+    _saveViewT = setTimeout(persistMapView, 400);
   });
 
   /* 🔒 BLOQUEO INICIAL (CORRECTO) */

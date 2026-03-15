@@ -581,6 +581,17 @@ main.map-wrapper {
   box-shadow: 0 4px 16px rgba(239, 83, 80, 0.4);
 }
 
+/* Popup Comentario/Nota: Editar y Borrar con texto verde oscuro */
+.pin-popup-actions-nota .pin-popup-btn-edit,
+.pin-popup-actions-nota .pin-popup-btn-delete {
+  color: #1b5e20;
+}
+
+.pin-popup-actions-nota .pin-popup-btn-edit:hover,
+.pin-popup-actions-nota .pin-popup-btn-delete:hover {
+  color: #2e7d32;
+}
+
 /* Compatibilidad con clases antiguas */
 .popup-btn {
   padding: 10px 14px;

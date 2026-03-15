@@ -248,7 +248,7 @@
         '<div class="pin-popup-row pin-popup-row-notes"><span class="pin-popup-label">Comentario</span><div class="pin-popup-notes-scroll"><span class="pin-popup-value">' +
         escapeHtml(nota.texto || "—") +
         "</span></div></div>" +
-        '</div><div class="pin-popup-actions">' +
+        '</div><div class="pin-popup-actions pin-popup-actions-nota">' +
         '<button type="button" data-pin-action="edit" class="pin-popup-btn pin-popup-btn-edit" aria-label="Editar comentario">✏️ Editar</button>' +
         '<button type="button" data-pin-action="delete" class="pin-popup-btn pin-popup-btn-delete" aria-label="Borrar comentario">🗑️ Borrar</button></div>';
 

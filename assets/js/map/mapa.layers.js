@@ -1351,8 +1351,10 @@
     const centralesVisible = !filterCentrales || filterCentrales.checked;
     const pinsLayerIds = [CONFIG.LAYERS?.CIERRES, CONFIG.LAYERS?.EVENTOS].filter(Boolean);
     if (pinsLayerIds.length === 0) pinsLayerIds.push(CONFIG.LAYERS?.CIERRES || "cierres-layer", CONFIG.LAYERS?.EVENTOS || "eventos-layer");
+    const hasMoleculaSelected = App._selectedMoleculaForPins != null && String(App._selectedMoleculaForPins).trim() !== "";
     pinsLayerIds.forEach(layerId => {
       if (isCorporativo && (layerId === "eventos-layer" || layerId === (CONFIG.LAYERS?.EVENTOS))) return;
+      if (hasMoleculaSelected) return;
       if (map.getLayer(layerId)) {
         try {
           map.setLayoutProperty(layerId, "visibility", "none");

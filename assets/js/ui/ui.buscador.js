@@ -347,6 +347,13 @@
     if (filterMoleculaSearch) {
       filterMoleculaSearch.value = moleculaOrNull || "";
     }
+    // Al seleccionar una molécula, marcar Cierres y Eventos para que se vean los pines de esa molécula
+    if (moleculaOrNull != null && String(moleculaOrNull).trim() !== "") {
+      if (filterCierres) filterCierres.checked = true;
+      if (filterEventos) filterEventos.checked = true;
+      const filterOcultar = document.getElementById("filterOcultarPines");
+      if (filterOcultar) filterOcultar.checked = false;
+    }
     if (!App?.map) return;
     if (!App.map.isStyleLoaded()) {
       App.map.once("load", () => setSelectedMoleculaForPins(moleculaOrNull, opts));

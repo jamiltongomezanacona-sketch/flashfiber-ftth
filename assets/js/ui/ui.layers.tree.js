@@ -577,19 +577,16 @@
     if (!App?.map) return;
     const map = App.map;
     const molecula = moleculaFromSearch != null ? moleculaFromSearch : extractMoleculaFromCableLayerId(layerIdOrMolecula);
+    // Filtro y visibilidad de cierres/eventos lo aplica setSelectedMoleculaForPins; solo mostrar centrales aquí para no pisar el filtro por molécula
     if (typeof App.setSelectedMoleculaForPins === "function") {
       App.setSelectedMoleculaForPins(molecula);
     }
     const LAYER_CENTRALES = CONFIG.LAYERS?.CENTRALES || "CORPORATIVO_CENTRALES_ETB";
-    const LAYER_CIERRES = CONFIG.LAYERS?.CIERRES || "cierres-layer";
-    const LAYER_EVENTOS = CONFIG.LAYERS?.EVENTOS || "eventos-layer";
-    [LAYER_CENTRALES, LAYER_CIERRES, LAYER_EVENTOS].forEach(function (id) {
-      if (map.getLayer(id)) {
-        try {
-          map.setLayoutProperty(id, "visibility", "visible");
-        } catch (e) {}
-      }
-    });
+    if (map.getLayer(LAYER_CENTRALES)) {
+      try {
+        map.setLayoutProperty(LAYER_CENTRALES, "visibility", "visible");
+      } catch (e) {}
+    }
     const fc = document.getElementById("filterCentrales");
     const fci = document.getElementById("filterCierres");
     const fe = document.getElementById("filterEventos");

@@ -7,7 +7,7 @@ import { supabase } from "../../../supabase.js";
 import { registerChannel } from "./supabase.db.js";
 
 const TABLE = "eventos";
-const READ_LIMIT = 250;
+const READ_LIMIT = 2000;
 
 const _eventosCallbacks = [];
 let _eventosChannel = null;
@@ -70,21 +70,22 @@ export async function eliminarEvento(id) {
   console.log("🗑️ Evento eliminado:", id);
 }
 
+async function fetchInitialEventos() {
+  const { data } = await supabase
+    .from(TABLE)
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(READ_LIMIT);
+  return (data || []).map((row) => rowToDoc(row)).filter(Boolean);
+}
+
 export function escucharEventos(callback) {
   _eventosCallbacks.push(callback);
 
   if (!_eventosChannel) {
     (async () => {
-      const { data: initial } = await supabase
-        .from(TABLE)
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(READ_LIMIT);
-
-      (initial || []).forEach((row) => {
-        const doc = rowToDoc(row);
-        if (doc) _eventosCallbacks.forEach((cb) => cb(doc));
-      });
+      const initial = await fetchInitialEventos();
+      initial.forEach((doc) => _eventosCallbacks.forEach((cb) => cb(doc)));
 
       const channel = supabase
         .channel("eventos-changes")
@@ -106,6 +107,11 @@ export function escucharEventos(callback) {
       _eventosChannel = channel;
       registerChannel("eventos", channel);
       console.log("👂 Escuchando eventos (Supabase Realtime)...");
+    })();
+  } else {
+    (async () => {
+      const initial = await fetchInitialEventos();
+      initial.forEach((doc) => callback(doc));
     })();
   }
 

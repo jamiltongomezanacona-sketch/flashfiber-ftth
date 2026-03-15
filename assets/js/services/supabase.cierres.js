@@ -7,7 +7,7 @@ import { supabase } from "../../../supabase.js";
 import { registerChannel } from "./supabase.db.js";
 
 const TABLE = "cierres";
-const READ_LIMIT = 250;
+const READ_LIMIT = 2000;
 
 const _cierresCallbacks = [];
 let _cierresChannel = null;
@@ -84,21 +84,22 @@ async function eliminarCierre(id) {
   console.log("🗑️ Cierre eliminado:", id);
 }
 
+async function fetchInitialCierres() {
+  const { data } = await supabase
+    .from(TABLE)
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(READ_LIMIT);
+  return (data || []).map((row) => rowToDoc(row)).filter(Boolean);
+}
+
 function escucharCierres(callback) {
   _cierresCallbacks.push(callback);
 
   if (!_cierresChannel) {
     (async () => {
-      const { data: initial } = await supabase
-        .from(TABLE)
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(READ_LIMIT);
-
-      (initial || []).forEach((row) => {
-        const doc = rowToDoc(row);
-        if (doc) _cierresCallbacks.forEach((cb) => cb(doc));
-      });
+      const initial = await fetchInitialCierres();
+      initial.forEach((doc) => _cierresCallbacks.forEach((cb) => cb(doc)));
 
       const channel = supabase
         .channel("cierres-changes")
@@ -120,6 +121,11 @@ function escucharCierres(callback) {
       _cierresChannel = channel;
       registerChannel("cierres", channel);
       console.log("👂 Escuchando cierres (Supabase Realtime)...");
+    })();
+  } else {
+    (async () => {
+      const initial = await fetchInitialCierres();
+      initial.forEach((doc) => callback(doc));
     })();
   }
 

@@ -10,11 +10,15 @@ Si la app **ya usa Supabase** y solo te falta **pasar los datos** de Firebase a 
 
 ### 1. Exportar desde Firebase
 
-- **Firestore:** En [Firebase Console](https://console.firebase.google.com) → tu proyecto → **Firestore** → cada colección (`cierres`, `eventos`, `eventos_corporativo`, `rutas`). Puedes exportar con un script o copiar manualmente:
-  - Opción A: Usar la extensión o script que genere JSON por colección (por ejemplo `cierres.json`, `eventos.json`, etc.).
-  - Opción B: Si tienes pocos registros, en **Table Editor** de Firestore puedes copiar y pegar en archivos JSON con formato `[{ "id": "...", "codigo": "...", ... }, ...]`.
-- Crea una carpeta, por ejemplo `backup/firestore/`, y guarda ahí: `cierres.json`, `eventos.json`, `eventos_corporativo.json`, `rutas.json`.  
-  Cada archivo puede ser un **array de objetos** `[{ ... }, { ... }]` o un **objeto por id** `{ "id1": { ... }, "id2": { ... } }`.
+**Guía paso a paso:** [Exportar Firestore a JSON](EXPORTAR_FIREBASE_A_JSON.md).
+
+- **Recomendado (script automático):** Obtener la clave de cuenta de servicio en Firebase Console → Cuentas de servicio → Generar nueva clave privada; guardar el JSON como `firebase-service-account.json` en la raíz del proyecto (y añadirlo a `.gitignore`). Luego:
+  ```bash
+  npm install firebase-admin
+  node scripts/exportar-firestore-a-json.js
+  ```
+  Se crea `backup/firestore/AAAA-MM-DD/` con `cierres.json`, `eventos.json`, `eventos_corporativo.json`, `rutas.json`.
+- **Manual:** Si tienes pocos documentos, puedes copiar desde Firestore y crear los JSON a mano en una carpeta `backup/firestore/`. Cada archivo: array de objetos `[{ "id": "...", ... }, ...]` u objeto por id `{ "id1": { ... } }`.
 
 ### 2. Ejecutar el script de migración
 

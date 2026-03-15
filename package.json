@@ -10,10 +10,12 @@
     "prepare": "node scripts/ensure-supabase-env.js",
     "build:js": "npx vite build",
     "build:geojson": "node scripts/build-consolidado-geojson.js",
-    "migrate:firebase-to-supabase": "node scripts/migrar-firebase-to-supabase.js"
+    "migrate:firebase-to-supabase": "node scripts/migrar-firebase-to-supabase.js",
+    "export:firestore": "node scripts/exportar-firestore-a-json.js"
   },
   "devDependencies": {
     "dotenv": "^17.3.1",
+    "firebase-admin": "^13.0.0",
     "vite": "^6.0.0"
   },
   "dependencies": {

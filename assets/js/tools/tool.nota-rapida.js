@@ -11,64 +11,7 @@
   const LAYER_ID = CONFIG.LAYERS?.NOTAS || "notas-layer";
   const LAYER_LABEL_ID = "notas-layer-label";
   const SOURCE_ID = "notas-src";
-  const ICON_SIZE = 40;
-  const NOTA_PIN_ICON_ID = "nota-pin";
   const log = window.__FTTH_LOG__;
-
-  function createNotaPinIconSVG(color) {
-    const size = ICON_SIZE;
-    const c = color.replace("#", "");
-    const svg = `
-<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <filter id="shadow-nota-${c}">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
-    </filter>
-  </defs>
-  <path d="M ${size/2} ${size*0.15}
-           Q ${size*0.2} ${size*0.15} ${size*0.2} ${size*0.4}
-           L ${size*0.2} ${size*0.7}
-           Q ${size*0.2} ${size*0.85} ${size*0.35} ${size*0.85}
-           L ${size*0.5} ${size}
-           L ${size*0.65} ${size*0.85}
-           Q ${size*0.8} ${size*0.85} ${size*0.8} ${size*0.7}
-           L ${size*0.8} ${size*0.4}
-           Q ${size*0.8} ${size*0.15} ${size*0.5} ${size*0.15} Z"
-        fill="${color}" stroke="#000" stroke-width="1.5"
-        filter="url(#shadow-nota-${c})"/>
-  <circle cx="${size/2}" cy="${size*0.4}" r="${size*0.25}"
-          fill="#fff" stroke="${color}" stroke-width="2"/>
-  <text x="${size/2}" y="${size*0.48}" font-size="${size*0.28}"
-        text-anchor="middle" dominant-baseline="middle"
-        font-family="Arial, sans-serif">📌</text>
-</svg>`;
-    return svg;
-  }
-
-  function loadNotaIcon(map) {
-    return new Promise(function (resolve) {
-      if (!map || map.hasImage(NOTA_PIN_ICON_ID)) {
-        resolve();
-        return;
-      }
-      const color = "#ff9800";
-      const svg = createNotaPinIconSVG(color);
-      const img = new Image();
-      const blob = new Blob([svg], { type: "image/svg+xml" });
-      const url = URL.createObjectURL(blob);
-      img.onload = function () {
-        if (!map.hasImage(NOTA_PIN_ICON_ID)) map.addImage(NOTA_PIN_ICON_ID, img);
-        URL.revokeObjectURL(url);
-        resolve();
-      };
-      img.onerror = function () {
-        if (log) log("warn", "Error cargando icono nota");
-        URL.revokeObjectURL(url);
-        resolve();
-      };
-      img.src = url;
-    });
-  }
 
   function getCentralFromMolecula(molecula) {
     if (!molecula || typeof molecula !== "string") return "";
@@ -131,13 +74,11 @@
       if (!map.getSource(SOURCE_ID)) {
         map.addSource(SOURCE_ID, { type: "geojson", data: notasToGeoJSON(), promoteId: "id" });
       }
-      loadNotaIcon(map).then(function () {
-        if (map.getLayer(LAYER_ID)) return;
-        addNotaLayers(map);
-      });
+      addNotaLayers(map);
     }
 
     function addNotaLayers(map) {
+      if (map.getLayer(LAYER_ID)) return;
       const beforeId = map.getLayer("geojson-lines") ? undefined : undefined;
       try {
         map.addLayer(
@@ -146,12 +87,16 @@
             type: "symbol",
             source: SOURCE_ID,
             layout: {
-              "icon-image": NOTA_PIN_ICON_ID,
-              "icon-size": ["interpolate", ["linear"], ["zoom"], 10, 0.6, 15, 1.0, 20, 1.4],
-              "icon-allow-overlap": true,
-              "icon-ignore-placement": true,
-              "icon-anchor": "bottom",
-              "icon-pitch-alignment": "viewport"
+              "text-field": "▼",
+              "text-size": 36,
+              "text-anchor": "bottom",
+              "text-allow-overlap": true,
+              "text-ignore-placement": true
+            },
+            paint: {
+              "text-color": "#9c27b0",
+              "text-halo-color": "#ffffff",
+              "text-halo-width": 3
             }
           },
           beforeId
@@ -162,7 +107,7 @@
             type: "symbol",
             source: SOURCE_ID,
             layout: {
-              "text-field": ["coalesce", ["get", "texto"], "—"],
+              "text-field": ["coalesce", ["get", "texto"], "Comentario"],
               "text-size": 14,
               "text-anchor": "bottom",
               "text-offset": [0, -1.2],
@@ -229,8 +174,8 @@
         if (!active) return;
         const mol = App._selectedMoleculaForPins;
         if (!mol) {
-          if (App?.ui?.notify) App.ui.notify("Selecciona una molécula en Capas para añadir una nota.");
-          else alert("Selecciona una molécula en Capas (🧱 Capas) para añadir una nota.");
+          if (App?.ui?.notify) App.ui.notify("Selecciona una molécula en Capas para añadir un comentario.");
+          else alert("Selecciona una molécula en Capas (🧱 Capas) para añadir un comentario.");
           return;
         }
         const lngLat = e.lngLat || e;
@@ -257,7 +202,7 @@
 
     function openModalAdd(lng, lat, molecula) {
       const central = getCentralFromMolecula(molecula);
-      const texto = window.prompt("Nota rápida (punto en " + molecula + "):", "");
+      const texto = window.prompt("Comentario (punto en " + molecula + "):", "");
       if (texto === null) return;
       const FB = window.FTTH_FIREBASE;
       FB.guardarNota({
@@ -295,31 +240,31 @@
       const content = document.createElement("div");
       content.className = "popup pin-popup pin-popup-card";
       content.innerHTML =
-        '<div class="pin-popup-header"><div class="pin-popup-header-icon">📌</div><h3 class="pin-popup-title">Nota rápida</h3></div>' +
+        '<div class="pin-popup-header"><div class="pin-popup-header-icon">💬</div><h3 class="pin-popup-title">Comentario</h3></div>' +
         '<div class="pin-popup-body">' +
         '<div class="pin-popup-row"><span class="pin-popup-label">Molécula</span><span class="pin-popup-value">' +
         escapeHtml(nota.molecula) +
         "</span></div>" +
-        '<div class="pin-popup-row pin-popup-row-notes"><span class="pin-popup-label">Nota</span><div class="pin-popup-notes-scroll"><span class="pin-popup-value">' +
+        '<div class="pin-popup-row pin-popup-row-notes"><span class="pin-popup-label">Comentario</span><div class="pin-popup-notes-scroll"><span class="pin-popup-value">' +
         escapeHtml(nota.texto || "—") +
         "</span></div></div>" +
         '</div><div class="pin-popup-actions">' +
-        '<button type="button" data-pin-action="edit" class="pin-popup-btn pin-popup-btn-edit">✏️ Editar</button>' +
-        '<button type="button" data-pin-action="delete" class="pin-popup-btn pin-popup-btn-delete">🗑️ Eliminar</button></div>';
+        '<button type="button" data-pin-action="edit" class="pin-popup-btn pin-popup-btn-edit" aria-label="Editar comentario">✏️ Editar</button>' +
+        '<button type="button" data-pin-action="delete" class="pin-popup-btn pin-popup-btn-delete" aria-label="Borrar comentario">🗑️ Borrar</button></div>';
 
       const popup = new mapboxgl.Popup({ closeButton: true, closeOnClick: true }).setLngLat(lngLat).setDOMContent(content).addTo(App.map);
 
       content.querySelector('[data-pin-action="edit"]')?.addEventListener("click", () => {
         popup.remove();
-        const nuevo = window.prompt("Editar nota:", nota.texto || "");
+        const nuevo = window.prompt("Editar comentario:", nota.texto || "");
         if (nuevo !== null) {
           const errMsg = (e) => e?.message || e?.error_description || (e && typeof e === "object" ? String(e.message || e.code || "") : String(e));
           window.FTTH_FIREBASE.actualizarNota(nota.id, { texto: nuevo }).catch((e) => alert("Error al actualizar: " + (errMsg(e) || "revisa la consola")));
         }
       });
       content.querySelector('[data-pin-action="delete"]')?.addEventListener("click", () => {
-        if (!confirm("¿Eliminar esta nota?")) return;
-        const codigo = window.prompt("Código para eliminar:");
+        if (!confirm("¿Borrar este comentario? Esta acción no se puede deshacer.")) return;
+        const codigo = window.prompt("Código para borrar (evitar borrados por error):");
         const esperado = CONFIG.DELETE_PIN || "7431";
         if (codigo !== esperado) {
           alert("Código incorrecto");
@@ -327,7 +272,7 @@
         }
         popup.remove();
         const errMsg = (e) => e?.message || e?.error_description || (e && typeof e === "object" ? String(e.message || e.code || "") : String(e));
-        window.FTTH_FIREBASE.eliminarNota(nota.id).catch((e) => alert("Error al eliminar: " + (errMsg(e) || "revisa la consola")));
+        window.FTTH_FIREBASE.eliminarNota(nota.id).catch((e) => alert("Error al borrar: " + (errMsg(e) || "revisa la consola")));
       });
     }
 

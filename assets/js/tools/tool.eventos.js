@@ -570,6 +570,7 @@
             type: "FeatureCollection",
             features: App.data.eventos || []
           });
+          window.dispatchEvent(new CustomEvent("ftth-eventos-layer-refreshed"));
         }
       }, SETDATA_THROTTLE_MS);
     }

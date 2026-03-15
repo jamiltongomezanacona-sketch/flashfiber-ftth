@@ -244,6 +244,16 @@
       setupFilterToggles();
       setupMoleculaFilter();
       if (App) App.setSelectedMoleculaForPins = setSelectedMoleculaForPins;
+      window.addEventListener("ftth-cierres-layer-refreshed", function reapplyCierres() {
+        if (App?._selectedMoleculaForPins && typeof setSelectedMoleculaForPins === "function") {
+          setSelectedMoleculaForPins(App._selectedMoleculaForPins, { keepCablesVisible: !!App.__cablesExplicitlyVisible, fromSearch: !!App._moleculaFromSearch });
+        }
+      });
+      window.addEventListener("ftth-eventos-layer-refreshed", function reapplyEventos() {
+        if (App?._selectedMoleculaForPins && typeof setSelectedMoleculaForPins === "function") {
+          setSelectedMoleculaForPins(App._selectedMoleculaForPins, { keepCablesVisible: !!App.__cablesExplicitlyVisible, fromSearch: !!App._moleculaFromSearch });
+        }
+      });
       console.log("🔍 Buscador inicializado - cargando datos en segundo plano");
     }
   }
@@ -408,9 +418,12 @@
       } catch (e) {}
     });
     if (showPins && pinsLayersApplied === 0) {
-      setTimeout(function () {
-        setSelectedMoleculaForPins(moleculaOrNull, opts);
-      }, 500);
+      [400, 900, 2000].forEach(function (delay, i) {
+        setTimeout(function () {
+          if (!App?.map || !App.map.getLayer(LAYER_CIERRES)) return;
+          setSelectedMoleculaForPins(moleculaOrNull, opts);
+        }, delay);
+      });
     }
     // Cierres del consolidado (CUNI): geojson-points con filtro por _molecula (misma lógica estándar)
     if (App.map.getLayer("geojson-points")) {

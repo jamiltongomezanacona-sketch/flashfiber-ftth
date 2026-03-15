@@ -708,6 +708,7 @@
             type: "FeatureCollection",
             features: App.data.cierres || []
           });
+          window.dispatchEvent(new CustomEvent("ftth-cierres-layer-refreshed"));
         }
         if (!App.map.getLayer(LAYER_ID)) initLayer();
       }, SETDATA_THROTTLE_MS);

@@ -66,28 +66,28 @@ main.map-wrapper {
   }
 }
 
-/* Controles flotantes */
+/* Controles flotantes (C.1: especificidad main.map-wrapper para reducir !important) */
 /* Mobile First: Horizontal en móvil, vertical en tablet+ */
 
-.map-controls {
-  position: fixed !important; /* ✅ Cambiar a fixed para estar fuera del flujo */
-  bottom: 20px !important; /* Cambiar a bottom en móvil */
-  right: 12px !important;
-  left: auto !important; /* ✅ Cambiar left a auto cuando es fixed */
-  display: flex !important; /* ✅ Forzar display */
-  flex-direction: row; /* Horizontal en móvil */
+main.map-wrapper .map-controls {
+  position: fixed;
+  bottom: 20px;
+  right: 12px;
+  left: auto;
+  display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
   gap: 8px;
-  z-index: 99999 !important; /* ✅ Z-index extremadamente alto */
+  z-index: 99999;
   justify-content: flex-end;
-  pointer-events: none; /* Permite clicks a través del contenedor */
-  visibility: visible !important; /* ✅ Forzar visibilidad */
-  opacity: 1 !important; /* ✅ Forzar opacidad */
-  width: auto !important; /* ✅ Ancho automático */
-  max-width: calc(100vw - 24px) !important; /* ✅ No exceder viewport */
+  pointer-events: none;
+  visibility: visible;
+  opacity: 1;
+  width: auto;
+  max-width: calc(100vw - 24px);
 }
 
-.map-controls button {
+main.map-wrapper .map-controls button {
   width: 48px;
   height: 48px;
   min-width: 48px;
@@ -105,25 +105,25 @@ main.map-wrapper {
   touch-action: manipulation;
   -webkit-tap-highlight-color: rgba(0, 180, 216, 0.2);
   outline: none;
-  display: flex !important;
+  display: flex;
   align-items: center;
   justify-content: center;
-  visibility: visible !important;
-  opacity: 1 !important;
+  visibility: visible;
+  opacity: 1;
   pointer-events: auto;
 }
 
-.map-controls button:active {
+main.map-wrapper .map-controls button:active {
   transform: scale(0.95);
 }
 
-.map-controls button:focus-visible {
+main.map-wrapper .map-controls button:focus-visible {
   outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
 }
 
 /* Botón Reset: solo texto RESET en mayúscula, color verde, sin icono */
-.map-controls button.map-control-reset .map-control-reset-text {
+main.map-wrapper .map-controls button.map-control-reset .map-control-reset-text {
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -131,12 +131,12 @@ main.map-wrapper {
   color: #22c55e;
 }
 @media (max-width: 767px) {
-  .map-controls button.map-control-reset .map-control-reset-text {
+  main.map-wrapper .map-controls button.map-control-reset .map-control-reset-text {
     display: inline;
   }
 }
 @media (min-width: 768px) {
-  .map-controls button.map-control-reset {
+  main.map-wrapper .map-controls button.map-control-reset {
     min-width: auto;
     width: auto;
     padding-left: 12px;
@@ -146,100 +146,96 @@ main.map-wrapper {
 
 /* ✅ Asegurar visibilidad en móvil */
 @media (max-width: 767px) {
-  .map-wrapper {
-    overflow: visible !important; /* ✅ Permitir que los botones sean visibles */
+  main.map-wrapper {
+    overflow: visible;
   }
-  
-  .map-controls {
-    position: fixed !important; /* ✅ Fixed en móvil también */
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    z-index: 99999 !important; /* ✅ Z-index extremadamente alto */
-    bottom: 20px !important; /* ✅ Forzar posición bottom */
-    right: 12px !important;
-    left: auto !important; /* ✅ Auto en fixed */
-    width: auto !important;
-    max-width: calc(100vw - 24px) !important;
+  main.map-wrapper .map-controls {
+    position: fixed;
+    bottom: 20px;
+    right: 12px;
+    left: auto;
+    display: flex;
+    visibility: visible;
+    opacity: 1;
+    z-index: 99999;
+    width: auto;
+    max-width: calc(100vw - 24px);
   }
-  
-  .map-controls button {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: relative !important; /* ✅ Asegurar posición relativa */
+  main.map-wrapper .map-controls button {
+    display: flex;
+    visibility: visible;
+    opacity: 1;
+    position: relative;
   }
 }
 
 /* Tablet y Desktop - Vertical */
 @media (min-width: 768px) {
-  .map-wrapper {
-    overflow: visible !important; /* ✅ Permitir que los botones sean visibles */
+  main.map-wrapper {
+    overflow: visible;
   }
-  
-  .map-controls {
-    position: fixed !important; /* ✅ Fixed también en tablet/desktop */
-    top: 76px !important; /* ✅ Debajo del header (56px + 20px margin) */
-    bottom: auto !important;
-    left: auto !important;
-    right: 20px !important;
-    flex-direction: column !important; /* Vertical en tablet+ */
-    flex-wrap: nowrap !important;
-    gap: 10px !important;
-    pointer-events: none; /* Mantener para permitir clicks a través */
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    z-index: 99999 !important; /* ✅ Z-index extremadamente alto */
-    width: auto !important;
+  main.map-wrapper .map-controls {
+    position: fixed;
+    top: 76px;
+    bottom: auto;
+    left: auto;
+    right: 20px;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 10px;
+    pointer-events: none;
+    display: flex;
+    visibility: visible;
+    opacity: 1;
+    z-index: 99999;
+    width: auto;
   }
-  
-  .map-controls button {
+  main.map-wrapper .map-controls button {
     width: 44px;
     height: 44px;
     min-width: 44px;
     min-height: 44px;
-    pointer-events: auto; /* Los botones sí reciben clicks */
-    display: flex !important; /* ✅ Forzar display */
-    visibility: visible !important; /* ✅ Forzar visibilidad */
-    opacity: 1 !important; /* ✅ Forzar opacidad */
+    pointer-events: auto;
+    display: flex;
+    visibility: visible;
+    opacity: 1;
   }
 }
 
-.map-controls button:hover {
+main.map-wrapper .map-controls button:hover {
   background: rgba(0, 180, 216, 0.18);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 229, 255, 0.12);
   transform: translateY(-2px);
 }
 
 /* Botones girar mapa (izq/der): solo en PC; ocultos en tablet y celular */
-.map-controls button.map-control-pc {
-  display: none !important;
+main.map-wrapper .map-controls button.map-control-pc {
+  display: none;
 }
 @media (min-width: 1024px) {
-  .map-controls button.map-control-pc {
-    display: flex !important;
+  main.map-wrapper .map-controls button.map-control-pc {
+    display: flex;
   }
 }
 
 /* Botón Rotar mapa: solo en tablet y celular; oculto en PC */
-.map-controls button.map-control-touch-only {
-  display: flex !important;
+main.map-wrapper .map-controls button.map-control-touch-only {
+  display: flex;
 }
 @media (min-width: 1024px) {
-  .map-controls button.map-control-touch-only {
-    display: none !important;
+  main.map-wrapper .map-controls button.map-control-touch-only {
+    display: none;
   }
 }
 
 /* En celular y tablet: ocultar botón de activar giro y dejar el mapa girando por defecto */
 @media (max-width: 1023px) {
-  .map-controls button#btnRotate {
-    display: none !important;
+  main.map-wrapper .map-controls button#btnRotate {
+    display: none;
   }
 }
 
-.map-controls button.active {
+main.map-wrapper .map-controls button.active {
   background: var(--accent-green);
   color: #003;
 }

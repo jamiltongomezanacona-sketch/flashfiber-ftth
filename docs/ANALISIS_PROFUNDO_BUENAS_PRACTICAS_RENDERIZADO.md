@@ -92,8 +92,8 @@ Documento generado a partir del análisis del código, la documentación existen
 
 | # | Mejora | Descripción | Esfuerzo | Archivos principales |
 |---|--------|-------------|----------|----------------------|
-| C.1 | Reducir `!important` en CSS de controles del mapa | Hay muchos `!important` en `map.css` y en estilos inline de mapa-ftth.html. Mover a clases en CSS y aumentar especificidad con un contenedor (ej. `.map-wrapper .map-controls`) para poder quitar `!important`. | Bajo | `map.css`, `pages/mapa-ftth.html` |
-| C.2 | Listener `ftth-consolidated-layers-ready` una sola vez | En `ui.layers.tree.js` el listener recarga el árbol; si el evento se dispara más de una vez, se recarga varias veces. Usar `once` o una bandera para ejecutar la recarga solo la primera vez. | Bajo | `ui.layers.tree.js` |
+| C.1 | Reducir `!important` en CSS de controles del mapa (especificidad main.map-wrapper) | Hay muchos `!important` en `map.css` y en estilos inline de mapa-ftth.html. Mover a clases en CSS y aumentar especificidad con un contenedor (ej. `.map-wrapper .map-controls`) para poder quitar `!important`. | ✅ Hecho | `map.css`: selectores `main.map-wrapper .map-controls` sin !important en controles |
+| C.2 | Listener `ftth-consolidated-layers-ready` una sola vez | En `ui.layers.tree.js` el listener recarga el árbol; si el evento se dispara más de una vez, se recarga varias veces. Usar `once` o una bandera para ejecutar la recarga solo la primera vez. | ✅ Hecho | `ui.layers.tree.js`: `{ once: true }` |
 | C.3 | Iconos de cierres/eventos en un solo sprite | Limitar iconos únicos y asegurar que estén en un sprite único del estilo para reducir cambios de textura (RECOMENDACIONES_RENDERIZADO 3.2). | Medio | Estilo Mapbox, `tool.cierres.js`, `tool.eventos.js` |
 | C.4 | Code-splitting por ruta (mapa-ftth vs home vs corporativo) | A medio plazo, usar bundler (Vite/Webpack) con code-splitting para cargar solo el JS de la página actual y reducir parse/compile en la primera carga (RECOMENDACIONES_RENDERIZADO 5.3). | Alto | Build (Vite ya existe para ftth-bundle), entradas por página |
 

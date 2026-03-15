@@ -746,11 +746,12 @@
             map.once("style.load", () => setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), CONFIG.MAP_TIMING?.RETRY_AFTER_STYLE_MS ?? 50));
             return;
           }
-          if (map.getSource("geojson-consolidado")) {
+          const srcId = CONFIG.LAYERS?.GEOJSON_CONSOLIDADO_SOURCE || "geojson-consolidado";
+          if (map.getSource(srcId)) {
           if (log) log("log", "🔄 Actualizando GeoJSON consolidado existente");
-          map.getSource("geojson-consolidado").setData(consolidated);
+          map.getSource(srcId).setData(consolidated);
         } else {
-          map.addSource("geojson-consolidado", {
+          map.addSource(srcId, {
             type: "geojson",
             data: consolidated,
             promoteId: "__id"
@@ -767,24 +768,28 @@
           f.geometry && (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon")
         );
         const beforeId = getBeforeIdForDataLayers(map);
-        if (lineFeatures.length > 0 && !map.getLayer("geojson-lines")) {
+        const linesId = CONFIG.LAYERS?.GEOJSON_LINES || "geojson-lines";
+        const pointsId = CONFIG.LAYERS?.GEOJSON_POINTS || "geojson-points";
+        const polygonsId = CONFIG.LAYERS?.GEOJSON_POLYGONS || "geojson-polygons";
+        const polygonsOutlineId = CONFIG.LAYERS?.GEOJSON_POLYGONS_OUTLINE || "geojson-polygons-outline";
+        if (lineFeatures.length > 0 && !map.getLayer(linesId)) {
           map.addLayer({
-            id: "geojson-lines",
+            id: linesId,
             type: "line",
-            source: "geojson-consolidado",
+            source: srcId,
             filter: ["==", ["geometry-type"], "LineString"],
             layout: { visibility: "none" },
             paint: { "line-color": "#000099", "line-width": 4, "line-opacity": 0.8 }
           }, beforeId);
           if (!App.__ftthLayerIds) App.__ftthLayerIds = [];
-          if (!App.__ftthLayerIds.includes("geojson-lines")) App.__ftthLayerIds.push("geojson-lines");
+          if (!App.__ftthLayerIds.includes(linesId)) App.__ftthLayerIds.push(linesId);
           if (log) log("log", "✅ Capa de líneas creada:", lineFeatures.length, "features");
         }
-        if (pointFeatures.length > 0 && !map.getLayer("geojson-points")) {
+        if (pointFeatures.length > 0 && !map.getLayer(pointsId)) {
           map.addLayer({
-            id: "geojson-points",
+            id: pointsId,
             type: "circle",
-            source: "geojson-consolidado",
+            source: srcId,
             filter: ["==", ["geometry-type"], "Point"],
             layout: { visibility: "none" },
             paint: {
@@ -795,28 +800,28 @@
               "circle-opacity": 0.9
             }
           }, beforeId);
-          if (!App.__ftthLayerIds.includes("geojson-points")) App.__ftthLayerIds.push("geojson-points");
+          if (!App.__ftthLayerIds.includes(pointsId)) App.__ftthLayerIds.push(pointsId);
           if (log) log("log", "✅ Capa de puntos creada:", pointFeatures.length, "features (oculta por defecto)");
         }
-        if (polygonFeatures.length > 0 && !map.getLayer("geojson-polygons")) {
+        if (polygonFeatures.length > 0 && !map.getLayer(polygonsId)) {
           map.addLayer({
-            id: "geojson-polygons",
+            id: polygonsId,
             type: "fill",
-            source: "geojson-consolidado",
+            source: srcId,
             filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
             layout: { visibility: "none" },
             paint: { "fill-color": "#00e5ff", "fill-opacity": 0.3 }
           }, beforeId);
-          if (!App.__ftthLayerIds.includes("geojson-polygons")) App.__ftthLayerIds.push("geojson-polygons");
+          if (!App.__ftthLayerIds.includes(polygonsId)) App.__ftthLayerIds.push(polygonsId);
           map.addLayer({
-            id: "geojson-polygons-outline",
+            id: polygonsOutlineId,
             type: "line",
-            source: "geojson-consolidado",
+            source: srcId,
             filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
             layout: { visibility: "none" },
             paint: { "line-color": "#00e5ff", "line-width": 2 }
           }, beforeId);
-          if (!App.__ftthLayerIds.includes("geojson-polygons-outline")) App.__ftthLayerIds.push("geojson-polygons-outline");
+          if (!App.__ftthLayerIds.includes(polygonsOutlineId)) App.__ftthLayerIds.push(polygonsOutlineId);
           if (log) log("log", "✅ Capa de polígonos creada:", polygonFeatures.length, "features (oculta por defecto)");
         }
         if (log) log("log", "✅ GeoJSON consolidado cargado en mapa base:", consolidated.features.length, "features totales");
@@ -1409,7 +1414,7 @@
         }
         return;
       }
-      if (cablesExplicitlyVisible && (id === "geojson-lines" || id === "geojson-points")) return;
+      if (cablesExplicitlyVisible && (id === (CONFIG.LAYERS?.GEOJSON_LINES || "geojson-lines") || id === (CONFIG.LAYERS?.GEOJSON_POINTS || "geojson-points"))) return;
       // ftth-cables (FTTH_COMPLETO) siempre oculto cuando no es la fuente activa: evita que persista CO36 u otro cable
       if (id === "ftth-cables" || id === "ftth-puntos") {
         try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) { if (CONFIG?.DEBUG && log) log("warn", "setLayoutProperty none", id, e?.message); }
@@ -1437,7 +1442,7 @@
       if (!isFtth) return;
       const isCentral = id.includes("CENTRALES") || id.includes("CORPORATIVO");
       if (isCentral) return;
-      if (cablesExplicitlyVisible && (id === "geojson-lines" || id === "geojson-points")) return;
+      if (cablesExplicitlyVisible && (id === (CONFIG.LAYERS?.GEOJSON_LINES || "geojson-lines") || id === (CONFIG.LAYERS?.GEOJSON_POINTS || "geojson-points"))) return;
       // ftth-cables (FTTH_COMPLETO) siempre oculto cuando no es la fuente activa: evita que persista CO36 u otro cable
       if (id === "ftth-cables" || id === "ftth-puntos") {
         try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) { if (CONFIG?.DEBUG && log) log("warn", "setLayoutProperty none", id, e?.message); }
@@ -1681,7 +1686,7 @@
     });
     setTimeout(enforceOnlyCentralesVisible, CONFIG.MAP_TIMING?.ENFORCE_AFTER_LOAD_MS ?? 2800);
     setTimeout(() => {
-      if (App?.map && !App.map.getLayer("geojson-lines") && App.map.isStyleLoaded()) {
+      if (App?.map && !App.map.getLayer(CONFIG.LAYERS?.GEOJSON_LINES || "geojson-lines") && App.map.isStyleLoaded()) {
         if (log) log("log", "🔄 Capa geojson-lines ausente tras carga, reintentando...");
         loadConsolidatedGeoJSONToBaseMap().catch(() => {});
       }

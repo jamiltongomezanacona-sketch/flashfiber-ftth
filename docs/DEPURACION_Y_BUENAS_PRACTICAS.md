@@ -95,10 +95,10 @@ Documento de análisis **sin alterar el comportamiento del proyecto**. Sirve com
 - **Problema:** Rechazos no manejados → "Uncaught (in promise)".
 - **Recomendación:** Ya se corrigió en `mapa.layers.js` para load/style.load. Revisar el resto de llamadas a funciones async desde event listeners y añadir `.catch()`.
 
-### 3.10 Strings de configuración repetidos
-- **Dónde:** IDs de capas como `"geojson-lines"`, `"geojson-points"`, `"CORPORATIVO_CENTRALES_ETB"` repetidos en varios archivos.
+### 3.10 Strings de configuración repetidos ✅ (parcial: config + mapa.layers)
+- **Dónde:** IDs de capas como `"geojson-lines"`, `"geojson-points"` repetidos en varios archivos.
 - **Problema:** Riesgo de typo; cambios requieren buscar y reemplazar en muchos sitios.
-- **Recomendación:** Ya existe `CONFIG.LAYERS` para algunos; extenderlo y usar constantes para todos los IDs de capas del mapa.
+- **Estado:** Añadidos en `CONFIG.LAYERS`: `GEOJSON_CONSOLIDADO_SOURCE`, `GEOJSON_LINES`, `GEOJSON_POINTS`, `GEOJSON_POLYGONS`, `GEOJSON_POLYGONS_OUTLINE`, `FTTH_CABLES`, `FTTH_PUNTOS`. `mapa.layers.js` los usa al crear source/capas y en enforceOnlyCentralesVisible. Pendiente: `ui.buscador.js`, `ui.layers.tree.js` y otros que referencien estos IDs.
 
 ---
 

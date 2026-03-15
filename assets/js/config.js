@@ -55,12 +55,19 @@ window.__FTTH_CONFIG__ = {
     BEARING: -10
   },
 
-  // IDs de capas del mapa (buscador, tools, layers)
+  // IDs de capas del mapa (buscador, tools, layers) — usar constantes para evitar typos
   LAYERS: {
     CENTRALES: "CORPORATIVO_CENTRALES_ETB",
     CIERRES: "cierres-layer",
     EVENTOS: "eventos-layer",
-    NOTAS: "notas-layer"
+    NOTAS: "notas-layer",
+    GEOJSON_CONSOLIDADO_SOURCE: "geojson-consolidado",
+    GEOJSON_LINES: "geojson-lines",
+    GEOJSON_POINTS: "geojson-points",
+    GEOJSON_POLYGONS: "geojson-polygons",
+    GEOJSON_POLYGONS_OUTLINE: "geojson-polygons-outline",
+    FTTH_CABLES: "ftth-cables",
+    FTTH_PUNTOS: "ftth-puntos"
   },
 
   // Buscador: debounce, reintentos, resultados máximos, geocodificación Bogotá

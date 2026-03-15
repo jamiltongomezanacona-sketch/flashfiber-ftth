@@ -140,9 +140,8 @@
       const mol = App._selectedMoleculaForPins;
       const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || function (m) { return m != null && m !== "" ? String(m).trim().toUpperCase() : ""; };
       const molNorm = normalizeMolecula(mol);
-      const fromSearch = !!App._moleculaFromSearch;
       const filterComentariosChecked = document.getElementById("filterComentarios")?.checked !== false;
-      const show = molNorm && !fromSearch && filterComentariosChecked;
+      const show = molNorm && filterComentariosChecked;
       const filterNotas = molNorm ? ["==", ["upcase", ["coalesce", ["get", "molecula"], ""]], molNorm] : null;
       [LAYER_ID, LAYER_LABEL_ID].forEach((lid) => {
         if (map.getLayer(lid)) {

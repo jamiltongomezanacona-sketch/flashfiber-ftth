@@ -463,11 +463,11 @@
     if (typeof App.applySavedRoutesMoleculaFilter === "function") {
       App.applySavedRoutesMoleculaFilter(selectedMoleculaForPins);
     }
-    // Notas rápidas: visibles cuando Comentarios está activado en sidebar y la molécula viene de Capas (no del buscador)
+    // Notas rápidas: visibles cuando Comentarios está activado en sidebar (también si la molécula viene del buscador)
     const filterComentariosPins = document.getElementById("filterComentarios");
     const NOTAS_LAYER = (window.__FTTH_CONFIG__?.LAYERS?.NOTAS) || "notas-layer";
     const NOTAS_LABEL_LAYER = "notas-layer-label";
-    const showNotas = showPins && !opts?.fromSearch && (filterComentariosPins?.checked !== false);
+    const showNotas = showPins && (filterComentariosPins?.checked !== false);
     [NOTAS_LAYER, NOTAS_LABEL_LAYER].forEach((layerId) => {
       if (App.map.getLayer(layerId)) {
         try {

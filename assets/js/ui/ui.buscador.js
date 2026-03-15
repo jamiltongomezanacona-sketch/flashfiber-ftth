@@ -1556,7 +1556,10 @@
     // Mostrar capa de la molécula seleccionada (CO36, SI05, etc.): zoom + filtro por _molecula
     if (result.type === "molecula") {
       if (!isCorporativo && result.id && result.coordinates) {
-        if (App) App.__cablesExplicitlyVisible = true;
+        if (App) {
+          App.__cablesExplicitlyVisible = true;
+          App._selectedMoleculaForPins = result.id;
+        }
         if (typeof App.enforceOnlyCentralesVisible === "function") App.enforceOnlyCentralesVisible();
         try {
           if (App.map.getLayer("ftth-cables")) {
@@ -1592,10 +1595,13 @@
         }
       } else {
         // GIS FTTH: al elegir un cable desde el buscador, mostrar SOLO ese cable (por _layerId) para que al cambiar a otro el anterior desaparezca
-        if (App) App.__cablesExplicitlyVisible = true;
+        const mol = result.molecula || getMoleculaFromCable(result);
+        if (App) {
+          App.__cablesExplicitlyVisible = true;
+          if (mol) App._selectedMoleculaForPins = mol;
+        }
         if (typeof App.enforceOnlyCentralesVisible === "function") App.enforceOnlyCentralesVisible();
         const layerId = result.layerId || result.id;
-        const mol = result.molecula || getMoleculaFromCable(result);
         function applyCableFilter() {
           try {
             if (!App.map || !App.map.getLayer("geojson-lines")) return false;

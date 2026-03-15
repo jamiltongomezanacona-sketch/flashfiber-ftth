@@ -60,10 +60,10 @@ Documento de análisis **sin alterar el comportamiento del proyecto**. Sirve com
 - **Problema:** Difícil mantener y entender el propósito de cada valor.
 - **Estado:** Añadido `CONFIG.MAP_TIMING` en config.js con todos los delays de carga de capas/estilo (RETRY_LOAD_MS, ENFORCE_VISIBILITY_MS, APPLY_FALLBACK_MS, etc.) y `mapa.layers.js` los usa con fallback `?? valor`. Pendiente: `ui.buscador.js` y `devtools-guard.js`.
 
-### 3.3 `document.write` para scripts
-- **Dónde:** `mapa-ftth.html`, `mapa-corporativo.html`, `mapa-eventos.html` – carga de `config.local.js` / `config.production.js` con `document.write`.
+### 3.3 `document.write` para scripts ✅ (parcial: mapa-ftth, mapa-corporativo)
+- **Dónde:** `mapa-ftth.html`, `mapa-corporativo.html`, `mapa-eventos.html` – carga de `config.local.js` / `config.production.js`.
 - **Problema:** `document.write` bloquea el parser y está desaconsejado en páginas dinámicas.
-- **Recomendación:** Sustituir por inyección de `<script>` con `document.createElement("script")` y `appendChild`, o por un único script en el HTML que defina la ruta de config.
+- **Estado:** En `mapa-ftth.html` y `mapa-corporativo.html` se sustituyó por inyección con `createElement('script')` + `appendChild`; `config.js` se carga en el `onload` del script de config para mantener orden. En `mapa-eventos.html` se mantiene `document.write` porque el script siguiente usa `__FTTH_CONFIG__` de forma síncrona.
 
 ### 3.4 Dependencia de globals
 - **Dónde:** Uso extensivo de `window.__FTTH_APP__`, `window.__FTTH_CONFIG__`, `window.__FTTH_LOG__`, `window.__GEOJSON_INDEX__`, etc.

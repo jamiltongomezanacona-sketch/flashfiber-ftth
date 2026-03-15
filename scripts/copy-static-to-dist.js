@@ -17,6 +17,7 @@ if (!existsSync(dist)) {
 const copies = [
   ["index.html", "index.html"],
   ["supabase.js", "supabase.js"],
+  ["sw.js", "sw.js"],
   ["manifest.json", "manifest.json"],
   ["assets", "assets"],
   ["pages", "pages"],

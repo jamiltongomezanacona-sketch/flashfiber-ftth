@@ -245,9 +245,9 @@
               "interpolate",
               ["linear"],
               ["zoom"],
-              10, 0.42,
-              15, 0.7,
-              20, 0.98
+              10, 0.48,
+              15, 0.8,
+              20, 1.12
             ],
             "icon-allow-overlap": true,
             "icon-ignore-placement": true,

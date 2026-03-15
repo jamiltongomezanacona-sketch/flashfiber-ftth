@@ -34,6 +34,11 @@
     return;
   }
   mapboxgl.accessToken = token;
+  // ✅ Menos peticiones de imagen en paralelo = menos tirones al cargar sprites/tiles (mejor renderizado)
+  const maxImg = CONFIG.RENDER_MAX_PARALLEL_IMAGE_REQUESTS;
+  if (typeof mapboxgl.setMaxParallelImageRequests === "function" && typeof maxImg === "number" && maxImg > 0) {
+    mapboxgl.setMaxParallelImageRequests(Math.min(32, maxImg));
+  }
 
   // 🗺️ MAPA BASE – calles (estilo desde config)
   // preserveDrawingBuffer: true necesario para getCanvas().toDataURL() en "Crear diseño de mapa" (PNG/PDF).

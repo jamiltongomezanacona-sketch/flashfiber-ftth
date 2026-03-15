@@ -727,7 +727,20 @@
         if (log) log("warn", "⚠️ No hay features para cargar en mapa base");
         return;
       }
-      
+
+      // ✅ Simplificar geometrías cuando hay muchos features (mejor rendimiento; requiere Turf cargado en la página)
+      const simplifyThreshold = CONFIG.RENDER_SIMPLIFY_WHEN_FEATURES_ABOVE;
+      if (typeof simplifyThreshold === "number" && consolidated.features.length >= simplifyThreshold &&
+          typeof window !== "undefined" && window.turf && typeof window.turf.simplify === "function") {
+        try {
+          const tol = CONFIG.RENDER_SIMPLIFY_TOLERANCE ?? 0.00005;
+          consolidated = window.turf.simplify(consolidated, { tolerance: tol });
+          if (log) log("log", "✅ Consolidado simplificado (tolerance " + tol + ") para mejor rendimiento:", consolidated.features.length, "features");
+        } catch (e) {
+          if (log) log("warn", "⚠️ Simplificación consolidado fallida:", e && e.message ? e.message : "");
+        }
+      }
+
       // ✅ Recomprobar estilo tras los await (evita "Style is not done loading")
       if (!map.isStyleLoaded()) {
         if (log) log("log", "⏳ Estilo dejó de estar listo tras cargar datos, esperando style.load...");
@@ -737,99 +750,96 @@
         return;
       }
       
+      // ✅ Precalcular una sola vez (evita getStyle/filter en cada frame)
+      const lineFeatures = consolidated.features.filter(f =>
+        f.geometry && f.geometry.type === "LineString"
+      );
+      const pointFeatures = consolidated.features.filter(f =>
+        f.geometry && f.geometry.type === "Point"
+      );
+      const polygonFeatures = consolidated.features.filter(f =>
+        f.geometry && (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon")
+      );
+      const beforeId = getBeforeIdForDataLayers(map);
+      const srcId = CONFIG.LAYERS?.GEOJSON_CONSOLIDADO_SOURCE || "geojson-consolidado";
+      const linesId = CONFIG.LAYERS?.GEOJSON_LINES || "geojson-lines";
+      const pointsId = CONFIG.LAYERS?.GEOJSON_POINTS || "geojson-points";
+      const polygonsId = CONFIG.LAYERS?.GEOJSON_POLYGONS || "geojson-polygons";
+      const polygonsOutlineId = CONFIG.LAYERS?.GEOJSON_POLYGONS_OUTLINE || "geojson-polygons-outline";
+
       let applied = false;
-      const applyToMap = () => {
-        if (applied) return;
-        try {
-          if (!map.isStyleLoaded()) {
-            if (log) log("log", "⏳ Estilo no listo en idle, reintentando...");
-            map.once("style.load", () => setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), CONFIG.MAP_TIMING?.RETRY_AFTER_STYLE_MS ?? 50));
-            return;
-          }
-          const srcId = CONFIG.LAYERS?.GEOJSON_CONSOLIDADO_SOURCE || "geojson-consolidado";
-          if (map.getSource(srcId)) {
-          if (log) log("log", "🔄 Actualizando GeoJSON consolidado existente");
-          map.getSource(srcId).setData(consolidated);
+      const runWhenIdle = (fn) => {
+        if (typeof requestIdleCallback !== "undefined") {
+          requestIdleCallback(fn, { timeout: 300 });
         } else {
-          map.addSource(srcId, {
-            type: "geojson",
-            data: consolidated,
-            promoteId: "__id"
-          });
-          if (log) log("log", "✅ Source consolidado creado");
+          setTimeout(fn, 0);
         }
-        const lineFeatures = consolidated.features.filter(f =>
-          f.geometry && f.geometry.type === "LineString"
-        );
-        const pointFeatures = consolidated.features.filter(f =>
-          f.geometry && f.geometry.type === "Point"
-        );
-        const polygonFeatures = consolidated.features.filter(f =>
-          f.geometry && (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon")
-        );
-        const beforeId = getBeforeIdForDataLayers(map);
-        const linesId = CONFIG.LAYERS?.GEOJSON_LINES || "geojson-lines";
-        const pointsId = CONFIG.LAYERS?.GEOJSON_POINTS || "geojson-points";
-        const polygonsId = CONFIG.LAYERS?.GEOJSON_POLYGONS || "geojson-polygons";
-        const polygonsOutlineId = CONFIG.LAYERS?.GEOJSON_POLYGONS_OUTLINE || "geojson-polygons-outline";
-        if (lineFeatures.length > 0 && !map.getLayer(linesId)) {
-          map.addLayer({
-            id: linesId,
-            type: "line",
-            source: srcId,
-            filter: ["==", ["geometry-type"], "LineString"],
-            layout: { visibility: "none" },
-            paint: { "line-color": "#000099", "line-width": 4, "line-opacity": 0.8 }
-          }, beforeId);
-          if (!App.__ftthLayerIds) App.__ftthLayerIds = [];
-          if (!App.__ftthLayerIds.includes(linesId)) App.__ftthLayerIds.push(linesId);
-          if (log) log("log", "✅ Capa de líneas creada:", lineFeatures.length, "features");
-        }
-        if (pointFeatures.length > 0 && !map.getLayer(pointsId)) {
-          map.addLayer({
-            id: pointsId,
-            type: "circle",
-            source: srcId,
-            filter: ["==", ["geometry-type"], "Point"],
-            layout: { visibility: "none" },
-            paint: {
-              "circle-radius": 6,
-              "circle-color": ["match", ["get", "tipo"], "E2", "#FF8C00", "#9E9E9E"],
-              "circle-stroke-width": 2,
-              "circle-stroke-color": "#000",
-              "circle-opacity": 0.9
-            }
-          }, beforeId);
-          if (!App.__ftthLayerIds.includes(pointsId)) App.__ftthLayerIds.push(pointsId);
-          if (log) log("log", "✅ Capa de puntos creada:", pointFeatures.length, "features (oculta por defecto)");
-        }
-        if (polygonFeatures.length > 0 && !map.getLayer(polygonsId)) {
-          map.addLayer({
-            id: polygonsId,
-            type: "fill",
-            source: srcId,
-            filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
-            layout: { visibility: "none" },
-            paint: { "fill-color": "#00e5ff", "fill-opacity": 0.3 }
-          }, beforeId);
-          if (!App.__ftthLayerIds.includes(polygonsId)) App.__ftthLayerIds.push(polygonsId);
-          map.addLayer({
-            id: polygonsOutlineId,
-            type: "line",
-            source: srcId,
-            filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
-            layout: { visibility: "none" },
-            paint: { "line-color": "#00e5ff", "line-width": 2 }
-          }, beforeId);
-          if (!App.__ftthLayerIds.includes(polygonsOutlineId)) App.__ftthLayerIds.push(polygonsOutlineId);
-          if (log) log("log", "✅ Capa de polígonos creada:", polygonFeatures.length, "features (oculta por defecto)");
-        }
+      };
+
+      const phase3AfterLayers = () => {
         if (log) log("log", "✅ GeoJSON consolidado cargado en mapa base:", consolidated.features.length, "features totales");
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("ftth-consolidated-layers-ready"));
         }
-        setTimeout(enforceOnlyCentralesVisible, CONFIG.MAP_TIMING?.ENFORCE_VISIBILITY_MS ?? 150);
-        applied = true;
+        runWhenIdle(() => {
+          setTimeout(enforceOnlyCentralesVisible, CONFIG.MAP_TIMING?.ENFORCE_VISIBILITY_MS ?? 150);
+        });
+      };
+
+      const phase2AddLayers = () => {
+        if (applied) return;
+        try {
+          if (lineFeatures.length > 0 && !map.getLayer(linesId)) {
+            map.addLayer({
+              id: linesId,
+              type: "line",
+              source: srcId,
+              filter: ["==", ["geometry-type"], "LineString"],
+              layout: { visibility: "none" },
+              paint: { "line-color": "#000099", "line-width": 4, "line-opacity": 0.8 }
+            }, beforeId);
+            if (!App.__ftthLayerIds) App.__ftthLayerIds = [];
+            if (!App.__ftthLayerIds.includes(linesId)) App.__ftthLayerIds.push(linesId);
+          }
+          if (pointFeatures.length > 0 && !map.getLayer(pointsId)) {
+            map.addLayer({
+              id: pointsId,
+              type: "circle",
+              source: srcId,
+              filter: ["==", ["geometry-type"], "Point"],
+              layout: { visibility: "none" },
+              paint: {
+                "circle-radius": 6,
+                "circle-color": ["match", ["get", "tipo"], "E2", "#FF8C00", "#9E9E9E"],
+                "circle-stroke-width": 2,
+                "circle-stroke-color": "#000",
+                "circle-opacity": 0.9
+              }
+            }, beforeId);
+            if (!App.__ftthLayerIds.includes(pointsId)) App.__ftthLayerIds.push(pointsId);
+          }
+          if (polygonFeatures.length > 0 && !map.getLayer(polygonsId)) {
+            map.addLayer({
+              id: polygonsId,
+              type: "fill",
+              source: srcId,
+              filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
+              layout: { visibility: "none" },
+              paint: { "fill-color": "#00e5ff", "fill-opacity": 0.3 }
+            }, beforeId);
+            if (!App.__ftthLayerIds.includes(polygonsId)) App.__ftthLayerIds.push(polygonsId);
+            map.addLayer({
+              id: polygonsOutlineId,
+              type: "line",
+              source: srcId,
+              filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
+              layout: { visibility: "none" },
+              paint: { "line-color": "#00e5ff", "line-width": 2 }
+            }, beforeId);
+            if (!App.__ftthLayerIds.includes(polygonsOutlineId)) App.__ftthLayerIds.push(polygonsOutlineId);
+          }
+          applied = true;
+          phase3AfterLayers();
         } catch (e) {
           const msg = (e && e.message) ? String(e.message) : "";
           if (/style is not done loading/i.test(msg)) {
@@ -839,12 +849,46 @@
           throw e;
         }
       };
-      // ✅ Defer setData/addLayer al siguiente frame para no bloquear el paint (configurable)
+
+      const phase1SourceOnly = () => {
+        if (applied) return;
+        try {
+          if (!map.isStyleLoaded()) {
+            if (log) log("log", "⏳ Estilo no listo en idle, reintentando...");
+            map.once("style.load", () => setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), CONFIG.MAP_TIMING?.RETRY_AFTER_STYLE_MS ?? 50));
+            return;
+          }
+          if (map.getSource(srcId)) {
+            if (log) log("log", "🔄 Actualizando GeoJSON consolidado existente");
+            map.getSource(srcId).setData(consolidated);
+          } else {
+            map.addSource(srcId, {
+              type: "geojson",
+              data: consolidated,
+              promoteId: "__id"
+            });
+            if (log) log("log", "✅ Source consolidado creado");
+          }
+          // ✅ Repartir: addLayer en el siguiente frame para no bloquear el paint
+          requestAnimationFrame(phase2AddLayers);
+        } catch (e) {
+          const msg = (e && e.message) ? String(e.message) : "";
+          if (/style is not done loading/i.test(msg)) {
+            map.once("style.load", () => setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), CONFIG.MAP_TIMING?.RETRY_AFTER_STYLE_MS ?? 50));
+            return;
+          }
+          throw e;
+        }
+      };
+
       const defer = CONFIG.RENDER_DEFER_SETDATA_FRAME !== false;
       const scheduleApply = () => {
         if (applied) return;
-        if (defer) requestAnimationFrame(() => { applyToMap(); });
-        else applyToMap();
+        if (defer) {
+          requestAnimationFrame(phase1SourceOnly);
+        } else {
+          phase1SourceOnly();
+        }
       };
       map.once("idle", scheduleApply);
       setTimeout(() => { if (!applied && map.isStyleLoaded()) scheduleApply(); }, CONFIG.MAP_TIMING?.APPLY_FALLBACK_MS ?? 400);

@@ -25,6 +25,12 @@ window.__FTTH_CONFIG__ = {
 
   // Render: defer setData a siguiente frame para reducir jank (requestAnimationFrame)
   RENDER_DEFER_SETDATA_FRAME: true,
+  // Máximo de peticiones de imagen en paralelo (Mapbox). Menor = menos tirones, carga más escalonada. 8 por defecto.
+  RENDER_MAX_PARALLEL_IMAGE_REQUESTS: 8,
+  // Simplificar geometrías del consolidado cuando hay muchos features (requiere Turf en página). null = no simplificar.
+  RENDER_SIMPLIFY_WHEN_FEATURES_ABOVE: 3000,
+  // Tolerancia en grados para turf.simplify (~0.00005 ≈ 5 m). Solo si RENDER_SIMPLIFY_WHEN_FEATURES_ABOVE está activo.
+  RENDER_SIMPLIFY_TOLERANCE: 0.00005,
 
   // Delays (ms) para carga de capas y estilo del mapa (evita números mágicos)
   MAP_TIMING: {

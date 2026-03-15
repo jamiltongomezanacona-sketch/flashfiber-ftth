@@ -60,6 +60,15 @@
   } catch (e) {}
   const map = new mapboxgl.Map(mapOpts);
 
+  // Si el estilo falla (token inválido, red, etc.) puede aparecer "Style is not done loading"
+  map.on("error", function (e) {
+    var msg = (e && e.error && e.error.message) ? String(e.error.message) : "";
+    if (msg && (msg.indexOf("style") !== -1 || e.error && e.error.status === 401)) {
+      console.warn("⚠️ Error de estilo del mapa (revisa MAPBOX_TOKEN):", msg);
+      if (log) log("warn", "Si persiste 'Style is not done loading', verifica en https://account.mapbox.com/ que el token sea válido y tenga permiso 'styles:read'.");
+    }
+  });
+
   // Guardar vista al mover/zoom (debounce para no escribir en cada frame)
   var _saveViewT = null;
   function persistMapView() {

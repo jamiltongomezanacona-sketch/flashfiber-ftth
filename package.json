@@ -11,7 +11,8 @@
     "build:js": "npx vite build",
     "build:geojson": "node scripts/build-consolidado-geojson.js",
     "migrate:firebase-to-supabase": "node scripts/migrar-firebase-to-supabase.js",
-    "export:firestore": "node scripts/exportar-firestore-a-json.js"
+    "export:firestore": "node scripts/exportar-firestore-a-json.js",
+    "list:fa-icons": "node scripts/list-fontawesome-icons.js"
   },
   "devDependencies": {
     "dotenv": "^17.3.1",

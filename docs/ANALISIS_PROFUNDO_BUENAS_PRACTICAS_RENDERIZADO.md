@@ -86,7 +86,7 @@ Documento generado a partir del análisis del código, la documentación existen
 | B.3 | Tiempos de espera en mapa.layers como constantes | Reemplazar números mágicos (100, 500, 1000, 1500, 2000, 2800 ms) por constantes con nombre al inicio del módulo (ej. `LOAD_RETRY_DELAY_MS`, `ENFORCE_VISIBILITY_DELAY_MS`) para facilitar ajuste y lectura. | ✅ Hecho | `config.js` → `MAP_TIMING` (RESTORE_LOAD_TREE_MS, FITBOUNDS_DURATION_MS, etc.); `mapa.layers.js`, `ui.layers.tree.js` |
 | B.4 | Sustituir setTimeout por evento “map ready” en tool.rutas | En `tool.rutas.js` se usa `setTimeout(startRutasSync, 800)` y 500 ms. Si existe `ftth-map-ready` (u otro), suscribirse a él para ejecutar la sincronización cuando el mapa esté listo en lugar de depender de tiempos fijos. | Bajo | `tool.rutas.js`, `mapa.init.js` (confirmar evento) |
 | B.5 | Límite o virtualización en resultados del buscador (primeros 50 + "Mostrar más") | Si en el futuro se muestran >100 resultados, limitar a ~50 en vista y “Cargar más” o virtualización (solo renderizar ítems visibles) para no crear cientos de nodos DOM (RECOMENDACIONES_RENDERIZADO 7.1). | ✅ Hecho | `config.js` SEARCH.DISPLAY_PAGE_SIZE; `ui.buscador.js`; `search.css` .search-load-more |
-| B.6 | Subset de Font Awesome o self-host | Reducir tamaño y dependencia externa; solo los iconos usados (RECOMENDACIONES_RENDERIZADO 5.2). | Medio | Build o script de assets, HTML donde se carga FA |
+| B.6 | Subset de Font Awesome o self-host | Reducir tamaño y dependencia externa; solo los iconos usados (RECOMENDACIONES_RENDERIZADO 5.2). | ✅ Doc + script | `scripts/list-fontawesome-icons.js`, `npm run list:fa-icons`, `docs/FONT_AWESOME_ICONOS_USADOS.md` (lista 58 iconos e instrucciones subset) |
 
 ### C. Prioridad baja
 

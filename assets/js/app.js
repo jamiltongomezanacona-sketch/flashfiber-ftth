@@ -58,6 +58,7 @@
     reloadAllLayers() {
       this.log("🔄 Recargando capas...");
 
+      this.reloadFTTH?.();
       this.reloadEventos?.();
       this.reloadRutas?.();
       this.reloadCierres?.();

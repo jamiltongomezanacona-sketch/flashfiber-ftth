@@ -348,6 +348,10 @@
       filterMoleculaSearch.value = moleculaOrNull || "";
     }
     if (!App?.map) return;
+    if (!App.map.isStyleLoaded()) {
+      App.map.once("load", () => setSelectedMoleculaForPins(moleculaOrNull, opts));
+      return;
+    }
     // Al cambiar molécula, ocultar capas individuales del árbol (ej. FTTH_CHICO_CO36_*) salvo si estamos mostrando un cable
     if (App) App.__cablesExplicitlyVisible = !!opts?.keepCablesVisible;
     if (typeof App.enforceOnlyCentralesVisible === "function") App.enforceOnlyCentralesVisible();
@@ -1437,6 +1441,10 @@
       hideResults();
       return;
     }
+    if (!App.map.isStyleLoaded()) {
+      App.map.once("load", () => selectResult(result));
+      return;
+    }
 
     try {
     // Asegurar que la capa y los datos existan antes de zoom (para que se vea a la primera)
@@ -1514,6 +1522,7 @@
     // Añadir pin como capa (círculo visible) cuando termine el movimiento
     if (result.type === "coordenadas" || result.type === "direccion") {
       App.map.once("moveend", function () {
+        if (!App.map.isStyleLoaded()) return;
         try {
           if (App.map.getLayer(PIN_COORDS_LAYER_ID)) App.map.removeLayer(PIN_COORDS_LAYER_ID);
           if (App.map.getSource(PIN_COORDS_SOURCE_ID)) App.map.removeSource(PIN_COORDS_SOURCE_ID);

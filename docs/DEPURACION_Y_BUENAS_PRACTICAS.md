@@ -85,10 +85,10 @@ Documento de análisis **sin alterar el comportamiento del proyecto**. Sirve com
 - **Problema:** Archivos muy largos; pruebas y mantenimiento más costosos.
 - **Recomendación:** A futuro, separar “capa de datos / índice”, “vista / render” y “controlador / eventos”.
 
-### 3.8 Bloqueo de teclas y menú contextual
+### 3.8 Bloqueo de teclas y menú contextual ✅ (abordado)
 - **Dónde:** `devtools-guard.js` – `e.preventDefault()` en F12, Ctrl+Shift+I/J/C, clic derecho, Ctrl+U.
 - **Problema:** Empeora accesibilidad y experiencia de desarrolladores; no evita inspección real.
-- **Recomendación:** Valorar desactivar en desarrollo (p. ej. solo activar cuando `!CONFIG.DEBUG`) o eliminar el preventDefault y dejar solo el aviso.
+- **Estado:** Si `CONFIG.DEBUG` es true no se llama a `preventDefault` (F12, clic derecho y Ctrl+U permitidos en desarrollo). El aviso se sigue mostrando. En producción (DEBUG false) se mantiene el bloqueo.
 
 ### 3.9 Promesas sin `.catch` en llamadas desde HTML/eventos
 - **Dónde:** Varios `loadConsolidatedGeoJSONToBaseMap()`, `loadFTTHTree()`, etc. se llaman desde eventos; en algunos puntos (p. ej. `ui.panel.js`, `ui.buscador.js`) podría quedar un `.then()` o llamada async sin `.catch()`.

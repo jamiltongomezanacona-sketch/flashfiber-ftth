@@ -56,11 +56,24 @@
   }
 
   function ensureLayers() {
+    if (!App.map.isStyleLoaded()) {
+      App.map.once("load", () => ensureLayers());
+      App.map.once("style.load", () => ensureLayers());
+      return;
+    }
     if (!App.map.getSource(SOURCE_POINT)) {
-      App.map.addSource(SOURCE_POINT, {
-        type: "geojson",
-        data: { type: "Feature", geometry: { type: "Point", coordinates: [0, 0] } }
-      });
+      try {
+        App.map.addSource(SOURCE_POINT, {
+          type: "geojson",
+          data: { type: "Feature", geometry: { type: "Point", coordinates: [0, 0] } }
+        });
+      } catch (err) {
+        if (/style is not done loading/i.test(err && err.message ? String(err.message) : "")) {
+          App.map.once("style.load", () => ensureLayers());
+          return;
+        }
+        throw err;
+      }
       App.map.addLayer({
         id: LAYER_POINT,
         type: "circle",
@@ -75,13 +88,21 @@
       });
     }
     if (!App.map.getSource(SOURCE_ACCURACY)) {
-      App.map.addSource(SOURCE_ACCURACY, {
-        type: "geojson",
-        data: {
-          type: "Feature",
-          geometry: { type: "Polygon", coordinates: [[[0, 0], [0, 0], [0, 0]]] }
+      try {
+        App.map.addSource(SOURCE_ACCURACY, {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            geometry: { type: "Polygon", coordinates: [[[0, 0], [0, 0], [0, 0]]] }
+          }
+        });
+      } catch (err) {
+        if (/style is not done loading/i.test(err && err.message ? String(err.message) : "")) {
+          App.map.once("style.load", () => ensureLayers());
+          return;
         }
-      });
+        throw err;
+      }
       App.map.addLayer(
         {
           id: LAYER_ACCURACY,

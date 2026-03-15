@@ -98,9 +98,24 @@
   ============================ */
   function createLayers() {
     const map = App.map;
+    if (!map || !map.isStyleLoaded()) {
+      if (map) {
+        map.once("load", () => createLayers());
+        map.once("style.load", () => createLayers());
+      }
+      return;
+    }
 
     if (!map.getSource(SRC_LINE)) {
-      map.addSource(SRC_LINE, { type: "geojson", data: emptyLine() });
+      try {
+        map.addSource(SRC_LINE, { type: "geojson", data: emptyLine() });
+      } catch (err) {
+        if (/style is not done loading/i.test(err && err.message ? String(err.message) : "")) {
+          map.once("style.load", () => createLayers());
+          return;
+        }
+        throw err;
+      }
       map.addLayer({
         id: LAYER_LINE,
         type: "line",
@@ -110,7 +125,15 @@
     }
 
     if (!map.getSource(SRC_PTS)) {
-      map.addSource(SRC_PTS, { type: "geojson", data: emptyPoints() });
+      try {
+        map.addSource(SRC_PTS, { type: "geojson", data: emptyPoints() });
+      } catch (err) {
+        if (/style is not done loading/i.test(err && err.message ? String(err.message) : "")) {
+          map.once("style.load", () => createLayers());
+          return;
+        }
+        throw err;
+      }
       map.addLayer({
         id: LAYER_PTS,
         type: "circle",
@@ -184,10 +207,18 @@
     if (!App || !App.map || !App.map.isStyleLoaded()) return;
     if (App.map.getSource(SAVED_ROUTES_SOURCE)) return;
 
-    App.map.addSource(SAVED_ROUTES_SOURCE, {
-      type: "geojson",
-      data: { type: "FeatureCollection", features: [] }
-    });
+    try {
+      App.map.addSource(SAVED_ROUTES_SOURCE, {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] }
+      });
+    } catch (err) {
+      if (/style is not done loading/i.test(err && err.message ? String(err.message) : "")) {
+        App.map.once("style.load", () => initSavedRoutesLayer());
+        return;
+      }
+      throw err;
+    }
 
     App.map.addLayer({
       id: SAVED_ROUTES_LAYER,

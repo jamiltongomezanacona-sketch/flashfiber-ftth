@@ -202,6 +202,11 @@
 
     function initLayer() {
       if (!App || !App.map) return;
+      if (!App.map.isStyleLoaded()) {
+        App.map.once("load", () => initLayer());
+        App.map.once("style.load", () => initLayer());
+        return;
+      }
       try {
         if (App.map.getSource(SOURCE_ID)) return;
       } catch (_) {
@@ -215,8 +220,9 @@
           promoteId: "id"
         });
       } catch (err) {
-        if (log) log("warn", "⚠️ tool.eventos: addSource falló (¿estilo no cargado?), reintentando en load:", err.message);
+        if (log) log("warn", "⚠️ tool.eventos: addSource falló (¿estilo no cargado?), reintentando en load/style.load:", err.message);
         App.map.once("load", () => initLayer());
+        App.map.once("style.load", () => initLayer());
         return;
       }
 
@@ -256,8 +262,9 @@
           }
         }, beforeId);
       } catch (err) {
-        if (log) log("warn", "⚠️ tool.eventos: addLayer falló, reintentando en load:", err.message);
+        if (log) log("warn", "⚠️ tool.eventos: addLayer falló, reintentando en load/style.load:", err.message);
         App.map.once("load", () => initLayer());
+        App.map.once("style.load", () => initLayer());
         return;
       }
 

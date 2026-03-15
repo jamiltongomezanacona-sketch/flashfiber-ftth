@@ -69,10 +69,23 @@
     function ensureLayer() {
       const map = App.map;
       if (!map) return;
+      if (!map.isStyleLoaded()) {
+        map.once("load", () => ensureLayer());
+        map.once("style.load", () => ensureLayer());
+        return;
+      }
       if (map.getLayer(LAYER_ID)) return;
 
       if (!map.getSource(SOURCE_ID)) {
-        map.addSource(SOURCE_ID, { type: "geojson", data: notasToGeoJSON(), promoteId: "id" });
+        try {
+          map.addSource(SOURCE_ID, { type: "geojson", data: notasToGeoJSON(), promoteId: "id" });
+        } catch (err) {
+          if (/style is not done loading/i.test(err && err.message ? String(err.message) : "")) {
+            map.once("style.load", () => ensureLayer());
+            return;
+          }
+          throw err;
+        }
       }
       addNotaLayers(map);
     }
@@ -130,6 +143,7 @@
       } catch (e) {
         if (log) log("warn", "notas layer add:", e.message);
         map.once("load", function () { addNotaLayers(map); });
+        map.once("style.load", function () { addNotaLayers(map); });
       }
     }
 

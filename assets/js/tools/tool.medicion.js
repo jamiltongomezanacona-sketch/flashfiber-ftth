@@ -227,12 +227,25 @@
        DRAW LINE + POINTS + LABELS
     =============================== */
     function ensureLayer() {
+      if (!App.map.isStyleLoaded()) {
+        App.map.once("style.load", () => ensureLayer());
+        App.map.once("load", () => ensureLayer());
+        return;
+      }
       if (App.map.getSource(lineSourceId)) return;
 
-      App.map.addSource(lineSourceId, {
-        type: "geojson",
-        data: { type: "Feature", geometry: { type: "LineString", coordinates: [] } }
-      });
+      try {
+        App.map.addSource(lineSourceId, {
+          type: "geojson",
+          data: { type: "Feature", geometry: { type: "LineString", coordinates: [] } }
+        });
+      } catch (err) {
+        if (/style is not done loading/i.test(err && err.message ? String(err.message) : "")) {
+          App.map.once("style.load", () => ensureLayer());
+          return;
+        }
+        throw err;
+      }
 
       App.map.addLayer({
         id: lineLayerId,

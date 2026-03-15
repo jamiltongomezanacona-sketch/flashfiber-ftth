@@ -1667,8 +1667,12 @@
 
     // Añadir pin como capa (círculo visible) cuando termine el movimiento
     if (result.type === "coordenadas" || result.type === "direccion") {
-      App.map.once("moveend", function () {
-        if (!App.map.isStyleLoaded()) return;
+      App.map.once("moveend", function addPinAfterMoveend() {
+        if (!App.map.isStyleLoaded()) {
+          App.map.once("style.load", addPinAfterMoveend);
+          App.map.once("load", addPinAfterMoveend);
+          return;
+        }
         try {
           if (App.map.getLayer(PIN_COORDS_LAYER_ID)) App.map.removeLayer(PIN_COORDS_LAYER_ID);
           if (App.map.getSource(PIN_COORDS_SOURCE_ID)) App.map.removeSource(PIN_COORDS_SOURCE_ID);
@@ -1679,18 +1683,26 @@
           type: "FeatureCollection",
           features: [{ type: "Feature", geometry: { type: "Point", coordinates: result.coordinates } }]
         };
-        App.map.addSource(PIN_COORDS_SOURCE_ID, { type: "geojson", data: geo });
-        App.map.addLayer({
-          id: PIN_COORDS_LAYER_ID,
-          type: "circle",
-          source: PIN_COORDS_SOURCE_ID,
-          paint: {
-            "circle-radius": 16,
-            "circle-color": "#00e5ff",
-            "circle-stroke-width": 3,
-            "circle-stroke-color": "#ffffff"
+        try {
+          App.map.addSource(PIN_COORDS_SOURCE_ID, { type: "geojson", data: geo });
+          App.map.addLayer({
+            id: PIN_COORDS_LAYER_ID,
+            type: "circle",
+            source: PIN_COORDS_SOURCE_ID,
+            paint: {
+              "circle-radius": 16,
+              "circle-color": "#00e5ff",
+              "circle-stroke-width": 3,
+              "circle-stroke-color": "#ffffff"
+            }
+          });
+        } catch (e) {
+          if (e && /style is not done loading/i.test(String(e.message))) {
+            App.map.once("style.load", addPinAfterMoveend);
+            return;
           }
-        });
+          throw e;
+        }
       });
     }
 

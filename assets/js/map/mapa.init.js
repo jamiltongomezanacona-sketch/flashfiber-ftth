@@ -117,6 +117,69 @@
 
   // Registrar mapa
   App.setMap(map);
+
+  // ✅ SOLUCIÓN DEFINITIVA: envolver addSource/addLayer para que NUNCA se ejecuten hasta que el estilo esté listo
+  (function patchMapAddSourceAndLayer() {
+    var m = map;
+    var origAddSource = m.addSource.bind(m);
+    var origAddLayer = m.addLayer.bind(m);
+
+    m.addSource = function (id, spec) {
+      function doAdd() {
+        if (!m.isStyleLoaded()) {
+          m.once("load", doAdd);
+          m.once("style.load", doAdd);
+          return;
+        }
+        try {
+          if (!m.getSource(id)) origAddSource(id, spec);
+        } catch (e) {
+          if (e && /style is not done loading/i.test(String(e.message))) {
+            m.once("style.load", function () { m.once("idle", doAdd); });
+            return;
+          }
+          throw e;
+        }
+      }
+      doAdd();
+    };
+
+    m.addLayer = function (layerSpec, beforeId) {
+      function doAdd() {
+        if (!m.isStyleLoaded()) {
+          m.once("load", doAdd);
+          m.once("style.load", doAdd);
+          return;
+        }
+        try {
+          origAddLayer(layerSpec, beforeId);
+        } catch (e) {
+          if (e && /style is not done loading/i.test(String(e.message))) {
+            m.once("style.load", function () { m.once("idle", doAdd); });
+            return;
+          }
+          throw e;
+        }
+      }
+      doAdd();
+    };
+  })();
+
+  // ✅ Helper para código que prefiera encolar lógica: ejecuta fn cuando el estilo está cargado y estable (idle)
+  App.whenStyleReady = function (fn) {
+    var m = App.map;
+    if (!m) return;
+    function run() {
+      if (!m.isStyleLoaded()) {
+        m.once("load", run);
+        m.once("style.load", run);
+        return;
+      }
+      m.once("idle", fn);
+    }
+    run();
+  };
+
   // ✅ Un solo flyTo a la vez: cancela animación anterior para no solapar (B.2 buenas prácticas)
   App.flyToQueued = function (options) {
     if (!App.map) return;

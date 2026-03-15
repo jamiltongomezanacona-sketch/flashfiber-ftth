@@ -39,7 +39,7 @@
     try {
       const geojsonUrl = typeof window !== "undefined" && window.__FTTH_GEOJSON_CONSOLIDADO_URL__
         ? window.__FTTH_GEOJSON_CONSOLIDADO_URL__
-        : "../geojson/consolidado-ftth.geojson";
+        : "/geojson/consolidado-ftth.geojson";
       map.addSource("ftth-src", {
         type: "geojson",
         data: geojsonUrl,

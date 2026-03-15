@@ -639,7 +639,7 @@
   ========================= */
   async function loadCentrales() {
     try {
-      const res = await fetch("../geojson/CORPORATIVO/centrales-etb.geojson", { cache: "default" });
+      const res = await fetch("/geojson/CORPORATIVO/centrales-etb.geojson", { cache: "default" });
       const geojson = await res.json();
       
       if (geojson.features) {
@@ -661,7 +661,7 @@
   /* =========================
      GIS Corporativo: solo cables de CABLES (235 cables del KML)
   ========================= */
-  const CABLES_CORPORATIVO_URL = "../geojson/CABLES/cables.geojson";
+  const CABLES_CORPORATIVO_URL = "/geojson/CABLES/cables.geojson";
 
   async function loadCablesCorporativo() {
     searchIndex.cables = [];
@@ -697,7 +697,7 @@
   /* =========================
      Cargar cables: índice único (1 fetch) o fallback al árbol (N fetches)
   ========================= */
-  const CABLES_INDEX_URL = "../geojson/cables-index.json";
+  const CABLES_INDEX_URL = "/geojson/cables-index.json";
 
   async function loadCables() {
     if (isCorporativo) return;
@@ -749,11 +749,11 @@
         }
       }
       // Fallback: recorrer árbol (múltiples fetches)
-      const indexUrl = (typeof window !== "undefined" && window.__GEOJSON_INDEX__) || "../geojson/index.json";
+      const indexUrl = (typeof window !== "undefined" && window.__GEOJSON_INDEX__) || "/geojson/index.json";
       const indexRes = await fetch(indexUrl, { cache: "default" });
       if (!indexRes.ok) throw new Error("Índice de cables no disponible");
       const root = await indexRes.json();
-      await walkTreeForCables(root, "../geojson/");
+      await walkTreeForCables(root, "/geojson/");
       console.log("✅ Cables cargados desde árbol:", searchIndex.cables.length);
       // Respaldo: completar índice desde consolidado (asegura CO35FH144, CO36, etc. aunque falle un fetch del árbol)
       await loadCablesFromConsolidado();
@@ -764,7 +764,7 @@
   }
 
   /** URLs para consolidado (misma fuente que el mapa): relativa y absoluta por si la página está en /mapa-ftth. */
-  const CONSOLIDADO_URLS = ["../geojson/consolidado-ftth.geojson", "/geojson/consolidado-ftth.geojson", "geojson/consolidado-ftth.geojson"];
+  const CONSOLIDADO_URLS = ["/geojson/consolidado-ftth.geojson", "geojson/consolidado-ftth.geojson"];
 
   /** Completar searchIndex.cables y searchIndex.moleculas desde consolidado-ftth.geojson (todos los cables del mapa, incl. CO36FH144). */
   async function loadCablesFromConsolidado() {
@@ -837,7 +837,7 @@
   async function loadCablesMuzu() {
     if (isCorporativo) return;
     try {
-      const res = await fetch("../geojson/FTTH/MUZU/muzu.geojson", { cache: "default" });
+      const res = await fetch("/geojson/FTTH/MUZU/muzu.geojson", { cache: "default" });
       if (!res.ok) return;
       const geojson = await res.json();
       if (!geojson.features || !geojson.features.length) return;
@@ -985,11 +985,11 @@
         // ✅ Normalizar URL
         let url = basePath + node.path;
         url = url.replace(/\/+/g, "/");
-        if (!url.startsWith("../geojson/")) {
+        if (!url.startsWith("/geojson/") && !url.startsWith("../geojson/")) {
           if (url.startsWith("geojson/")) {
-            url = "../" + url;
+            url = "/" + url;
           } else {
-            url = "../geojson/" + url.replace(/^\.\.\/geojson\//, "");
+            url = "/geojson/" + url.replace(/^\.\.\/geojson\//, "").replace(/^\/?geojson\//, "");
           }
         }
         
@@ -1076,11 +1076,11 @@
                 // ✅ Normalizar URL
                 let url = basePath + child.index;
                 url = url.replace(/\/+/g, "/");
-                if (!url.startsWith("../geojson/")) {
+                if (!url.startsWith("/geojson/") && !url.startsWith("../geojson/")) {
                   if (url.startsWith("geojson/")) {
-                    url = "../" + url;
+                    url = "/" + url;
                   } else {
-                    url = "../geojson/" + url.replace(/^\.\.\/geojson\//, "");
+                    url = "/geojson/" + url.replace(/^\.\.\/geojson\//, "").replace(/^\/?geojson\//, "");
                   }
                 }
                 

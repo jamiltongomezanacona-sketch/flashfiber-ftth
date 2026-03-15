@@ -6,8 +6,8 @@
   "use strict";
 
   const TREE_CONTAINER_ID = "layersTree";
-  const ROOT_INDEX = (typeof window !== "undefined" && window.__GEOJSON_INDEX__) || "../geojson/index.json";
-  const GEOJSON_BASE = "../geojson/";
+  const ROOT_INDEX = (typeof window !== "undefined" && window.__GEOJSON_INDEX__) || "/geojson/index.json";
+  const GEOJSON_BASE = "/geojson/";
 
   /** Cache de index.json por path (lazy load): evita re-fetch al expandir/colapsar */
   const indexCache = new Map();

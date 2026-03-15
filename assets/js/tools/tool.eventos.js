@@ -693,7 +693,7 @@
     async function loadCableNames() {
       if (cableNamesList.length > 0) return;
       try {
-        const res = await fetch("../geojson/CABLES/cables.geojson", { cache: "default" });
+        const res = await fetch("/geojson/CABLES/cables.geojson", { cache: "default" });
         const geojson = await res.json();
         if (geojson.features && geojson.features.length) {
           cableNamesList = geojson.features

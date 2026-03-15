@@ -15,7 +15,7 @@
     return;
   }
 
-  const ROOT_INDEX = (typeof window !== "undefined" && window.__GEOJSON_INDEX__) || "../geojson/index.json";
+  const ROOT_INDEX = (typeof window !== "undefined" && window.__GEOJSON_INDEX__) || "/geojson/index.json";
   const CONSOLIDADO_PREGENERADO = (typeof window !== "undefined" && window.__GEOJSON_CONSOLIDADO__) ||
     (ROOT_INDEX.replace(/index\.json$/i, "consolidado-ftth.geojson"));
   let restoring = false;
@@ -523,11 +523,11 @@
             // ✅ Normalizar URL para evitar duplicados
             let url = basePath + node.path;
             url = url.replace(/\/+/g, "/");
-            if (!url.startsWith("../geojson/")) {
+            if (!url.startsWith("/geojson/") && !url.startsWith("../geojson/")) {
               if (url.startsWith("geojson/")) {
-                url = "../" + url;
+                url = "/" + url;
               } else {
-                url = "../geojson/" + url.replace(/^\.\.\/geojson\//, "");
+                url = "/geojson/" + url.replace(/^\.\.\/geojson\//, "").replace(/^\/?geojson\//, "");
               }
             }
             
@@ -638,11 +638,11 @@
       // Cargar árbol raíz y consolidar
       const res = await fetch(ROOT_INDEX, { cache: "default" });
       const root = await res.json();
-      await collectGeoJSON(root, "../geojson/", "");
+      await collectGeoJSON(root, "/geojson/", "");
 
       // ✅ Estandar: MUZU como el resto de centrales — incorporar cables al consolidado (mismo formato que FTTH)
       try {
-        const muzuRes = await fetch("../geojson/FTTH/MUZU/muzu.geojson", { cache: "default" });
+        const muzuRes = await fetch("/geojson/FTTH/MUZU/muzu.geojson", { cache: "default" });
         if (muzuRes.ok) {
           const muzuGeo = await muzuRes.json();
           if (muzuGeo.features && muzuGeo.features.length > 0) {
@@ -878,7 +878,7 @@
       const res = await fetch(ROOT_INDEX, { cache: "default" });
       const root = await res.json();
 
-      await walkNode(root, "../geojson/");
+      await walkNode(root, "/geojson/");
 
       if (log) log("log", "🌳 Árbol FTTH procesado");
       // Forzar que solo centrales queden visibles tras cargar capas
@@ -964,14 +964,13 @@
     // Normalizar la ruta: eliminar dobles barras
     url = url.replace(/\/+/g, "/");
     
-    // Si la basePath ya tiene ../geojson/, no duplicar
-    if (url.startsWith("../geojson/")) {
+    // Asegurar URL absoluta o relativa correcta (móvil: /geojson/ evita fallos por base)
+    if (url.startsWith("/geojson/") || url.startsWith("../geojson/")) {
       // Ya está bien formada
     } else if (url.startsWith("geojson/")) {
-      url = "../" + url;
-    } else if (!url.startsWith("../")) {
-      // Asegurar que comience con ../geojson/
-      url = "../geojson/" + url.replace(/^\.\.\/geojson\//, "");
+      url = "/" + url;
+    } else {
+      url = "/geojson/" + url.replace(/^\/?geojson\//, "").replace(/^\.\.\/geojson\//, "");
     }
     
     // ✅ PERMITIR cargar todas las capas individuales (cables, cierres, eventos)
@@ -1530,7 +1529,7 @@
       if (log) log("log", "🏢 Cargando centrales ETB (fijas)...");
       
       // Cargar GeoJSON de centrales
-      const res = await fetch("../geojson/CORPORATIVO/centrales-etb.geojson", { cache: "default" });
+      const res = await fetch("/geojson/CORPORATIVO/centrales-etb.geojson", { cache: "default" });
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       }

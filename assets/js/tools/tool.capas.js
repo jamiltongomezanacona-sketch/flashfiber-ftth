@@ -7,7 +7,7 @@
   "use strict";
 
   const log = window.__FTTH_LOG__;
-  const INDEX_URL = "../geojson/FTTH/index.json";
+  const INDEX_URL = "/geojson/FTTH/index.json";
 
   function init() {
     const App = window.__FTTH_APP__;

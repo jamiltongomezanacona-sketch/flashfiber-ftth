@@ -737,120 +737,105 @@
         return;
       }
       
-      // Verificar si el source ya existe
-      if (map.getSource("geojson-consolidado")) {
-        if (log) log("log", "🔄 Actualizando GeoJSON consolidado existente");
-        map.getSource("geojson-consolidado").setData(consolidated);
-      } else {
-        // Crear source consolidado
-        map.addSource("geojson-consolidado", {
-          type: "geojson",
-          data: consolidated,
-          promoteId: "__id"
-        });
-        if (log) log("log", "✅ Source consolidado creado");
-      }
-      
-      // Separar features por tipo de geometría
-      const lineFeatures = consolidated.features.filter(f => 
-        f.geometry && f.geometry.type === "LineString"
-      );
-      const pointFeatures = consolidated.features.filter(f => 
-        f.geometry && f.geometry.type === "Point"
-      );
-      const polygonFeatures = consolidated.features.filter(f => 
-        f.geometry && (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon")
-      );
-      
-      // Capa de líneas (cables, rutas, etc.) — debajo de etiquetas del estilo
-      const beforeId = getBeforeIdForDataLayers(map);
-      if (lineFeatures.length > 0 && !map.getLayer("geojson-lines")) {
-        map.addLayer({
-          id: "geojson-lines",
-          type: "line",
-          source: "geojson-consolidado",
-          filter: ["==", ["geometry-type"], "LineString"],
-          layout: {
-            visibility: "none" // ✅ Iniciar oculto - sin cables visibles
-          },
-          paint: {
-            "line-color": "#000099",
-            "line-width": 4,
-            "line-opacity": 0.8
+      let applied = false;
+      const applyToMap = () => {
+        if (applied) return;
+        try {
+          if (!map.isStyleLoaded()) {
+            if (log) log("log", "⏳ Estilo no listo en idle, reintentando...");
+            map.once("style.load", () => setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), 50));
+            return;
           }
-        }, beforeId);
-        if (log) log("log", "✅ Capa de líneas creada:", lineFeatures.length, "features");
-        
-        // ✅ Registrar en el sistema de capas FTTH
-        if (!App.__ftthLayerIds) {
-          App.__ftthLayerIds = [];
+          if (map.getSource("geojson-consolidado")) {
+          if (log) log("log", "🔄 Actualizando GeoJSON consolidado existente");
+          map.getSource("geojson-consolidado").setData(consolidated);
+        } else {
+          map.addSource("geojson-consolidado", {
+            type: "geojson",
+            data: consolidated,
+            promoteId: "__id"
+          });
+          if (log) log("log", "✅ Source consolidado creado");
         }
-        if (!App.__ftthLayerIds.includes("geojson-lines")) {
-          App.__ftthLayerIds.push("geojson-lines");
-          if (log) log("log", "✅ Capa geojson-lines registrada en sistema FTTH");
+        const lineFeatures = consolidated.features.filter(f =>
+          f.geometry && f.geometry.type === "LineString"
+        );
+        const pointFeatures = consolidated.features.filter(f =>
+          f.geometry && f.geometry.type === "Point"
+        );
+        const polygonFeatures = consolidated.features.filter(f =>
+          f.geometry && (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon")
+        );
+        const beforeId = getBeforeIdForDataLayers(map);
+        if (lineFeatures.length > 0 && !map.getLayer("geojson-lines")) {
+          map.addLayer({
+            id: "geojson-lines",
+            type: "line",
+            source: "geojson-consolidado",
+            filter: ["==", ["geometry-type"], "LineString"],
+            layout: { visibility: "none" },
+            paint: { "line-color": "#000099", "line-width": 4, "line-opacity": 0.8 }
+          }, beforeId);
+          if (!App.__ftthLayerIds) App.__ftthLayerIds = [];
+          if (!App.__ftthLayerIds.includes("geojson-lines")) App.__ftthLayerIds.push("geojson-lines");
+          if (log) log("log", "✅ Capa de líneas creada:", lineFeatures.length, "features");
         }
-      }
-      
-      // Capa de puntos (oculta por defecto; solo visible desde árbol de capas o buscador)
-      if (pointFeatures.length > 0 && !map.getLayer("geojson-points")) {
-        map.addLayer({
-          id: "geojson-points",
-          type: "circle",
-          source: "geojson-consolidado",
-          filter: ["==", ["geometry-type"], "Point"],
-          layout: { visibility: "none" },
-          paint: {
-            "circle-radius": 6,
-            "circle-color": [
-              "match",
-              ["get", "tipo"],
-              "E2", "#FF8C00",
-              "#9E9E9E"
-            ],
-            "circle-stroke-width": 2,
-            "circle-stroke-color": "#000",
-            "circle-opacity": 0.9
+        if (pointFeatures.length > 0 && !map.getLayer("geojson-points")) {
+          map.addLayer({
+            id: "geojson-points",
+            type: "circle",
+            source: "geojson-consolidado",
+            filter: ["==", ["geometry-type"], "Point"],
+            layout: { visibility: "none" },
+            paint: {
+              "circle-radius": 6,
+              "circle-color": ["match", ["get", "tipo"], "E2", "#FF8C00", "#9E9E9E"],
+              "circle-stroke-width": 2,
+              "circle-stroke-color": "#000",
+              "circle-opacity": 0.9
+            }
+          }, beforeId);
+          if (!App.__ftthLayerIds.includes("geojson-points")) App.__ftthLayerIds.push("geojson-points");
+          if (log) log("log", "✅ Capa de puntos creada:", pointFeatures.length, "features (oculta por defecto)");
+        }
+        if (polygonFeatures.length > 0 && !map.getLayer("geojson-polygons")) {
+          map.addLayer({
+            id: "geojson-polygons",
+            type: "fill",
+            source: "geojson-consolidado",
+            filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
+            layout: { visibility: "none" },
+            paint: { "fill-color": "#00e5ff", "fill-opacity": 0.3 }
+          }, beforeId);
+          if (!App.__ftthLayerIds.includes("geojson-polygons")) App.__ftthLayerIds.push("geojson-polygons");
+          map.addLayer({
+            id: "geojson-polygons-outline",
+            type: "line",
+            source: "geojson-consolidado",
+            filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
+            layout: { visibility: "none" },
+            paint: { "line-color": "#00e5ff", "line-width": 2 }
+          }, beforeId);
+          if (!App.__ftthLayerIds.includes("geojson-polygons-outline")) App.__ftthLayerIds.push("geojson-polygons-outline");
+          if (log) log("log", "✅ Capa de polígonos creada:", polygonFeatures.length, "features (oculta por defecto)");
+        }
+        if (log) log("log", "✅ GeoJSON consolidado cargado en mapa base:", consolidated.features.length, "features totales");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("ftth-consolidated-layers-ready"));
+        }
+        setTimeout(enforceOnlyCentralesVisible, 150);
+        applied = true;
+        } catch (e) {
+          const msg = (e && e.message) ? String(e.message) : "";
+          if (/style is not done loading/i.test(msg)) {
+            map.once("style.load", () => setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), 50));
+            return;
           }
-        }, beforeId);
-        if (!App.__ftthLayerIds.includes("geojson-points")) App.__ftthLayerIds.push("geojson-points");
-        if (log) log("log", "✅ Capa de puntos creada:", pointFeatures.length, "features (oculta por defecto)");
-      }
-      
-      // Capa de polígonos (oculta por defecto; solo visible desde árbol de capas o buscador)
-      if (polygonFeatures.length > 0 && !map.getLayer("geojson-polygons")) {
-        map.addLayer({
-          id: "geojson-polygons",
-          type: "fill",
-          source: "geojson-consolidado",
-          filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
-          layout: { visibility: "none" },
-          paint: {
-            "fill-color": "#00e5ff",
-            "fill-opacity": 0.3
-          }
-        }, beforeId);
-        if (!App.__ftthLayerIds.includes("geojson-polygons")) App.__ftthLayerIds.push("geojson-polygons");
-        
-        map.addLayer({
-          id: "geojson-polygons-outline",
-          type: "line",
-          source: "geojson-consolidado",
-          filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
-          layout: { visibility: "none" },
-          paint: {
-            "line-color": "#00e5ff",
-            "line-width": 2
-          }
-        }, beforeId);
-        if (!App.__ftthLayerIds.includes("geojson-polygons-outline")) App.__ftthLayerIds.push("geojson-polygons-outline");
-        if (log) log("log", "✅ Capa de polígonos creada:", polygonFeatures.length, "features (oculta por defecto)");
-      }
-      
-      if (log) log("log", "✅ GeoJSON consolidado cargado en mapa base:", consolidated.features.length, "features totales");
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("ftth-consolidated-layers-ready"));
-      }
-      setTimeout(enforceOnlyCentralesVisible, 150);
+          throw e;
+        }
+      };
+      map.once("idle", applyToMap);
+      setTimeout(() => { if (!applied && map.isStyleLoaded()) applyToMap(); }, 400);
     } catch (err) {
       const msg = (err && err.message) ? String(err.message) : "";
       if (/style is not done loading/i.test(msg)) {
@@ -1166,10 +1151,13 @@
         if (log) log("log", "✅ Features con iconId:", featuresWithIcons, "de", geojson.features.length, "(carga bajo demanda activa)");
         
         // Crear source DESPUÉS de cargar todos los iconos y asignar iconId
-        // El mapa ya está verificado al inicio de la función
         if (log) log("log", "📦 Creando source para", id, "con", geojson.features.length, "features");
+        if (!map.isStyleLoaded()) {
+          if (log) log("log", "⏳ Estilo no listo en createLayer (symbol), reintentando en style.load...");
+          map.once("style.load", () => createLayer(layer, basePath));
+          return;
+        }
         try {
-          // Verificar que el source no exista ya
           if (map.getSource(id)) {
             if (log) log("log", "⚠️ Source ya existe, omitiendo creación:", id);
           } else {
@@ -1181,11 +1169,13 @@
             if (log) log("log", "✅ Source creado con datos actualizados:", id);
           }
         } catch (sourceError) {
-          console.error(`❌ Error creando source ${id}:`, sourceError);
-          // Si el error es que ya existe, continuar
-          if (!sourceError.message?.includes('already exists')) {
+          const sm = (sourceError && sourceError.message) ? String(sourceError.message) : "";
+          if (/style is not done loading/i.test(sm)) {
+            map.once("style.load", () => createLayer(layer, basePath));
             return;
           }
+          console.error(`❌ Error creando source ${id}:`, sourceError);
+          if (!sm.includes('already exists')) return;
         }
         
         // Verificar que los iconId están en las features
@@ -1239,17 +1229,17 @@
           }
         };
 
-        // Agregar la capa directamente - el mapa está garantizado que está listo (debajo de etiquetas)
         try {
-          // Verificar que la capa no exista ya
+          if (!map.isStyleLoaded()) {
+            map.once("style.load", () => createLayer(layer, basePath));
+            return;
+          }
           if (map.getLayer(id)) {
             if (log) log("log", "⚠️ Capa ya existe, omitiendo:", id);
           } else {
             map.addLayer(layerConfig, getBeforeIdForDataLayers(map));
             if (log) log("log", "✅ Capa symbol agregada:", id, "con", geojson.features.length, "features");
           }
-          
-          // Verificar que la capa se creó correctamente
           if (map.getLayer(id)) {
             const visibility = map.getLayoutProperty(id, "visibility");
             const textFieldExpr = map.getLayoutProperty(id, "text-field");
@@ -1272,19 +1262,34 @@
             console.error(`❌ ERROR: Capa ${id} NO se creó correctamente`);
           }
         } catch (layerError) {
+          const lm = (layerError && layerError.message) ? String(layerError.message) : "";
+          if (/style is not done loading/i.test(lm)) {
+            map.once("style.load", () => createLayer(layer, basePath));
+            return;
+          }
           console.error(`❌ Error agregando capa ${id}:`, layerError);
-          // Limpiar el registro si falla
           layerIconRegistry.delete(id);
         }
       } else {
-        // Configuración para líneas y otros tipos
-        // ✅ Verificar nuevamente antes de agregar (evitar race conditions)
+        if (!map.isStyleLoaded()) {
+          map.once("style.load", () => createLayer(layer, basePath));
+          return;
+        }
         if (!map.getSource(id)) {
-          map.addSource(id, {
-            type: "geojson",
-            data: geojson,
-            promoteId: "name"
-          });
+          try {
+            map.addSource(id, {
+              type: "geojson",
+              data: geojson,
+              promoteId: "name"
+            });
+          } catch (sourceErr) {
+            const em = (sourceErr && sourceErr.message) ? String(sourceErr.message) : "";
+            if (/style is not done loading/i.test(em)) {
+              map.once("style.load", () => createLayer(layer, basePath));
+              return;
+            }
+            throw sourceErr;
+          }
         } else {
           if (log) log("log", "⚠️ Source ya existe al intentar agregar, usando existente:", id);
           // Actualizar datos del source existente
@@ -1319,9 +1324,17 @@
           layerConfig.filter = ["==", ["get", "name"], "__none__"];
         }
 
-        // ✅ Verificar nuevamente antes de agregar layer (evitar duplicados); debajo de etiquetas
         if (!map.getLayer(id)) {
-          map.addLayer(layerConfig, getBeforeIdForDataLayers(map));
+          try {
+            map.addLayer(layerConfig, getBeforeIdForDataLayers(map));
+          } catch (layerErr) {
+            const em = (layerErr && layerErr.message) ? String(layerErr.message) : "";
+            if (/style is not done loading/i.test(em)) {
+              map.once("style.load", () => createLayer(layer, basePath));
+              return;
+            }
+            throw layerErr;
+          }
         } else {
           if (log) log("log", "⚠️ Layer ya existe, omitiendo agregar:", id);
         }
@@ -1522,7 +1535,12 @@
       
       if (log) log("log", "📊 GeoJSON cargado:", geojson.features.length, "centrales");
       
-      // Crear source si no existe
+      if (!map.isStyleLoaded()) {
+        if (log) log("log", "⏳ Estilo no listo tras fetch centrales, reintentando en style.load...");
+        map.once("style.load", () => loadCentralesFijas(0));
+        return;
+      }
+      
       if (!map.getSource(CENTRALES_SOURCE)) {
         try {
           map.addSource(CENTRALES_SOURCE, {
@@ -1532,8 +1550,12 @@
           });
           if (log) log("log", "✅ Source creado:", CENTRALES_SOURCE);
         } catch (err) {
-          // Si el source ya existe, actualizar datos
-          if (err.message && err.message.includes("already exists")) {
+          const em = (err && err.message) ? String(err.message) : "";
+          if (/style is not done loading/i.test(em)) {
+            map.once("style.load", () => loadCentralesFijas(0));
+            return;
+          }
+          if (em.includes("already exists")) {
             if (log) log("log", "⚠️ Source ya existe, actualizando datos...");
             map.getSource(CENTRALES_SOURCE).setData(geojson);
           } else {
@@ -1578,8 +1600,12 @@
             App.__ftthLayerIds.push(CENTRALES_ID);
           }
         } catch (err) {
+          const em = (err && err.message) ? String(err.message) : "";
+          if (/style is not done loading/i.test(em)) {
+            map.once("style.load", () => loadCentralesFijas(0));
+            return;
+          }
           console.error("❌ Error creando layer:", err);
-          // Si el layer ya existe, solo asegurar visibilidad
           if (map.getLayer(CENTRALES_ID)) {
             map.setLayoutProperty(CENTRALES_ID, "visibility", "visible");
           }
@@ -1609,8 +1635,12 @@
       }
       
     } catch (err) {
+      const em = (err && err.message) ? String(err.message) : "";
+      if (/style is not done loading/i.test(em)) {
+        map.once("style.load", () => loadCentralesFijas(0));
+        return;
+      }
       console.error("❌ Error cargando centrales fijas:", err);
-      // Reintentar si no se ha excedido el límite
       if (retryCount < MAX_RETRIES) {
         if (log) log("log", "🔄 Reintentando carga de centrales...", retryCount + 1, "/", MAX_RETRIES);
         setTimeout(() => loadCentralesFijas(retryCount + 1), 1000);
@@ -1621,33 +1651,45 @@
   /* ===============================
      Eventos
   =============================== */
+  function handleStyleNotReady(err, retryFn) {
+    const msg = (err && err.message) ? String(err.message) : "";
+    if (!/style is not done loading/i.test(msg)) return false;
+    const map = App?.map;
+    if (map && typeof retryFn === "function") {
+      if (log) log("log", "⏳ Style no listo (promesa), reintentando en style.load...");
+      map.once("load", retryFn);
+      map.once("style.load", retryFn);
+    }
+    return true;
+  }
+
   App.map?.on("load", () => {
-    // Inicializar handler global cuando el mapa esté listo
     initGlobalImageMissingHandler();
-    
-    // ✅ CARGAR CENTRALES DE FORMA FIJA E INDEPENDIENTE (PRIMERO)
     setTimeout(() => {
-      loadCentralesFijas();
+      loadCentralesFijas().catch((err) => {
+        if (!handleStyleNotReady(err, () => loadCentralesFijas())) console.error("❌", err);
+      });
     }, 300);
-    
-    // ✅ CARGAR TODO EL GEOJSON CONSOLIDADO EN EL MAPA BASE
-    loadConsolidatedGeoJSONToBaseMap();
-    
-    // También cargar el árbol individual (para compatibilidad)
-    loadFTTHTree();
-    
-    // 🔒 Forzar solo centrales visibles tras todo (incl. mapa.ftth.js que corre ~300ms)
+    loadConsolidatedGeoJSONToBaseMap().catch((err) => {
+      if (!handleStyleNotReady(err, () => loadConsolidatedGeoJSONToBaseMap())) console.error("❌", err);
+    });
+    loadFTTHTree().catch((err) => {
+      if (!handleStyleNotReady(err, () => loadFTTHTree())) console.error("❌", err);
+    });
     setTimeout(enforceOnlyCentralesVisible, 2800);
   });
   App.map?.on("style.load", () => {
     restoreLayers();
     setTimeout(() => {
       initGlobalImageMissingHandler();
-      loadCentralesFijas();
+      loadCentralesFijas().catch((err) => {
+        if (!handleStyleNotReady(err, () => loadCentralesFijas())) console.error("❌", err);
+      });
       setTimeout(() => {
-        loadConsolidatedGeoJSONToBaseMap();
+        loadConsolidatedGeoJSONToBaseMap().catch((err) => {
+          if (!handleStyleNotReady(err, () => loadConsolidatedGeoJSONToBaseMap())) console.error("❌", err);
+        });
       }, 300);
-      // 🔒 Forzar solo centrales visibles después de recargar
       setTimeout(enforceOnlyCentralesVisible, 1500);
     }, 500);
   });

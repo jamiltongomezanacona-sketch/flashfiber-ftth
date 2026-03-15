@@ -27,6 +27,7 @@
 
     if (!map.isStyleLoaded()) {
       map.once("load", () => loadFTTHLayers());
+      map.once("style.load", () => loadFTTHLayers());
       return;
     }
 
@@ -87,8 +88,9 @@
             map.removeSource("ftth-src");
           }
         } catch (_) {}
-        if (log) log("warn", "⏳ Estilo aún cargando, reintentando en load...");
+        if (log) log("warn", "⏳ Estilo aún cargando, reintentando en style.load...");
         map.once("load", () => loadFTTHLayers());
+        map.once("style.load", () => loadFTTHLayers());
       } else {
         throw err;
       }

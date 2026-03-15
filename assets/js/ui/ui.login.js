@@ -144,14 +144,9 @@
       }, 5000);
     }
 
-    // Escuchar cambios de autenticación
-    window.FTTH_CORE.onUserChange((user) => {
-      if (user && window.__USER__) {
-        // Usuario autenticado y perfil cargado
-        console.log("✅ Usuario autenticado, redirigiendo...");
-        window.location.href = (typeof window.__FTTH_REDIRECT_AFTER_LOGIN__ === "function" && window.__FTTH_REDIRECT_AFTER_LOGIN__()) || "pages/home.html";
-      }
-    });
+    // Redirección tras login: se hace en supabase.core.js cuando __USER__ está listo
+    // (onAuthStateChange se dispara antes de cargar el perfil, por eso no redirigíamos aquí).
+    window.FTTH_CORE.onUserChange(() => {});
   }
 
   async function checkAuthState() {

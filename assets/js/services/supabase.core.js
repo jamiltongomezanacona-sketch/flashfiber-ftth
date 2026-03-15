@@ -73,6 +73,14 @@ onUserChange(async (user) => {
   };
 
   console.log("👤 Usuario cargado:", window.__USER__);
+
+  // Redirigir desde aquí: onAuthStateChange se dispara antes de cargar el perfil,
+  // así que la condición (user && __USER__) en ui.login.js nunca se cumple a tiempo.
+  const path = typeof location !== "undefined" ? location.pathname : "";
+  if (/^\/(index\.html)?\/?$/i.test(path) || path === "" || path === "/") {
+    const url = (typeof window.__FTTH_REDIRECT_AFTER_LOGIN__ === "function" && window.__FTTH_REDIRECT_AFTER_LOGIN__()) || "pages/home.html";
+    window.location.href = url;
+  }
 });
 
 /* =========================

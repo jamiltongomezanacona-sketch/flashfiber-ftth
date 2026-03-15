@@ -32,10 +32,13 @@
 
     if (log) log("log", "📡 Cargando FTTH GeoJSON...");
 
+    const geojsonUrl = typeof window !== "undefined" && window.__FTTH_GEOJSON_CONSOLIDADO_URL__
+      ? window.__FTTH_GEOJSON_CONSOLIDADO_URL__
+      : "../geojson/consolidado-ftth.geojson";
     map.addSource("ftth-src", {
       type: "geojson",
-      data: "../geojson/FTTH_COMPLETO.geojson",
-      promoteId: "name"
+      data: geojsonUrl,
+      promoteId: "__id"
     });
 
     /* ======================

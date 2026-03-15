@@ -22,6 +22,8 @@ window.__FTTH_CONFIG__ = {
     RESIZE_MAP_MS: 150,   // estilo del mapa recargado → resize
     COPY_BUTTON_RESET_MS: 1500  // texto "Copiar coordenada" vuelve al original
   },
+  // Feedback "¡Copiar coordenada" → "✓ Copiado" (ms). Usado en mapa.init, tool.cierres, tool.eventos, tool.navegacion.
+  UI_COPY_FEEDBACK_MS: 1500,
 
   // Render: defer setData a siguiente frame para reducir jank (requestAnimationFrame)
   RENDER_DEFER_SETDATA_FRAME: true,

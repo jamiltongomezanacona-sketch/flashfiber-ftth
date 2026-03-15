@@ -9,7 +9,7 @@
   const App = window.__FTTH_APP__;
   const CONFIG = window.__FTTH_CONFIG__;
   if (!App) return;
-  const copyResetMs = CONFIG?.DEBOUNCE?.COPY_BUTTON_RESET_MS ?? 1500;
+  const copyResetMs = CONFIG?.UI_COPY_FEEDBACK_MS ?? 1500;
   const log = window.__FTTH_LOG__;
 
   // ✅ Asegurar contenedor de herramientas

@@ -9,6 +9,7 @@
   const ROTATE_STEP = 15; // grados por clic en botones girar
 
   const App = window.__FTTH_APP__;
+  const log = window.__FTTH_LOG__;
   if (!App) return;
 
   window.initMapControls = function () {
@@ -32,7 +33,7 @@
         map.easeTo({ pitch: 30, duration: 200 });
 
         btnRotate.classList.add("active");
-        console.log("🧭 Giro ACTIVADO");
+        if (log) log("log", "🧭 Giro ACTIVADO");
 
       } else {
         // 🔒 PLANO (SIN GIRAR, CON ZOOM)
@@ -47,7 +48,7 @@
         });
 
         btnRotate.classList.remove("active");
-        console.log("🧭 Giro DESACTIVADO");
+        if (log) log("log", "🧭 Giro DESACTIVADO");
       }
     });
 

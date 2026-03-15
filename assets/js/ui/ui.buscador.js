@@ -1601,13 +1601,21 @@
       }
     }
 
-    // Hacer zoom al resultado
+    // Hacer zoom al resultado (flyToQueued evita solapar animaciones)
     const zoomLevel = result.type === "central" ? 15 : (result.type === "direccion" ? 17 : (result.type === "molecula" ? 16 : (result.type === "ruta" || result.type === "correccion" ? 15 : 17)));
-    App.map.flyTo({
-      center: result.coordinates,
-      zoom: zoomLevel,
-      duration: MAP_FLYTO_DURATION_MS
-    });
+    if (typeof App.flyToQueued === "function") {
+      App.flyToQueued({
+        center: result.coordinates,
+        zoom: zoomLevel,
+        duration: MAP_FLYTO_DURATION_MS
+      });
+    } else {
+      App.map.flyTo({
+        center: result.coordinates,
+        zoom: zoomLevel,
+        duration: MAP_FLYTO_DURATION_MS
+      });
+    }
 
     // Si el usuario mueve el mapa durante el flyTo, cancelar la animación para que no se bloquee
     App.map.once("movestart", function () {

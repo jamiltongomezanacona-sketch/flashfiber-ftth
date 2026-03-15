@@ -312,15 +312,15 @@
                   }
                 } catch (addError) {
                   // Silenciar errores de iconos faltantes (404, etc.) - se usarán pins generados
-                  if (!addError.message?.includes('404') && !addError.message?.includes('Not Found')) {
-                    console.debug(`ℹ️ No se pudo agregar icono ${e.id}, se usará pin generado`);
+                  if (!addError.message?.includes('404') && !addError.message?.includes('Not Found') && log) {
+                    log("log", "ℹ️ No se pudo agregar icono", e.id, ", se usará pin generado");
                   }
                 }
               })
               .catch((error) => {
                 // Silenciar errores 404 de iconos faltantes - se usarán pins generados automáticamente
-                if (!error.message?.includes('404') && !error.message?.includes('Not Found') && !error.message?.includes('Could not load image')) {
-                  console.debug(`ℹ️ Icono ${e.id} no disponible, se usará pin generado`);
+                if (!error.message?.includes('404') && !error.message?.includes('Not Found') && !error.message?.includes('Could not load image') && log) {
+                  log("log", "ℹ️ Icono", e.id, "no disponible, se usará pin generado");
                 }
               });
           }
@@ -401,7 +401,7 @@
 
       // Verificar que el mapa esté listo antes de aplicar zoom
       if (!map.isStyleLoaded() || !map.loaded()) {
-        console.debug("ℹ️ Mapa no completamente cargado para zoom a Santa Inés. Reintentando...");
+        if (log) log("log", "ℹ️ Mapa no completamente cargado para zoom a Santa Inés. Reintentando...");
         setTimeout(zoomToSantaInes, CONFIG.MAP_TIMING?.ZOOM_SANTA_INES_MS ?? 500);
         return;
       }
@@ -416,7 +416,7 @@
     } catch (error) {
       // Silenciar errores de zoom si el mapa no está completamente listo
       if (error.message?.includes('Invalid LngLat') || error.message?.includes('NaN')) {
-        console.debug("ℹ️ Zoom a Santa Inés omitido (mapa no completamente listo)");
+        if (log) log("log", "ℹ️ Zoom a Santa Inés omitido (mapa no completamente listo)");
       } else {
         console.error("❌ Error aplicando zoom a Santa Inés:", error);
       }
@@ -1164,7 +1164,7 @@
           
         } catch (err) {
           // Silenciar advertencias de iconos faltantes - se usarán pins generados automáticamente
-          console.debug(`ℹ️ Algunos iconos personalizados no están disponibles, se usarán pins generados`);
+          if (log) log("log", "ℹ️ Algunos iconos personalizados no están disponibles, se usarán pins generados");
         }
         
         // NO BLOQUEAR - Continuar inmediatamente con la creación de la capa

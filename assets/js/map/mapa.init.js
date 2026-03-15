@@ -63,7 +63,7 @@
       if (typeof saved.pitch === "number") mapOpts.pitch = saved.pitch;
     }
   } catch (e) {
-    if (CONFIG?.DEBUG) console.debug("[mapa.init] localStorage vista mapa", e?.message);
+    if (CONFIG?.DEBUG && log) log("log", "[mapa.init] localStorage vista mapa", e?.message);
   }
   const map = new mapboxgl.Map(mapOpts);
 
@@ -71,7 +71,7 @@
   map.on("error", function (e) {
     var msg = (e && e.error && e.error.message) ? String(e.error.message) : "";
     if (msg && (msg.indexOf("style") !== -1 || e.error && e.error.status === 401)) {
-      console.warn("⚠️ Error de estilo del mapa (revisa MAPBOX_TOKEN):", msg);
+      if (log) log("warn", "⚠️ Error de estilo del mapa (revisa MAPBOX_TOKEN):", msg);
       if (log) log("warn", "Si persiste 'Style is not done loading', verifica en https://account.mapbox.com/ que el token sea válido y tenga permiso 'styles:read'.");
     }
   });
@@ -88,7 +88,7 @@
         pitch: map.getPitch()
       }));
     } catch (e) {
-      if (CONFIG?.DEBUG) console.debug("[mapa.init] persistMapView", e?.message);
+      if (CONFIG?.DEBUG && log) log("log", "[mapa.init] persistMapView", e?.message);
     }
   }
   map.on("moveend", function () {
@@ -117,10 +117,16 @@
 
   // Registrar mapa
   App.setMap(map);
+  // ✅ Un solo flyTo a la vez: cancela animación anterior para no solapar (B.2 buenas prácticas)
+  App.flyToQueued = function (options) {
+    if (!App.map) return;
+    App.map.stop();
+    App.map.flyTo(options);
+  };
   try {
     window.dispatchEvent(new CustomEvent("ftth-map-ready"));
   } catch (e) {
-    if (CONFIG?.DEBUG) console.debug("[mapa.init] ftth-map-ready", e?.message);
+    if (CONFIG?.DEBUG && log) log("log", "[mapa.init] ftth-map-ready", e?.message);
   }
 
   /* ===============================
@@ -200,7 +206,7 @@
             if (navigator.clipboard && navigator.clipboard.writeText) {
               navigator.clipboard.writeText(text).then(function () {
                 btnCopy.textContent = "✓ Copiado";
-                setTimeout(function () { btnCopy.textContent = "📋 Copiar coordenada"; }, CONFIG.DEBOUNCE?.COPY_BUTTON_RESET_MS ?? 1500);
+                setTimeout(function () { btnCopy.textContent = "📋 Copiar coordenada"; }, CONFIG.UI_COPY_FEEDBACK_MS ?? 1500);
               }).catch(function () { fallbackCopy(text, btnCopy); });
             } else {
               fallbackCopy(text, btnCopy);
@@ -236,7 +242,7 @@
             document.execCommand("copy");
             document.body.removeChild(ta);
             button.textContent = "✓ Copiado";
-            setTimeout(function () { button.textContent = "📋 Copiar coordenada"; }, CONFIG.DEBOUNCE?.COPY_BUTTON_RESET_MS ?? 1500);
+            setTimeout(function () { button.textContent = "📋 Copiar coordenada"; }, CONFIG.UI_COPY_FEEDBACK_MS ?? 1500);
           } catch (err) {
             alert("Coordenadas: " + text);
           }

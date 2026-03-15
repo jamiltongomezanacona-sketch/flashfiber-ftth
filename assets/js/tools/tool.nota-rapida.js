@@ -88,7 +88,7 @@
             source: SOURCE_ID,
             layout: {
               "text-field": "▼",
-              "text-size": 36,
+              "text-size": 52,
               "text-anchor": "bottom",
               "text-allow-overlap": true,
               "text-ignore-placement": true
@@ -96,7 +96,7 @@
             paint: {
               "text-color": "#9c27b0",
               "text-halo-color": "#ffffff",
-              "text-halo-width": 3
+              "text-halo-width": 4
             }
           },
           beforeId

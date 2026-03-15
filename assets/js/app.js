@@ -80,10 +80,20 @@ if (typeof window !== "undefined" && window.__FTTH_INITIALIZER__) {
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/sw.js")
+    const swUrl = "/sw.js";
+    fetch(swUrl, { method: "HEAD" })
+      .then(r => {
+        if (!r.ok) throw new Error("sw.js no encontrado (404). Despliega la carpeta dist como raíz.");
+        return navigator.serviceWorker.register(swUrl);
+      })
       .then(() => { const l = window.__FTTH_LOG__; if (l) l("log", "📱 PWA activa"); else console.log("📱 PWA activa"); })
-      .catch(err => console.error("❌ Error SW", err));
+      .catch(err => {
+        if (err.message && err.message.includes("404")) {
+          console.info("ℹ️ PWA no disponible:", err.message, "→ Ejecuta 'npm run build' y sirve el contenido de dist/ como raíz del sitio (p. ej. Vercel con Output Directory = dist).");
+        } else {
+          console.error("❌ Error SW", err);
+        }
+      });
   });
 }
 export {};

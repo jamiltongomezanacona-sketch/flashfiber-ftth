@@ -31,6 +31,9 @@
 </head>
 
 <body class="app-map app-map-corporativo" data-gis="corporativo">
+  <div id="deploy-error-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#b91c1c;color:#fff;padding:12px 16px;font-size:14px;font-family:Inter,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+    <strong>⚠️ Error de despliegue:</strong> <code>ftth-bundle.js</code> no se encuentra (404). Ejecuta <code>npm run build</code> y sirve la carpeta <strong>dist</strong> como raíz del sitio (en Vercel: Output Directory = <code>dist</code>).
+  </div>
   <script>window.__GEOJSON_INDEX__ = "../geojson/index-corporativo.json";</script>
 
   <header class="header">
@@ -427,8 +430,16 @@
 
 <!-- Bundle JS (mismo que GIS FTTH: evita errores por export en scripts clásicos y asegura carga de capas) -->
 <script type="module" src="/ftth-bundle.js"></script>
-
-
+<script>
+  (function() {
+    setTimeout(function() {
+      if (!window.__FTTH_APP__) {
+        var b = document.getElementById("deploy-error-banner");
+        if (b) b.style.display = "block";
+      }
+    }, 3000);
+  })();
+</script>
 
 </body>
 

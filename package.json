@@ -2,6 +2,9 @@
   "name": "flashfiber-ftth",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "npm run build:js && npm run build:geojson && node scripts/copy-static-to-dist.js && node scripts/write-supabase-env.js && node scripts/write-config-production.js",
     "prepare": "node scripts/ensure-supabase-env.js",

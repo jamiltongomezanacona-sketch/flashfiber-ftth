@@ -27,9 +27,16 @@ const copies = [
 for (const [src, dest] of copies) {
   const srcPath = path.join(root, src);
   const destPath = path.join(dist, dest);
-  if (existsSync(srcPath)) {
-    cpSync(srcPath, destPath, { recursive: true });
-    console.log("  📄", src, "→ dist/" + dest);
+  try {
+    if (existsSync(srcPath)) {
+      cpSync(srcPath, destPath, { recursive: true });
+      console.log("  📄", src, "→ dist/" + dest);
+    } else {
+      console.warn("  ⚠️ No encontrado:", src, "(se omite)");
+    }
+  } catch (err) {
+    console.error("  ❌ Error copiando", src, "→", err.message);
+    throw err;
   }
 }
 

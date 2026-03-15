@@ -107,7 +107,7 @@
             type: "symbol",
             source: SOURCE_ID,
             layout: {
-              "text-field": ["coalesce", ["get", "texto"], "Comentario"],
+              "text-field": ["coalesce", ["get", "texto"], "Comentarios"],
               "text-size": 14,
               "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
               "text-anchor": "bottom",
@@ -137,11 +137,12 @@
       const src = map?.getSource(SOURCE_ID);
       if (src) src.setData(notasToGeoJSON());
       const mol = App._selectedMoleculaForPins;
+      const show = active && mol;
       [LAYER_ID, LAYER_LABEL_ID].forEach((lid) => {
         if (map && map.getLayer(lid)) {
           try {
             map.setFilter(lid, mol ? ["==", ["get", "molecula"], mol] : null);
-            map.setLayoutProperty(lid, "visibility", mol ? "visible" : "none");
+            map.setLayoutProperty(lid, "visibility", show ? "visible" : "none");
           } catch (e) {}
         }
       });
@@ -209,7 +210,7 @@
 
     function openModalAdd(lng, lat, molecula) {
       const central = getCentralFromMolecula(molecula);
-      const texto = window.prompt("Comentario (punto en " + molecula + "):", "");
+      const texto = window.prompt("Comentarios (punto en " + molecula + "):", "");
       if (texto === null) return;
       const FB = window.FTTH_FIREBASE;
       FB.guardarNota({
@@ -254,12 +255,12 @@
       const content = document.createElement("div");
       content.className = "popup pin-popup pin-popup-card";
       content.innerHTML =
-        '<div class="pin-popup-header"><div class="pin-popup-header-icon">💬</div><h3 class="pin-popup-title">Comentario</h3></div>' +
+        '<div class="pin-popup-header"><div class="pin-popup-header-icon">💬</div><h3 class="pin-popup-title">Comentarios</h3></div>' +
         '<div class="pin-popup-body">' +
         '<div class="pin-popup-row"><span class="pin-popup-label">Molécula</span><span class="pin-popup-value">' +
         escapeHtml(nota.molecula) +
         "</span></div>" +
-        '<div class="pin-popup-row pin-popup-row-notes"><span class="pin-popup-label">Comentario</span><div class="pin-popup-notes-scroll"><span class="pin-popup-value">' +
+        '<div class="pin-popup-row pin-popup-row-notes"><span class="pin-popup-label">Comentarios</span><div class="pin-popup-notes-scroll"><span class="pin-popup-value">' +
         escapeHtml(nota.texto || "—") +
         "</span></div></div>" +
         '</div><div class="pin-popup-actions pin-popup-actions-nota">' +

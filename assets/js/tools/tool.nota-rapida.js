@@ -116,8 +116,8 @@
               "text-ignore-placement": false
             },
             paint: {
-              "text-color": "#ffffff",
-              "text-halo-color": "#1a1a2e",
+              "text-color": "#1b5e20",
+              "text-halo-color": "#ffffff",
               "text-halo-width": 2
             }
           },
@@ -217,15 +217,22 @@
         lng,
         lat,
         texto: (texto || "").trim()
-      }).catch((err) => {
-        const msg = err?.message || err?.error_description || (err && typeof err === "object" ? (err.message || err.code || JSON.stringify(err)) : String(err));
-        console.error("Error guardando nota:", err);
-        if (/does not exist|relation.*notas_rapidas|404|PGRST116/i.test(String(msg))) {
-          alert("La tabla 'notas_rapidas' no existe en Supabase.\n\nCrea la tabla con el SQL de docs/NOTA_RAPIDA_PIN.md (Supabase → SQL Editor) y activa Realtime para esa tabla.");
-        } else {
-          alert("No se pudo guardar la nota: " + msg);
-        }
-      });
+      })
+        .then((doc) => {
+          if (doc) {
+            notasList.push(doc);
+            syncNotasToMap();
+          }
+        })
+        .catch((err) => {
+          const msg = err?.message || err?.error_description || (err && typeof err === "object" ? (err.message || err.code || JSON.stringify(err)) : String(err));
+          console.error("Error guardando nota:", err);
+          if (/does not exist|relation.*notas_rapidas|404|PGRST116/i.test(String(msg))) {
+            alert("La tabla 'notas_rapidas' no existe en Supabase.\n\nCrea la tabla con el SQL de docs/NOTA_RAPIDA_PIN.md (Supabase → SQL Editor) y activa Realtime para esa tabla.");
+          } else {
+            alert("No se pudo guardar la nota: " + msg);
+          }
+        });
     }
 
     function closeModalAdd() {
@@ -264,21 +271,28 @@
         popup.remove();
         const nuevo = window.prompt("Editar comentario:", nota.texto || "");
         if (nuevo !== null) {
+          const id = nota.id;
           const errMsg = (e) => e?.message || e?.error_description || (e && typeof e === "object" ? String(e.message || e.code || "") : String(e));
-          window.FTTH_FIREBASE.actualizarNota(nota.id, { texto: nuevo }).catch((e) => alert("Error al actualizar: " + (errMsg(e) || "revisa la consola")));
+          // Actualizar al instante en mapa (optimista)
+          const idx = notasList.findIndex((n) => String(n.id) === String(id));
+          if (idx >= 0) {
+            notasList[idx] = { ...notasList[idx], texto: nuevo };
+            syncNotasToMap();
+          }
+          window.FTTH_FIREBASE.actualizarNota(id, { texto: nuevo }).catch((e) => alert("Error al actualizar: " + (errMsg(e) || "revisa la consola")));
         }
       });
       content.querySelector('[data-pin-action="delete"]')?.addEventListener("click", () => {
         if (!confirm("¿Borrar este comentario? Esta acción no se puede deshacer.")) return;
-        const codigo = window.prompt("Código para borrar (evitar borrados por error):");
-        const esperado = CONFIG.DELETE_PIN || "7431";
-        if (codigo !== esperado) {
-          alert("Código incorrecto");
-          return;
-        }
+        const id = nota.id;
         popup.remove();
+        // Desaparecer al instante (optimista)
+        notasList = notasList.filter((n) => String(n.id) !== String(id));
+        syncNotasToMap();
         const errMsg = (e) => e?.message || e?.error_description || (e && typeof e === "object" ? String(e.message || e.code || "") : String(e));
-        window.FTTH_FIREBASE.eliminarNota(nota.id).catch((e) => alert("Error al borrar: " + (errMsg(e) || "revisa la consola")));
+        window.FTTH_FIREBASE.eliminarNota(id).catch((e) => {
+          alert("Error al borrar: " + (errMsg(e) || "revisa la consola"));
+        });
       });
     }
 

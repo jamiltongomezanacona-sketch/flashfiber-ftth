@@ -6,7 +6,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "npm run build:js && npm run build:geojson && node scripts/copy-static-to-dist.js && node scripts/write-supabase-env.js && node scripts/write-config-production.js",
+    "build": "npm run build:js && npm run build:geojson && node scripts/copy-static-to-dist.js && node scripts/cache-bust-dist.js && node scripts/write-supabase-env.js && node scripts/write-config-production.js",
     "prepare": "node scripts/ensure-supabase-env.js",
     "build:js": "npx vite build",
     "build:geojson": "node scripts/build-consolidado-geojson.js",

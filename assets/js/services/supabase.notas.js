@@ -35,10 +35,10 @@ async function guardarNota(nota) {
     texto: String(nota.texto ?? "").trim(),
     created_by: userId
   };
-  const { data, error } = await supabase.from(TABLE).insert(payload).select("id").single();
+  const { data, error } = await supabase.from(TABLE).insert(payload).select("*").single();
   if (error) throw error;
   console.log("📌 Nota rápida guardada:", data.id);
-  return data.id;
+  return rowToDoc(data);
 }
 
 async function actualizarNota(id, data) {

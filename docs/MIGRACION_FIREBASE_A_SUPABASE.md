@@ -4,6 +4,52 @@ Pasos ordenados para cambiar el backend de **Firebase** (Auth, Firestore, Storag
 
 ---
 
+## La manera más fácil de migrar lo que falta (datos)
+
+Si la app **ya usa Supabase** y solo te falta **pasar los datos** de Firebase a Supabase:
+
+### 1. Exportar desde Firebase
+
+- **Firestore:** En [Firebase Console](https://console.firebase.google.com) → tu proyecto → **Firestore** → cada colección (`cierres`, `eventos`, `eventos_corporativo`, `rutas`). Puedes exportar con un script o copiar manualmente:
+  - Opción A: Usar la extensión o script que genere JSON por colección (por ejemplo `cierres.json`, `eventos.json`, etc.).
+  - Opción B: Si tienes pocos registros, en **Table Editor** de Firestore puedes copiar y pegar en archivos JSON con formato `[{ "id": "...", "codigo": "...", ... }, ...]`.
+- Crea una carpeta, por ejemplo `backup/firestore/`, y guarda ahí: `cierres.json`, `eventos.json`, `eventos_corporativo.json`, `rutas.json`.  
+  Cada archivo puede ser un **array de objetos** `[{ ... }, { ... }]` o un **objeto por id** `{ "id1": { ... }, "id2": { ... } }`.
+
+### 2. Ejecutar el script de migración
+
+En la raíz del proyecto, con **Node.js** y variables de entorno de Supabase:
+
+**PowerShell (Windows):**
+
+```powershell
+$env:SUPABASE_URL="https://TU_PROYECTO.supabase.co"
+$env:SUPABASE_ANON_KEY="tu_clave_anon_publica"
+node scripts/migrar-firebase-to-supabase.js
+```
+
+Por defecto el script busca la carpeta `backup/firestore/`. Para otra ruta:
+
+```powershell
+node scripts/migrar-firebase-to-supabase.js --path=backup/firestore/2025-03-12
+```
+
+**Bash (Linux/Mac):**
+
+```bash
+export SUPABASE_URL="https://TU_PROYECTO.supabase.co"
+export SUPABASE_ANON_KEY="tu_clave_anon_publica"
+node scripts/migrar-firebase-to-supabase.js
+```
+
+El script inserta (o actualiza por `id`) en las tablas `cierres`, `eventos`, `eventos_corporativo` y `rutas`. Los **usuarios** debes crearlos en Supabase → Authentication y en la tabla `usuarios` (mismo `id` que en Auth).
+
+### 3. Comprobar
+
+En **Supabase → Table Editor** revisa que las tablas tengan los registros. Si algo falla, revisa la consola donde ejecutaste el script (errores por RLS, columnas faltantes, etc.).
+
+---
+
 ## ✅ Implementación realizada (Paso 4)
 
 La capa de servicios Supabase ya está creada y conectada:

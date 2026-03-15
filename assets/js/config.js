@@ -71,10 +71,8 @@ window.__FTTH_CONFIG__ = {
   }
 };
 
-// Aviso solo si no hay token
-if (!window.__FTTH_CONFIG__.MAPBOX_TOKEN) {
-  console.warn("⚠️ MAPBOX_TOKEN no configurado. Crea config.local.js desde config.local.example.js.");
-}
+// El aviso de MAPBOX_TOKEN se muestra solo al abrir una pantalla con mapa (mapa.init.js, mapa-eventos.js),
+// así la pantalla de login carga sin mensajes ni demoras.
 
 // Helper de log: solo escribe en consola si CONFIG.DEBUG (útil para reducir ruido en producción)
 window.__FTTH_LOG__ = function (level, ...args) {

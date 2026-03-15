@@ -9,6 +9,7 @@
 
   const CONFIG = window.__FTTH_CONFIG__ || {};
   const LAYER_ID = CONFIG.LAYERS?.NOTAS || "notas-layer";
+  const LAYER_LABEL_ID = "notas-layer-label";
   const SOURCE_ID = "notas-src";
   const log = window.__FTTH_LOG__;
 
@@ -73,6 +74,7 @@
       if (!map.getSource(SOURCE_ID)) {
         map.addSource(SOURCE_ID, { type: "geojson", data: notasToGeoJSON() });
       }
+      const beforeId = map.getLayer("geojson-lines") ? undefined : undefined;
       try {
         map.addLayer(
           {
@@ -80,17 +82,44 @@
             type: "symbol",
             source: SOURCE_ID,
             layout: {
-              "text-field": "📌",
-              "text-size": 22,
+              "text-field": "▼",
+              "text-size": 28,
               "text-anchor": "bottom",
               "text-allow-overlap": true,
               "text-ignore-placement": true
             },
-            paint: { "text-halo-color": "#0a1929", "text-halo-width": 2 }
+            paint: {
+              "text-color": "#ff6600",
+              "text-halo-color": "#ffffff",
+              "text-halo-width": 3
+            }
           },
-          map.getLayer("geojson-lines") ? undefined : undefined
+          beforeId
+        );
+        map.addLayer(
+          {
+            id: LAYER_LABEL_ID,
+            type: "symbol",
+            source: SOURCE_ID,
+            layout: {
+              "text-field": ["coalesce", ["get", "texto"], "—"],
+              "text-size": 14,
+              "text-anchor": "bottom",
+              "text-offset": [0, -1.2],
+              "text-max-width": 12,
+              "text-allow-overlap": true,
+              "text-ignore-placement": false
+            },
+            paint: {
+              "text-color": "#ffffff",
+              "text-halo-color": "#1a1a2e",
+              "text-halo-width": 2
+            }
+          },
+          beforeId
         );
         map.setLayoutProperty(LAYER_ID, "visibility", "none");
+        map.setLayoutProperty(LAYER_LABEL_ID, "visibility", "none");
       } catch (e) {
         if (log) log("warn", "notas layer add:", e.message);
       }
@@ -101,12 +130,14 @@
       const src = map?.getSource(SOURCE_ID);
       if (src) src.setData(notasToGeoJSON());
       const mol = App._selectedMoleculaForPins;
-      if (map && map.getLayer(LAYER_ID)) {
-        try {
-          map.setFilter(LAYER_ID, mol ? ["==", ["get", "molecula"], mol] : null);
-          map.setLayoutProperty(LAYER_ID, "visibility", mol ? "visible" : "none");
-        } catch (e) {}
-      }
+      [LAYER_ID, LAYER_LABEL_ID].forEach((lid) => {
+        if (map && map.getLayer(lid)) {
+          try {
+            map.setFilter(lid, mol ? ["==", ["get", "molecula"], mol] : null);
+            map.setLayoutProperty(lid, "visibility", mol ? "visible" : "none");
+          } catch (e) {}
+        }
+      });
     }
 
     function onNotaReceived(doc) {

@@ -376,15 +376,18 @@
     if (typeof App.applySavedRoutesMoleculaFilter === "function") {
       App.applySavedRoutesMoleculaFilter(selectedMoleculaForPins);
     }
-    // Notas rápidas: mismo filtro por molécula
+    // Notas rápidas: flecha + etiqueta de texto (mismo filtro por molécula)
     const NOTAS_LAYER = (window.__FTTH_CONFIG__?.LAYERS?.NOTAS) || "notas-layer";
-    if (App.map.getLayer(NOTAS_LAYER)) {
-      try {
-        const filterNotas = selectedMoleculaForPins ? ["==", ["get", "molecula"], selectedMoleculaForPins] : null;
-        App.map.setFilter(NOTAS_LAYER, filterNotas);
-        App.map.setLayoutProperty(NOTAS_LAYER, "visibility", showPins ? "visible" : "none");
-      } catch (e) {}
-    }
+    const NOTAS_LABEL_LAYER = "notas-layer-label";
+    [NOTAS_LAYER, NOTAS_LABEL_LAYER].forEach((layerId) => {
+      if (App.map.getLayer(layerId)) {
+        try {
+          const filterNotas = selectedMoleculaForPins ? ["==", ["get", "molecula"], selectedMoleculaForPins] : null;
+          App.map.setFilter(layerId, filterNotas);
+          App.map.setLayoutProperty(layerId, "visibility", showPins ? "visible" : "none");
+        } catch (e) {}
+      }
+    });
   }
 
 

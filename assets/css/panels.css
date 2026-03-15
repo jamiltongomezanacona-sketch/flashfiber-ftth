@@ -1132,6 +1132,10 @@
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+.route-body select {
+  color-scheme: dark;
+}
+
 .route-body input:hover,
 .route-body select:hover,
 .route-body textarea:hover {
@@ -1164,14 +1168,20 @@
   box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.15);
 }
 
-/* Desplegables (select): mismo color que ítem activo del sidebar */
+/* Desplegables (select): fondo oscuro para buen contraste */
 .route-body select:focus {
-  background: rgba(30, 110, 119, 0.85);
+  background: #1e293b;
   border-color: rgba(0, 229, 255, 0.25);
 }
 .route-body select:hover {
-  background: rgba(30, 110, 119, 0.35);
+  background: rgba(30, 41, 59, 0.95);
   border-color: rgba(0, 229, 255, 0.15);
+}
+
+/* Opciones del desplegable: fondo oscuro y texto claro para leer bien (Molécula, Tipo, Central, etc.) */
+.route-body select option {
+  background: #1e293b;
+  color: #f1f5f9;
 }
 
 .route-body input::placeholder,
@@ -1365,7 +1375,15 @@
 /* Opciones en formato legible (capitalize) */
 #eventoModal select {
   text-transform: capitalize;
+  color-scheme: dark;
 }
+
+/* Opciones del desplegable: fondo oscuro y texto claro */
+#eventoModal select option {
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
 /* Opciones placeholder y PROVISIONAL en verde */
 #eventoModal select option.evento-opt-placeholder,
 #eventoModal select option.evento-opt-verde {

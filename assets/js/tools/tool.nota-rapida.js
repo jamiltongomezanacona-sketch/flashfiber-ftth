@@ -126,6 +126,7 @@
         );
         map.setLayoutProperty(LAYER_ID, "visibility", "none");
         map.setLayoutProperty(LAYER_LABEL_ID, "visibility", "none");
+        if (typeof syncNotasToMap === "function") syncNotasToMap();
       } catch (e) {
         if (log) log("warn", "notas layer add:", e.message);
         map.once("load", function () { addNotaLayers(map); });

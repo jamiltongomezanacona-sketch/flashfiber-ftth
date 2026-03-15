@@ -359,7 +359,9 @@
       const showNotasSidebar = showPins && (filterComentarios?.checked === true);
       if (showNotasSidebar && !App.map.getLayer(NOTAS_LAYER) && typeof App.tools?.notaRapida?.ensureLayer === "function") {
         App.tools.notaRapida.ensureLayer();
-        setTimeout(applyPinsVisibility, 350);
+        [350, 700, 1500].forEach(function (delay) {
+          setTimeout(applyPinsVisibility, delay);
+        });
       }
       [NOTAS_LAYER, NOTAS_LABEL_LAYER].forEach(function (layerId) {
         if (App.map.getLayer(layerId)) {

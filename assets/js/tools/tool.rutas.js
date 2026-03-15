@@ -353,25 +353,29 @@
   // Exponer función global para dibujar rutas
   window.drawSavedRoute = drawSavedRoute;
 
-  // Inicializar capa al cargar
-  if (App.map && App.map.isStyleLoaded()) {
-    initSavedRoutesLayer();
-    setTimeout(startRutasSync, 800);
-  } else if (App.map) {
-    App.map.once("load", () => {
+  // B.4: Usar ftth-map-ready cuando el mapa aún no existe; evitar tiempos fijos (800/500 ms)
+  function initRutasWhenReady() {
+    if (!App.map) return;
+    if (App.map.isStyleLoaded()) {
       initSavedRoutesLayer();
-      App.reloadRutas();
-      setTimeout(startRutasSync, 800);
-    });
-  }
-
-  // Reconstruir al cambiar estilo
-  if (App.map) {
+      setTimeout(startRutasSync, 200);
+    } else {
+      App.map.once("load", () => {
+        initSavedRoutesLayer();
+        if (App.reloadRutas) App.reloadRutas();
+        setTimeout(startRutasSync, 200);
+      });
+    }
     App.map.on("style.load", () => {
       initSavedRoutesLayer();
       App.reloadRutas();
-      setTimeout(startRutasSync, 500);
+      setTimeout(startRutasSync, 200);
     });
+  }
+  if (App.map) {
+    initRutasWhenReady();
+  } else {
+    window.addEventListener("ftth-map-ready", initRutasWhenReady, { once: true });
   }
 
   /* ============================

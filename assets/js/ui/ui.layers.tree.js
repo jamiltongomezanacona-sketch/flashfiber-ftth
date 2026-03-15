@@ -36,7 +36,7 @@
         console.log("🔄 Árbol recargado con capas consolidadas");
       }, 400);
     }
-    window.addEventListener("ftth-consolidated-layers-ready", onConsolidatedLayersReady, { once: false });
+    window.addEventListener("ftth-consolidated-layers-ready", onConsolidatedLayersReady, { once: true });
 
     // Fallback: si el evento no llega en 10 s, recargar una vez por si ya hay capas
     setTimeout(() => {

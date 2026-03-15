@@ -205,6 +205,9 @@
     }
   }
 
+  /** B.1: referencia para que hideResults pueda quitar el listener de document (está definido dentro de init) */
+  let removeDocumentClickListenerRef = null;
+
   /* =========================
      Inicialización
   ========================= */
@@ -223,8 +226,9 @@
       }
     });
 
-    // Un solo listener en document para cerrar al hacer clic fuera (resultados + dropdown molécula)
-    document.addEventListener("click", function onDocumentClickCloseBuscadorPanels(e) {
+    // B.1: Listener solo cuando el buscador está abierto; se quita al cerrar para no dejar listener global
+    let documentClickListenerAttached = false;
+    function onDocumentClickCloseBuscadorPanels(e) {
       const mainInput = document.getElementById("searchInput");
       const mainResults = document.getElementById("searchResults");
       const filterSearch = document.getElementById("filterMoleculaSearch");
@@ -235,7 +239,21 @@
       if (filterSearch && filterDropdown && !filterSearch.contains(e.target) && !filterDropdown.contains(e.target)) {
         filterDropdown.classList.add("hidden");
       }
-    });
+      if (mainResults?.classList.contains("hidden") && (!filterDropdown || filterDropdown.classList.contains("hidden"))) {
+        removeDocumentClickListener();
+      }
+    }
+    function addDocumentClickListener() {
+      if (documentClickListenerAttached) return;
+      document.addEventListener("click", onDocumentClickCloseBuscadorPanels);
+      documentClickListenerAttached = true;
+    }
+    function removeDocumentClickListener() {
+      if (!documentClickListenerAttached) return;
+      document.removeEventListener("click", onDocumentClickCloseBuscadorPanels);
+      documentClickListenerAttached = false;
+    }
+    removeDocumentClickListenerRef = removeDocumentClickListener;
 
     if (isCorporativo) {
       // GIS Corporativo: solo los 235 cables de CABLES (no centrales/cierres/eventos FTTH)
@@ -582,12 +600,15 @@
       setSelectedMoleculaForPins(value || null, { fromSearch: !!value });
       searchInput.value = value || "";
       dropdown.classList.add("hidden");
+      const sr = document.getElementById("searchResults");
+      if (sr && sr.classList.contains("hidden") && removeDocumentClickListenerRef && typeof removeDocumentClickListenerRef === "function") removeDocumentClickListenerRef();
     }
 
     function openDropdown() {
       const q = searchInput.value.trim();
       renderDropdown(filterByQuery(q), q);
       dropdown.classList.remove("hidden");
+      if (typeof addDocumentClickListener === "function") addDocumentClickListener();
     }
 
     function closeDropdown() {
@@ -1355,6 +1376,7 @@
       if (retryCount < SEARCH_MAX_RETRIES) {
         searchResults.innerHTML = `<div class="search-no-results"><i class="fas fa-spinner fa-spin"></i><div>Cargando índice de búsqueda...</div></div>`;
         searchResults.classList.remove("hidden");
+        addDocumentClickListener();
         if (isCorporativo) loadCablesCorporativo(); else { loadCentrales(); loadCables(); }
         setTimeout(() => performSearch(query, retryCount + 1), SEARCH_RETRY_DELAY_MS);
       } else {
@@ -1478,6 +1500,7 @@
         </div>
       `;
       searchResults.classList.remove("hidden");
+      addDocumentClickListener();
       return;
     }
     
@@ -1518,6 +1541,7 @@
     
     searchResults.innerHTML = html;
     searchResults.classList.remove("hidden");
+    addDocumentClickListener();
   }
 
   /* =========================
@@ -1840,6 +1864,10 @@
 
   function hideResults() {
     searchResults.classList.add("hidden");
+    const filterDropdown = document.getElementById("filterMoleculaDropdown");
+    if (!filterDropdown || filterDropdown.classList.contains("hidden")) {
+      if (removeDocumentClickListenerRef && typeof removeDocumentClickListenerRef === "function") removeDocumentClickListenerRef();
+    }
   }
 
   // Auto-inicializar cuando el DOM esté listo

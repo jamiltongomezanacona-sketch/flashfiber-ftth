@@ -117,9 +117,9 @@
               "text-ignore-placement": false
             },
             paint: {
-              "text-color": "#1b5e20",
-              "text-halo-color": "#ffffff",
-              "text-halo-width": 2
+              "text-color": "#81c784",
+              "text-halo-color": "#000000",
+              "text-halo-width": 3
             }
           },
           beforeId

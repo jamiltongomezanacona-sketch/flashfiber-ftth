@@ -31,20 +31,24 @@
 
     // Recargar árbol cuando las capas consolidadas estén listas (evento en lugar de setInterval)
     function onConsolidatedLayersReady() {
+      const CONFIG = window.__FTTH_CONFIG__;
+      const delay = CONFIG?.MAP_TIMING?.LAYERS_TREE_LOAD_ROOT_MS ?? 400;
       setTimeout(() => {
         loadRoot();
-        console.log("🔄 Árbol recargado con capas consolidadas");
-      }, 400);
+        if (window.__FTTH_LOG__) window.__FTTH_LOG__("log", "🔄 Árbol recargado con capas consolidadas");
+      }, delay);
     }
     window.addEventListener("ftth-consolidated-layers-ready", onConsolidatedLayersReady, { once: true });
 
-    // Fallback: si el evento no llega en 10 s, recargar una vez por si ya hay capas
+    // Fallback: si el evento no llega, recargar una vez por si ya hay capas
+    const CONFIG = window.__FTTH_CONFIG__;
+    const fallbackMs = CONFIG?.MAP_TIMING?.LAYERS_TREE_FALLBACK_MS ?? 10000;
     setTimeout(() => {
       const App = window.__FTTH_APP__;
       if (App?.__ftthLayerIds?.length && App.__ftthLayerIds.some(id => id.startsWith("geojson-") || id.startsWith("ftth-"))) {
         loadRoot();
       }
-    }, 10000);
+    }, fallbackMs);
   }
 
   async function waitForDependencies(maxAttempts = 100) {

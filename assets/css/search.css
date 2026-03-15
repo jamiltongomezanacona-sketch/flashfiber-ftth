@@ -279,6 +279,21 @@
   opacity: 0.5;
 }
 
+.search-load-more {
+  padding: 12px 14px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--accent-cyan);
+  cursor: pointer;
+  border-top: 1px solid var(--border-soft);
+  transition: background 0.15s ease;
+}
+.search-load-more:hover,
+.search-load-more:focus {
+  background: rgba(0, 229, 255, 0.08);
+  outline: none;
+}
+
 /* Scrollbar personalizado */
 .search-results::-webkit-scrollbar {
   width: 6px;

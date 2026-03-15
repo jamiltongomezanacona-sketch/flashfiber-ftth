@@ -59,6 +59,7 @@
   const SEARCH_RETRY_DELAY_MS = CONFIG.SEARCH?.RETRY_DELAY_MS ?? 600;
   const SEARCH_MAX_RETRIES = CONFIG.SEARCH?.MAX_RETRIES ?? 3;
   const SEARCH_MAX_RESULTS = CONFIG.SEARCH?.MAX_RESULTS ?? 20;
+  const SEARCH_DISPLAY_PAGE_SIZE = CONFIG.SEARCH?.DISPLAY_PAGE_SIZE ?? 50;
   const MAP_FLYTO_DURATION_MS = CONFIG.MAP_FLYTO_DURATION_MS ?? 1500;
   const GEOCODE_BOGOTA_BBOX = CONFIG.SEARCH?.GEOCODE_BOGOTA_BBOX ?? [-74.35, 4.46, -73.99, 4.83];
   const GEOCODE_LIMIT = CONFIG.SEARCH?.GEOCODE_LIMIT ?? 5;
@@ -1491,7 +1492,7 @@
   /* =========================
      Renderizar resultados
   ========================= */
-  function renderResults() {
+  function renderResults(maxToShow) {
     if (allResults.length === 0) {
       searchResults.innerHTML = `
         <div class="search-no-results">
@@ -1503,43 +1504,55 @@
       addDocumentClickListener();
       return;
     }
-    
+    const pageSize = typeof maxToShow === "number" && maxToShow > 0 ? maxToShow : SEARCH_DISPLAY_PAGE_SIZE;
+    const toRender = allResults.slice(0, pageSize);
+    const hasMore = allResults.length > pageSize;
+    const remaining = allResults.length - pageSize;
+
+    const rowHtml = (result) => {
+      const rawName = result.type === "cable" ? cableNameForDisplay(result.layerId, result.name) : result.name;
+      const displayName = escapeHtml(rawName != null ? String(rawName) : "");
+      let badge = result.type;
+      if (result.type === "direccion") badge = "dirección";
+      else if (result.type === "molecula") badge = "molécula";
+      else if (result.type === "correccion") badge = "corrección";
+      else if (result.type === "ruta") badge = "ruta";
+      const safeSubtitle = escapeHtml(result.subtitle != null ? String(result.subtitle) : "");
+      const titleHtml = result.type === "direccion" ? displayName : highlightMatch(displayName, currentSearch);
+      const safeId = escapeHtml(String(result.id != null ? result.id : ""));
+      return `
+        <div class="search-result-item" role="option" data-type="${result.type}" data-id="${safeId}">
+          <div class="search-result-icon ${result.type}">${result.icon}</div>
+          <div class="search-result-content">
+            <div class="search-result-title">${titleHtml} <span class="search-result-badge">${escapeHtml(badge)}</span></div>
+            <div class="search-result-subtitle">${safeSubtitle}</div>
+          </div>
+          <input type="checkbox" class="search-result-btn-seleccionar" title="Ubicar en el mapa" aria-label="Seleccionar" unchecked />
+        </div>`;
+    };
+
+    const loadMoreHtml = hasMore
+      ? `<div class="search-load-more" role="button" tabindex="0" data-action="load-more">Mostrar más (${remaining} restantes)</div>`
+      : "";
+
     const html = `
       <div class="search-results-header">
         ${allResults.length} resultado${allResults.length > 1 ? "s" : ""}
       </div>
       <div class="search-results-list" role="listbox" aria-label="Resultados de búsqueda">
-        ${allResults.map(result => {
-          const rawName = result.type === "cable" ? cableNameForDisplay(result.layerId, result.name) : result.name;
-          const displayName = escapeHtml(rawName != null ? String(rawName) : "");
-          let badge = result.type;
-          if (result.type === "direccion") badge = "dirección";
-          else if (result.type === "molecula") badge = "molécula";
-          else if (result.type === "correccion") badge = "corrección";
-          else if (result.type === "ruta") badge = "ruta";
-          const safeSubtitle = escapeHtml(result.subtitle != null ? String(result.subtitle) : "");
-          const titleHtml = result.type === "direccion" ? displayName : highlightMatch(displayName, currentSearch);
-          const safeId = escapeHtml(String(result.id != null ? result.id : ""));
-          return `
-          <div class="search-result-item" role="option" data-type="${result.type}" data-id="${safeId}">
-            <div class="search-result-icon ${result.type}">
-              ${result.icon}
-            </div>
-            <div class="search-result-content">
-              <div class="search-result-title">
-                ${titleHtml}
-                <span class="search-result-badge">${escapeHtml(badge)}</span>
-              </div>
-              <div class="search-result-subtitle">${safeSubtitle}</div>
-            </div>
-            <input type="checkbox" class="search-result-btn-seleccionar" title="Ubicar en el mapa" aria-label="Seleccionar" unchecked />
-          </div>
-        `;
-        }).join("")}
+        ${toRender.map(rowHtml).join("")}
+        ${loadMoreHtml}
       </div>
     `;
-    
+
     searchResults.innerHTML = html;
+    if (hasMore) {
+      const btn = searchResults.querySelector('[data-action="load-more"]');
+      if (btn) {
+        btn.addEventListener("click", () => renderResults(allResults.length));
+        btn.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); renderResults(allResults.length); } });
+      }
+    }
     searchResults.classList.remove("hidden");
     addDocumentClickListener();
   }

@@ -49,7 +49,16 @@ window.__FTTH_CONFIG__ = {
     ENFORCE_AFTER_STYLE_LOAD_MS: 1500,
     LAYER_MISSING_RETRY_MS: 3500,
     ZOOM_RETRY_MS: 100,
-    ZOOM_SANTA_INES_MS: 500
+    ZOOM_SANTA_INES_MS: 500,
+    RESTORE_LOAD_TREE_MS: 400,
+    CENTRALES_INIT_DELAY_MS: 300,
+    STYLE_LOAD_CONSOLIDATED_DELAY_MS: 300,
+    STYLE_LOAD_INIT_DELAY_MS: 500,
+    FITBOUNDS_DURATION_MS: 1000,
+    ZOOM_BOGOTA_DELAY_MS: 500,
+    LAYERS_TREE_LOAD_ROOT_MS: 400,
+    LAYERS_TREE_FALLBACK_MS: 10000,
+    IDLE_CALLBACK_TIMEOUT_MS: 300
   },
 
   MAP: {
@@ -87,6 +96,8 @@ window.__FTTH_CONFIG__ = {
     RETRY_DELAY_MS: 600,
     MAX_RETRIES: 3,
     MAX_RESULTS: 20,
+    /** B.5: máximo resultados mostrados en DOM en la primera vista; si hay más, se muestra botón "Cargar más" */
+    DISPLAY_PAGE_SIZE: 50,
     // Búsqueda de direcciones en Bogotá (Mapbox Geocoding)
     GEOCODE_BOGOTA_BBOX: [-74.35, 4.46, -73.99, 4.83],
     GEOCODE_LIMIT: 5

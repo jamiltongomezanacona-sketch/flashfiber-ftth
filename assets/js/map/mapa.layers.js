@@ -409,7 +409,7 @@
       // Aplicar zoom con padding para mejor visualización
       map.fitBounds(santaInesBounds, {
         padding: { top: 80, bottom: 80, left: 80, right: 80 },
-        duration: 1000,
+        duration: CONFIG.MAP_TIMING?.FITBOUNDS_DURATION_MS ?? 1000,
         maxZoom: 15 // Zoom más cercano para ver el sector en detalle
       });
       if (log) log("log", "🎯 Zoom a Santa Inés aplicado");
@@ -439,11 +439,11 @@
     setTimeout(() => {
       map.fitBounds(bogotaBounds, {
         padding: { top: 50, bottom: 50, left: 50, right: 50 },
-        duration: 1000,
+        duration: CONFIG.MAP_TIMING?.FITBOUNDS_DURATION_MS ?? 1000,
         maxZoom: 13
       });
       if (log) log("log", "🎯 Zoom a Bogotá aplicado");
-    }, 500);
+    }, CONFIG.MAP_TIMING?.ZOOM_BOGOTA_DELAY_MS ?? 500);
   }
 
   /* ===============================
@@ -770,7 +770,7 @@
       let applied = false;
       const runWhenIdle = (fn) => {
         if (typeof requestIdleCallback !== "undefined") {
-          requestIdleCallback(fn, { timeout: 300 });
+          requestIdleCallback(fn, { timeout: CONFIG.MAP_TIMING?.IDLE_CALLBACK_TIMEOUT_MS ?? 300 });
         } else {
           setTimeout(fn, 0);
         }
@@ -1531,7 +1531,7 @@
     setTimeout(() => {
       loadFTTHTree();
       restoring = false;
-    }, 400);
+    }, CONFIG.MAP_TIMING?.RESTORE_LOAD_TREE_MS ?? 400);
   }
 
   /* ===============================
@@ -1727,7 +1727,7 @@
       loadCentralesFijas().catch((err) => {
         if (!handleStyleNotReady(err, () => loadCentralesFijas())) console.error("❌", err);
       });
-    }, 300);
+    }, CONFIG.MAP_TIMING?.CENTRALES_INIT_DELAY_MS ?? 300);
     loadConsolidatedGeoJSONToBaseMap().catch((err) => {
       if (!handleStyleNotReady(err, () => loadConsolidatedGeoJSONToBaseMap())) console.error("❌", err);
     });
@@ -1753,9 +1753,9 @@
         loadConsolidatedGeoJSONToBaseMap().catch((err) => {
           if (!handleStyleNotReady(err, () => loadConsolidatedGeoJSONToBaseMap())) console.error("❌", err);
         });
-      }, 300);
+      }, CONFIG.MAP_TIMING?.STYLE_LOAD_CONSOLIDATED_DELAY_MS ?? 300);
       setTimeout(enforceOnlyCentralesVisible, CONFIG.MAP_TIMING?.ENFORCE_AFTER_STYLE_LOAD_MS ?? 1500);
-    }, 500);
+    }, CONFIG.MAP_TIMING?.STYLE_LOAD_INIT_DELAY_MS ?? 500);
   });
   
   // Limpiar cuando el mapa se destruye

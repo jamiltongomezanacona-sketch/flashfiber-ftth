@@ -211,7 +211,7 @@
     if (!App?.map) return;
     App._lastSavedRoutesMoleculaFilter = moleculaOrNull ?? null;
     if (!App.map.getLayer(SAVED_ROUTES_LAYER)) return;
-    const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || (m) => (m != null && m !== "" ? String(m).trim().toUpperCase() : "");
+    const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || function (m) { return m != null && m !== "" ? String(m).trim().toUpperCase() : ""; };
     const molNorm = normalizeMolecula(moleculaOrNull);
     try {
       if (!molNorm) {

@@ -20,7 +20,7 @@ function rowToDoc(row) {
 }
 
 function toSafePayload(payload) {
-  const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || (m) => (m != null && m !== "" ? String(m).trim().toUpperCase() : "");
+  const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || function (m) { return m != null && m !== "" ? String(m).trim().toUpperCase() : ""; };
   return {
     nombre: String(payload.nombre ?? ""),
     tipo: String(payload.tipo ?? ""),

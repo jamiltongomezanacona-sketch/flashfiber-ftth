@@ -138,7 +138,7 @@
       const src = map.getSource(SOURCE_ID);
       if (src) src.setData(notasToGeoJSON());
       const mol = App._selectedMoleculaForPins;
-      const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || (m) => (m != null && m !== "" ? String(m).trim().toUpperCase() : "");
+      const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || function (m) { return m != null && m !== "" ? String(m).trim().toUpperCase() : ""; };
       const molNorm = normalizeMolecula(mol);
       const fromSearch = !!App._moleculaFromSearch;
       const show = active && molNorm && !fromSearch;

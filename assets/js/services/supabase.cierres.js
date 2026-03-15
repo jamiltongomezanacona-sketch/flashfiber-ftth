@@ -29,7 +29,7 @@ async function guardarCierre(cierre) {
   if (Number.isNaN(lat) || Number.isNaN(lng)) {
     throw new Error("Coordenadas inválidas (lat/lng)");
   }
-  const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || (m) => (m != null && m !== "" ? String(m).trim().toUpperCase() : "");
+  const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || function (m) { return m != null && m !== "" ? String(m).trim().toUpperCase() : ""; };
   const payload = {
     codigo: cierre.codigo ?? "",
     tipo: cierre.tipo ?? "",
@@ -59,7 +59,7 @@ async function actualizarCierre(id, data) {
   // camelCase: PostgREST espera created_at/created_by y falla con "Could not find createdAt".
   const lat = data.lat != null ? Number(data.lat) : undefined;
   const lng = data.lng != null ? Number(data.lng) : undefined;
-  const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || (m) => (m != null && m !== "" ? String(m).trim().toUpperCase() : "");
+  const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || function (m) { return m != null && m !== "" ? String(m).trim().toUpperCase() : ""; };
   const clean = {
     codigo: data.codigo,
     tipo: data.tipo,

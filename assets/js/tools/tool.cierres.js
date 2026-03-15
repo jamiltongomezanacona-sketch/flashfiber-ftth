@@ -464,6 +464,10 @@
         const lat = lngLat.lat != null ? Number(lngLat.lat) : (p.lat != null ? Number(p.lat) : null);
         const lng = lngLat.lng != null ? Number(lngLat.lng) : (p.lng != null ? Number(p.lng) : null);
         const coordsText = (lat != null && lng != null) ? `${lat.toFixed(6)}, ${lng.toFixed(6)}` : "—";
+        const centralKey = p.central || "";
+        const distCentral = (window.__FTTH_CENTRALES__ && window.__FTTH_CENTRALES__.distanciaDesdeCentral && lng != null && lat != null)
+          ? window.__FTTH_CENTRALES__.distanciaDesdeCentral(lng, lat, centralKey)
+          : "—";
 
         const html = `
   <div class="popup pin-popup pin-popup-card" role="dialog" aria-label="Propiedades del cierre">
@@ -472,6 +476,7 @@
       <h3 class="pin-popup-title">${nombrePin}</h3>
     </div>
     <div class="pin-popup-body">
+      <div class="pin-popup-row"><span class="pin-popup-label">Distancia desde central</span><span class="pin-popup-value">${escapeHtml(distCentral)}</span></div>
       <div class="pin-popup-row"><span class="pin-popup-label">Coordenadas</span><span class="pin-popup-value pin-popup-coords">${coordsText}</span></div>
       <div class="pin-popup-row"><span class="pin-popup-label">Fecha de creación</span><span class="pin-popup-value">${escapeHtml(fecha)}</span></div>
       <div class="pin-popup-row"><span class="pin-popup-label">Creado por</span><span class="pin-popup-value">${creadoPor}</span></div>

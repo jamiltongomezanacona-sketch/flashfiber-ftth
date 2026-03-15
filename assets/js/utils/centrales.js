@@ -37,9 +37,46 @@
     });
   }
 
+  /** Coordenadas [lng, lat] de cada central (para calcular distancia pin → central). Origen: centrales-etb.geojson */
+  var CENTRAL_COORDS = {
+    BACHUE: [-74.113013, 4.711564],
+    CHICO: [-74.053421, 4.674773],
+    CUNI: [-74.087926, 4.62991],
+    FONTIBON: [-74.144039, 4.673819],
+    GUAYMARAL: [-74.035133, 4.812858],
+    HOLANDA: [-74.184633, 4.629427],
+    MUZU: [-74.133859, 4.594729],
+    SANTA_INES: [-74.088195, 4.562537],
+    SUBA: [-74.113456, 4.663407],
+    TOBERIN: [-74.04542, 4.750089]
+  };
+
+  /**
+   * Distancia en línea recta desde un punto [lng, lat] hasta la central (en km). Requiere Turf en window.
+   * @param {number} lng - Longitud del pin
+   * @param {number} lat - Latitud del pin
+   * @param {string} centralKey - Clave de central (ej: SANTA_INES, CHICO)
+   * @returns {string} Ej: "1.25 km" o "—" si no hay central o Turf
+   */
+  function distanciaDesdeCentral(lng, lat, centralKey) {
+    if (lng == null || lat == null || !centralKey || typeof centralKey !== "string") return "—";
+    var coords = CENTRAL_COORDS[centralKey.toUpperCase().replace(/\s/g, "_")];
+    if (!coords || !Array.isArray(coords) || coords.length < 2) return "—";
+    if (typeof window.turf !== "undefined" && window.turf.distance) {
+      var from = window.turf.point([Number(lng), Number(lat)]);
+      var to = window.turf.point(coords);
+      var km = window.turf.distance(from, to, { units: "kilometers" });
+      if (km < 1) return (km * 1000).toFixed(0) + " m";
+      return km.toFixed(2) + " km";
+    }
+    return "—";
+  }
+
   window.__FTTH_CENTRALES__ = {
     CENTRAL_PREFIX: CENTRAL_PREFIX,
-    generarMoleculas: generarMoleculas
+    CENTRAL_COORDS: CENTRAL_COORDS,
+    generarMoleculas: generarMoleculas,
+    distanciaDesdeCentral: distanciaDesdeCentral
   };
 })();
 // Compatibilidad ESM para el bundler (entry-ftth.js); la API real está en window.__FTTH_CENTRALES__

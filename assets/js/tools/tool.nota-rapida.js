@@ -253,11 +253,21 @@
       const nota = notasList.find((n) => String(n.id) === String(id));
       if (!nota) return;
 
+      const centralKey = nota.central || getCentralFromMolecula(nota.molecula) || "";
+      const lng = lngLat?.lng != null ? Number(lngLat.lng) : (nota.lng != null ? Number(nota.lng) : null);
+      const lat = lngLat?.lat != null ? Number(lngLat.lat) : (nota.lat != null ? Number(nota.lat) : null);
+      const distCentral = (window.__FTTH_CENTRALES__ && window.__FTTH_CENTRALES__.distanciaDesdeCentral && lng != null && lat != null)
+        ? window.__FTTH_CENTRALES__.distanciaDesdeCentral(lng, lat, centralKey)
+        : "—";
+
       const content = document.createElement("div");
       content.className = "popup pin-popup pin-popup-card";
       content.innerHTML =
         '<div class="pin-popup-header"><div class="pin-popup-header-icon">💬</div><h3 class="pin-popup-title">Comentarios</h3></div>' +
         '<div class="pin-popup-body">' +
+        '<div class="pin-popup-row"><span class="pin-popup-label">Distancia desde central</span><span class="pin-popup-value">' +
+        escapeHtml(distCentral) +
+        "</span></div>" +
         '<div class="pin-popup-row"><span class="pin-popup-label">Molécula</span><span class="pin-popup-value">' +
         escapeHtml(nota.molecula) +
         "</span></div>" +

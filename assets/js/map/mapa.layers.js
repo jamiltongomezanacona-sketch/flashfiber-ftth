@@ -727,20 +727,6 @@
         if (log) log("warn", "⚠️ No hay features para cargar en mapa base");
         return;
       }
-
-      // Re-comprobar estilo tras await (puede haber cambiado o no estar listo)
-      if (!map.isStyleLoaded()) {
-        if (log) log("log", "⏳ Estilo no listo tras cargar datos, reintentando en load...");
-        let done = false;
-        const retry = () => {
-          if (done) return;
-          done = true;
-          setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), 100);
-        };
-        map.once("load", retry);
-        map.once("style.load", retry);
-        return;
-      }
       
       // Verificar si el source ya existe
       if (map.getSource("geojson-consolidado")) {
@@ -857,21 +843,6 @@
       }
       setTimeout(enforceOnlyCentralesVisible, 150);
     } catch (err) {
-      const msg = err && err.message ? String(err.message) : "";
-      if (/style is not done loading/i.test(msg)) {
-        if (log) log("warn", "⏳ Style is not done loading, reintentando en load...");
-        let done = false;
-        const retry = () => {
-          if (done) return;
-          done = true;
-          setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), 100);
-        };
-        if (map) {
-          map.once("load", retry);
-          map.once("style.load", retry);
-        }
-        return;
-      }
       console.error("❌ Error cargando GeoJSON consolidado en mapa base:", err);
     }
   }

@@ -134,13 +134,14 @@
 
     function syncNotasToMap() {
       const map = App.map;
-      const src = map?.getSource(SOURCE_ID);
+      if (!map || !map.isStyleLoaded()) return;
+      const src = map.getSource(SOURCE_ID);
       if (src) src.setData(notasToGeoJSON());
       const mol = App._selectedMoleculaForPins;
       const fromSearch = !!App._moleculaFromSearch;
       const show = active && mol && !fromSearch;
       [LAYER_ID, LAYER_LABEL_ID].forEach((lid) => {
-        if (map && map.getLayer(lid)) {
+        if (map.getLayer(lid)) {
           try {
             map.setFilter(lid, mol ? ["==", ["get", "molecula"], mol] : null);
             map.setLayoutProperty(lid, "visibility", show ? "visible" : "none");

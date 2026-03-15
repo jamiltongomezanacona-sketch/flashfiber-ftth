@@ -137,7 +137,8 @@
       const src = map?.getSource(SOURCE_ID);
       if (src) src.setData(notasToGeoJSON());
       const mol = App._selectedMoleculaForPins;
-      const show = active && mol;
+      const fromSearch = !!App._moleculaFromSearch;
+      const show = active && mol && !fromSearch;
       [LAYER_ID, LAYER_LABEL_ID].forEach((lid) => {
         if (map && map.getLayer(lid)) {
           try {

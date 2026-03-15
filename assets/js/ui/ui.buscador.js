@@ -332,7 +332,10 @@
    */
   function setSelectedMoleculaForPins(moleculaOrNull, opts) {
     selectedMoleculaForPins = moleculaOrNull || null;
-    if (App) App._selectedMoleculaForPins = selectedMoleculaForPins;
+    if (App) {
+      App._selectedMoleculaForPins = selectedMoleculaForPins;
+      App._moleculaFromSearch = (opts?.fromSearch === true) && selectedMoleculaForPins != null;
+    }
     const filterCierres = document.getElementById("filterCierres");
     const filterEventos = document.getElementById("filterEventos");
     const filterOcultarPines = document.getElementById("filterOcultarPines");
@@ -376,15 +379,16 @@
     if (typeof App.applySavedRoutesMoleculaFilter === "function") {
       App.applySavedRoutesMoleculaFilter(selectedMoleculaForPins);
     }
-    // Notas rápidas: flecha + etiqueta de texto (mismo filtro por molécula)
+    // Notas rápidas: solo visibles cuando la molécula viene de Capas (no del buscador/filtro)
     const NOTAS_LAYER = (window.__FTTH_CONFIG__?.LAYERS?.NOTAS) || "notas-layer";
     const NOTAS_LABEL_LAYER = "notas-layer-label";
+    const showNotas = showPins && !opts?.fromSearch;
     [NOTAS_LAYER, NOTAS_LABEL_LAYER].forEach((layerId) => {
       if (App.map.getLayer(layerId)) {
         try {
           const filterNotas = selectedMoleculaForPins ? ["==", ["get", "molecula"], selectedMoleculaForPins] : null;
           App.map.setFilter(layerId, filterNotas);
-          App.map.setLayoutProperty(layerId, "visibility", showPins ? "visible" : "none");
+          App.map.setLayoutProperty(layerId, "visibility", showNotas ? "visible" : "none");
         } catch (e) {}
       }
     });
@@ -474,7 +478,7 @@
 
     function selectMolecula(value) {
       select.value = value || "";
-      setSelectedMoleculaForPins(value || null);
+      setSelectedMoleculaForPins(value || null, { fromSearch: !!value });
       searchInput.value = value || "";
       dropdown.classList.add("hidden");
     }
@@ -1550,7 +1554,7 @@
           console.warn("⚠️ Filtro molécula:", e);
         }
         if (typeof App.setSelectedMoleculaForPins === "function") {
-          App.setSelectedMoleculaForPins(result.id, { keepCablesVisible: true });
+          App.setSelectedMoleculaForPins(result.id, { keepCablesVisible: true, fromSearch: true });
         }
         if (typeof App.showPinsWhenCableActivated === "function") {
           App.showPinsWhenCableActivated(null, result.id);
@@ -1615,13 +1619,13 @@
           App.showPinsWhenCableActivated(result.layerId, result.molecula || getMoleculaFromCable(result));
         }
         if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
-          App.setSelectedMoleculaForPins(result.molecula, { keepCablesVisible: true });
+          App.setSelectedMoleculaForPins(result.molecula, { keepCablesVisible: true, fromSearch: true });
         }
       }
     }
     if (result.type === "cierre") {
       if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
-        App.setSelectedMoleculaForPins(result.molecula);
+        App.setSelectedMoleculaForPins(result.molecula, { fromSearch: true });
       }
       if (App.map.getLayer(LAYER_CIERRES)) {
         App.map.setLayoutProperty(LAYER_CIERRES, "visibility", "visible");
@@ -1631,7 +1635,7 @@
     }
     if (result.type === "evento") {
       if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
-        App.setSelectedMoleculaForPins(result.molecula);
+        App.setSelectedMoleculaForPins(result.molecula, { fromSearch: true });
       }
       if (App.map.getLayer(LAYER_EVENTOS)) {
         App.map.setLayoutProperty(LAYER_EVENTOS, "visibility", "visible");
@@ -1656,7 +1660,7 @@
         }
       }
       if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
-        App.setSelectedMoleculaForPins(result.molecula, { keepCablesVisible: true });
+        App.setSelectedMoleculaForPins(result.molecula, { keepCablesVisible: true, fromSearch: true });
       }
     }
 

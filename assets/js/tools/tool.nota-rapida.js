@@ -163,11 +163,12 @@
       if (!map || clickHandler) return;
       clickHandler = function (e) {
         if (App.tools?.medicion?.isActive?.()) return;
-        if (map.getLayer(LAYER_ID) && e.features?.length) {
-          const f = e.features.find((fe) => fe.layer?.id === LAYER_ID);
-          if (f) {
+        // Clic en la flecha o en la etiqueta: mostrar popup Editar/Borrar
+        if (map.getLayer(LAYER_ID) || map.getLayer(LAYER_LABEL_ID)) {
+          const hits = map.queryRenderedFeatures(e.point, { layers: [LAYER_ID, LAYER_LABEL_ID] });
+          if (hits && hits.length > 0) {
             e.originalEvent?.preventDefault?.();
-            showNotaPopup(f, e.lngLat);
+            showNotaPopup(hits[0], e.lngLat);
             return;
           }
         }
@@ -184,6 +185,11 @@
         openModalAdd(lng, lat, mol);
       };
       map.on("click", clickHandler);
+      // Cursor pointer al pasar sobre flecha o etiqueta
+      map.on("mouseenter", LAYER_ID, () => { if (!App.tools?.medicion?.isActive?.()) map.getCanvas().style.cursor = "pointer"; });
+      map.on("mouseleave", LAYER_ID, () => { map.getCanvas().style.cursor = ""; });
+      map.on("mouseenter", LAYER_LABEL_ID, () => { if (!App.tools?.medicion?.isActive?.()) map.getCanvas().style.cursor = "pointer"; });
+      map.on("mouseleave", LAYER_LABEL_ID, () => { map.getCanvas().style.cursor = ""; });
     }
 
     function start() {

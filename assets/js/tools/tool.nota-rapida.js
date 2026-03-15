@@ -11,7 +11,64 @@
   const LAYER_ID = CONFIG.LAYERS?.NOTAS || "notas-layer";
   const LAYER_LABEL_ID = "notas-layer-label";
   const SOURCE_ID = "notas-src";
+  const ICON_SIZE = 40;
+  const NOTA_PIN_ICON_ID = "nota-pin";
   const log = window.__FTTH_LOG__;
+
+  function createNotaPinIconSVG(color) {
+    const size = ICON_SIZE;
+    const c = color.replace("#", "");
+    const svg = `
+<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow-nota-${c}">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <path d="M ${size/2} ${size*0.15}
+           Q ${size*0.2} ${size*0.15} ${size*0.2} ${size*0.4}
+           L ${size*0.2} ${size*0.7}
+           Q ${size*0.2} ${size*0.85} ${size*0.35} ${size*0.85}
+           L ${size*0.5} ${size}
+           L ${size*0.65} ${size*0.85}
+           Q ${size*0.8} ${size*0.85} ${size*0.8} ${size*0.7}
+           L ${size*0.8} ${size*0.4}
+           Q ${size*0.8} ${size*0.15} ${size*0.5} ${size*0.15} Z"
+        fill="${color}" stroke="#000" stroke-width="1.5"
+        filter="url(#shadow-nota-${c})"/>
+  <circle cx="${size/2}" cy="${size*0.4}" r="${size*0.25}"
+          fill="#fff" stroke="${color}" stroke-width="2"/>
+  <text x="${size/2}" y="${size*0.48}" font-size="${size*0.28}"
+        text-anchor="middle" dominant-baseline="middle"
+        font-family="Arial, sans-serif">📌</text>
+</svg>`;
+    return svg;
+  }
+
+  function loadNotaIcon(map) {
+    return new Promise(function (resolve) {
+      if (!map || map.hasImage(NOTA_PIN_ICON_ID)) {
+        resolve();
+        return;
+      }
+      const color = "#ff9800";
+      const svg = createNotaPinIconSVG(color);
+      const img = new Image();
+      const blob = new Blob([svg], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      img.onload = function () {
+        if (!map.hasImage(NOTA_PIN_ICON_ID)) map.addImage(NOTA_PIN_ICON_ID, img);
+        URL.revokeObjectURL(url);
+        resolve();
+      };
+      img.onerror = function () {
+        if (log) log("warn", "Error cargando icono nota");
+        URL.revokeObjectURL(url);
+        resolve();
+      };
+      img.src = url;
+    });
+  }
 
   function getCentralFromMolecula(molecula) {
     if (!molecula || typeof molecula !== "string") return "";
@@ -72,8 +129,15 @@
       if (map.getLayer(LAYER_ID)) return;
 
       if (!map.getSource(SOURCE_ID)) {
-        map.addSource(SOURCE_ID, { type: "geojson", data: notasToGeoJSON() });
+        map.addSource(SOURCE_ID, { type: "geojson", data: notasToGeoJSON(), promoteId: "id" });
       }
+      loadNotaIcon(map).then(function () {
+        if (map.getLayer(LAYER_ID)) return;
+        addNotaLayers(map);
+      });
+    }
+
+    function addNotaLayers(map) {
       const beforeId = map.getLayer("geojson-lines") ? undefined : undefined;
       try {
         map.addLayer(
@@ -82,16 +146,12 @@
             type: "symbol",
             source: SOURCE_ID,
             layout: {
-              "text-field": "▼",
-              "text-size": 44,
-              "text-anchor": "bottom",
-              "text-allow-overlap": true,
-              "text-ignore-placement": true
-            },
-            paint: {
-              "text-color": "#ff6600",
-              "text-halo-color": "#ffffff",
-              "text-halo-width": 4
+              "icon-image": NOTA_PIN_ICON_ID,
+              "icon-size": ["interpolate", ["linear"], ["zoom"], 10, 0.6, 15, 1.0, 20, 1.4],
+              "icon-allow-overlap": true,
+              "icon-ignore-placement": true,
+              "icon-anchor": "bottom",
+              "icon-pitch-alignment": "viewport"
             }
           },
           beforeId
@@ -122,6 +182,7 @@
         map.setLayoutProperty(LAYER_LABEL_ID, "visibility", "none");
       } catch (e) {
         if (log) log("warn", "notas layer add:", e.message);
+        map.once("load", function () { addNotaLayers(map); });
       }
     }
 

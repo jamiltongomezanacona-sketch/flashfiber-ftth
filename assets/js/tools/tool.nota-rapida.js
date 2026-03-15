@@ -121,20 +121,10 @@
       syncNotasToMap();
     }
 
-    function start() {
-      active = true;
-      ensureLayer();
-      if (!unsubNotas) unsubNotas = FB.escucharNotas(onNotaReceived);
-      syncNotasToMap();
-
+    function setupClickHandler() {
       const map = App.map;
-      if (clickHandler) {
-        map.off("click", clickHandler);
-        clickHandler = null;
-      }
-
+      if (!map || clickHandler) return;
       clickHandler = function (e) {
-        if (!active) return;
         if (App.tools?.medicion?.isActive?.()) return;
         if (map.getLayer(LAYER_ID) && e.features?.length) {
           const f = e.features.find((fe) => fe.layer?.id === LAYER_ID);
@@ -144,6 +134,7 @@
             return;
           }
         }
+        if (!active) return;
         const mol = App._selectedMoleculaForPins;
         if (!mol) {
           if (App?.ui?.notify) App.ui.notify("Selecciona una molécula en Capas para añadir una nota.");
@@ -155,23 +146,21 @@
         const lat = lngLat.lat != null ? lngLat.lat : lngLat[1];
         openModalAdd(lng, lat, mol);
       };
-
       map.on("click", clickHandler);
+    }
+
+    function start() {
+      active = true;
+      ensureLayer();
+      if (!unsubNotas) unsubNotas = FB.escucharNotas(onNotaReceived);
+      setupClickHandler();
+      syncNotasToMap();
     }
 
     function stop() {
       active = false;
-      const map = App.map;
-      if (map && clickHandler) {
-        map.off("click", clickHandler);
-        clickHandler = null;
-      }
-      if (map && map.getLayer(LAYER_ID)) {
-        try {
-          map.setLayoutProperty(LAYER_ID, "visibility", "none");
-        } catch (e) {}
-      }
       closeModalAdd();
+      syncNotasToMap();
     }
 
     function openModalAdd(lng, lat, molecula) {
@@ -186,8 +175,13 @@
         lat,
         texto: (texto || "").trim()
       }).catch((err) => {
+        const msg = err?.message || err?.error_description || (err && typeof err === "object" ? (err.message || err.code || JSON.stringify(err)) : String(err));
         console.error("Error guardando nota:", err);
-        alert("No se pudo guardar la nota: " + (err?.message || err));
+        if (/does not exist|relation.*notas_rapidas|404|PGRST116/i.test(String(msg))) {
+          alert("La tabla 'notas_rapidas' no existe en Supabase.\n\nCrea la tabla con el SQL de docs/NOTA_RAPIDA_PIN.md (Supabase → SQL Editor) y activa Realtime para esa tabla.");
+        } else {
+          alert("No se pudo guardar la nota: " + msg);
+        }
       });
     }
 
@@ -227,7 +221,8 @@
         popup.remove();
         const nuevo = window.prompt("Editar nota:", nota.texto || "");
         if (nuevo !== null) {
-          window.FTTH_FIREBASE.actualizarNota(nota.id, { texto: nuevo }).catch((e) => alert("Error: " + (e?.message || e)));
+          const errMsg = (e) => e?.message || e?.error_description || (e && typeof e === "object" ? String(e.message || e.code || "") : String(e));
+          window.FTTH_FIREBASE.actualizarNota(nota.id, { texto: nuevo }).catch((e) => alert("Error al actualizar: " + (errMsg(e) || "revisa la consola")));
         }
       });
       content.querySelector('[data-pin-action="delete"]')?.addEventListener("click", () => {
@@ -239,12 +234,18 @@
           return;
         }
         popup.remove();
-        window.FTTH_FIREBASE.eliminarNota(nota.id).catch((e) => alert("Error: " + (e?.message || e)));
+        const errMsg = (e) => e?.message || e?.error_description || (e && typeof e === "object" ? String(e.message || e.code || "") : String(e));
+        window.FTTH_FIREBASE.eliminarNota(nota.id).catch((e) => alert("Error al eliminar: " + (errMsg(e) || "revisa la consola")));
       });
     }
 
     if (!App.tools) App.tools = {};
     App.tools.notaRapida = { start, stop, isActive: () => active };
+
+    ensureLayer();
+    if (!unsubNotas) unsubNotas = FB.escucharNotas(onNotaReceived);
+    setupClickHandler();
+    syncNotasToMap();
   }
 
   if (document.readyState === "loading") {

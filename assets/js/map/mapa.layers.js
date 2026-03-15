@@ -836,6 +836,7 @@
       };
       map.once("idle", applyToMap);
       setTimeout(() => { if (!applied && map.isStyleLoaded()) applyToMap(); }, 400);
+      setTimeout(() => { if (!applied && map.isStyleLoaded()) applyToMap(); }, 1200);
     } catch (err) {
       const msg = (err && err.message) ? String(err.message) : "";
       if (/style is not done loading/i.test(msg)) {
@@ -1677,6 +1678,12 @@
       if (!handleStyleNotReady(err, () => loadFTTHTree())) console.error("❌", err);
     });
     setTimeout(enforceOnlyCentralesVisible, 2800);
+    setTimeout(() => {
+      if (App?.map && !App.map.getLayer("geojson-lines") && App.map.isStyleLoaded()) {
+        if (log) log("log", "🔄 Capa geojson-lines ausente tras carga, reintentando...");
+        loadConsolidatedGeoJSONToBaseMap().catch(() => {});
+      }
+    }, 3500);
   });
   App.map?.on("style.load", () => {
     restoreLayers();

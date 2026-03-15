@@ -585,7 +585,9 @@
     if (map.getLayer(LAYER_CENTRALES)) {
       try {
         map.setLayoutProperty(LAYER_CENTRALES, "visibility", "visible");
-      } catch (e) {}
+      } catch (e) {
+        if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[ui.layers.tree] setLayoutProperty centrales", e?.message);
+      }
     }
     const fc = document.getElementById("filterCentrales");
     const fci = document.getElementById("filterCierres");
@@ -633,7 +635,9 @@
             map.setFilter("geojson-lines", ["==", ["geometry-type"], "LineString"]);
             if (App) App.__cablesExplicitlyVisible = true;
             console.log("🧵 geojson-lines: todos los cables visibles");
-          } catch (e) {}
+          } catch (e) {
+            if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[ui.layers.tree] setFilter geojson-lines", e?.message);
+          }
         }
         // Al activar cable (FTTH o MUZU): mostrar pines y filtros como el resto de moléculas
         if (isCable) {

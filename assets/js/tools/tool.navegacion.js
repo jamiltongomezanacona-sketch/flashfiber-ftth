@@ -34,7 +34,9 @@
     // ✅ Apagar medición si está activa (evita conflicto de click)
     try {
       App.tools.medicion?.stop();
-    } catch (e) {}
+    } catch (e) {
+      if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[tool.navegacion] medicion stop", e?.message);
+    }
 
     App.map.getCanvas().style.cursor = "crosshair";
 
@@ -152,7 +154,9 @@
         btnCopy.textContent = "✓ Copiado";
         setTimeout(() => { if (btnCopy) btnCopy.textContent = "📋 Copiar coordenada"; }, copyResetMs);
       }
-    } catch (e) {}
+    } catch (e) {
+      if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[tool.navegacion] copy coords", e?.message);
+    }
     document.body.removeChild(input);
   }
 

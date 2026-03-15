@@ -87,7 +87,9 @@
             if (map.getLayer("ftth-puntos")) map.removeLayer("ftth-puntos");
             map.removeSource("ftth-src");
           }
-        } catch (_) {}
+        } catch (e) {
+          if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[mapa.ftth] cleanup on style error", e?.message);
+        }
         if (log) log("warn", "⏳ Estilo aún cargando, reintentando en style.load...");
         map.once("load", () => loadFTTHLayers());
         map.once("style.load", () => loadFTTHLayers());

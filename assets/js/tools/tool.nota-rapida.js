@@ -149,7 +149,9 @@
           try {
             map.setFilter(lid, filterNotas);
             map.setLayoutProperty(lid, "visibility", show ? "visible" : "none");
-          } catch (e) {}
+          } catch (e) {
+            if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[tool.nota-rapida] setLayoutProperty", e?.message);
+          }
         }
       });
     }

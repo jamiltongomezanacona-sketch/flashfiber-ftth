@@ -1392,7 +1392,9 @@
         try {
           map.setLayoutProperty(layerId, "visibility", "none");
           enforced++;
-        } catch (e) {}
+        } catch (e) {
+          if (CONFIG?.DEBUG && log) log("warn", "enforceOnlyCentralesVisible pins", e?.message);
+        }
       }
     });
     const cablesExplicitlyVisible = !!App.__cablesExplicitlyVisible;
@@ -1403,19 +1405,19 @@
         const current = map.getLayoutProperty(id, "visibility");
         const want = centralesVisible ? "visible" : "none";
         if (current !== want) {
-          try { map.setLayoutProperty(id, "visibility", want); enforced++; } catch (e) {}
+          try { map.setLayoutProperty(id, "visibility", want); enforced++; } catch (e) { if (CONFIG?.DEBUG && log) log("warn", "setLayoutProperty", id, e?.message); }
         }
         return;
       }
       if (cablesExplicitlyVisible && (id === "geojson-lines" || id === "geojson-points")) return;
       // ftth-cables (FTTH_COMPLETO) siempre oculto cuando no es la fuente activa: evita que persista CO36 u otro cable
       if (id === "ftth-cables" || id === "ftth-puntos") {
-        try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) {}
+        try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) { if (CONFIG?.DEBUG && log) log("warn", "setLayoutProperty none", id, e?.message); }
         return;
       }
       const current = map.getLayoutProperty(id, "visibility");
       if (current !== "none") {
-        try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) {}
+        try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) { if (CONFIG?.DEBUG && log) log("warn", "setLayoutProperty none", id, e?.message); }
         // Sincronizar árbol: desmarcar checkbox para que CO36 u otra capa no quede "activa" en la UI
         try {
           const tree = typeof document !== "undefined" && document.getElementById("layersTree");
@@ -1438,12 +1440,12 @@
       if (cablesExplicitlyVisible && (id === "geojson-lines" || id === "geojson-points")) return;
       // ftth-cables (FTTH_COMPLETO) siempre oculto cuando no es la fuente activa: evita que persista CO36 u otro cable
       if (id === "ftth-cables" || id === "ftth-puntos") {
-        try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) {}
+        try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) { if (CONFIG?.DEBUG && log) log("warn", "setLayoutProperty none", id, e?.message); }
         return;
       }
       const current = map.getLayoutProperty(id, "visibility");
       if (current !== "none") {
-        try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) {}
+        try { map.setLayoutProperty(id, "visibility", "none"); enforced++; } catch (e) { if (CONFIG?.DEBUG && log) log("warn", "setLayoutProperty none", id, e?.message); }
         try {
           const tree = typeof document !== "undefined" && document.getElementById("layersTree");
           if (tree) {

@@ -57,7 +57,9 @@
       if (typeof saved.bearing === "number") mapOpts.bearing = saved.bearing;
       if (typeof saved.pitch === "number") mapOpts.pitch = saved.pitch;
     }
-  } catch (e) {}
+  } catch (e) {
+    if (CONFIG?.DEBUG) console.debug("[mapa.init] localStorage vista mapa", e?.message);
+  }
   const map = new mapboxgl.Map(mapOpts);
 
   // Si el estilo falla (token inválido, red, etc.) puede aparecer "Style is not done loading"
@@ -80,7 +82,9 @@
         bearing: map.getBearing(),
         pitch: map.getPitch()
       }));
-    } catch (e) {}
+    } catch (e) {
+      if (CONFIG?.DEBUG) console.debug("[mapa.init] persistMapView", e?.message);
+    }
   }
   map.on("moveend", function () {
     if (_saveViewT) clearTimeout(_saveViewT);
@@ -110,7 +114,9 @@
   App.setMap(map);
   try {
     window.dispatchEvent(new CustomEvent("ftth-map-ready"));
-  } catch (e) {}
+  } catch (e) {
+    if (CONFIG?.DEBUG) console.debug("[mapa.init] ftth-map-ready", e?.message);
+  }
 
   /* ===============================
      MAPA LISTO

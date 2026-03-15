@@ -93,7 +93,9 @@ window.__FTTH_LOG__ = function (level, ...args) {
       if (!WORK_RE.test(p) || /index\.html?$/i.test(p)) return;
       if (p.indexOf("file:") === 0) return;
       localStorage.setItem(KEY, p.charAt(0) === "/" ? p : "/" + p);
-    } catch (e) {}
+    } catch (e) {
+      if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[config] persistPath", e?.message);
+    }
   }
   window.addEventListener("beforeunload", savePath);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", savePath);

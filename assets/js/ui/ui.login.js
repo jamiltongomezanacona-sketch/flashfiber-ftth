@@ -64,7 +64,9 @@
             try {
               const msg = "Para instalar: en Chrome/Edge usa el menú (⋮) → \"Instalar Flash Fiber\" o \"Instalar aplicación\".";
               if (typeof alert === "function") alert(msg);
-            } catch (_) {}
+            } catch (e) {
+              if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[ui.login] beforeInstallPrompt", e?.message);
+            }
           }
         });
       }

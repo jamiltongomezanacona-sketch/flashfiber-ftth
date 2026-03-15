@@ -26,7 +26,9 @@
       setTimeout(function () {
         if (toast.parentNode) toast.parentNode.removeChild(toast);
       }, 4000);
-    } catch (e) {}
+    } catch (e) {
+      if (typeof console !== "undefined" && console.debug) console.debug("[devtools-guard] toast", e?.message);
+    }
   }
 
   document.addEventListener("keydown", function (e) {

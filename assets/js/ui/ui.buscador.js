@@ -323,7 +323,9 @@
       if (App.map.getLayer(LAYER_CENTRALES)) {
         try {
           App.map.setLayoutProperty(LAYER_CENTRALES, "visibility", filterCentrales.checked ? "visible" : "none");
-        } catch (e) {}
+        } catch (e) {
+          if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[ui.buscador] setCentralesVisibility", e?.message);
+        }
       }
     }
 
@@ -340,7 +342,9 @@
         try {
           App.map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
           App.map.setFilter(layerId, showPins ? filter : null);
-        } catch (e) {}
+        } catch (e) {
+          if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[ui.buscador] applyPinsVisibility layer", e?.message);
+        }
       });
       // Cierres del consolidado (CUNI, etc.): capa geojson-points filtrada por _molecula (misma lógica estándar)
       if (App.map.getLayer("geojson-points")) {
@@ -351,7 +355,9 @@
         try {
           App.map.setLayoutProperty("geojson-points", "visibility", visibleConsolidated ? "visible" : "none");
           App.map.setFilter("geojson-points", filterPoints || ["==", ["geometry-type"], "Point"]);
-        } catch (e) {}
+        } catch (e) {
+          if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[ui.buscador] applyPinsVisibility geojson-points", e?.message);
+        }
       }
       // Comentarios (notas rápidas): visibles cuando Comentarios está activado en el sidebar
       const NOTAS_LAYER = (window.__FTTH_CONFIG__?.LAYERS?.NOTAS) || "notas-layer";
@@ -368,7 +374,9 @@
           try {
             App.map.setFilter(layerId, showNotasSidebar ? buildFilterMolecula(molNorm) : null);
             App.map.setLayoutProperty(layerId, "visibility", showNotasSidebar ? "visible" : "none");
-          } catch (e) {}
+          } catch (e) {
+            if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[ui.buscador] applyPinsVisibility notas", e?.message);
+          }
         }
       });
       setCentralesVisibility();
@@ -440,7 +448,9 @@
       try {
         App.map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
         App.map.setFilter(layerId, showPins ? filter : null);
-      } catch (e) {}
+      } catch (e) {
+        if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[ui.buscador] setSelectedMoleculaForPins layer", e?.message);
+      }
     });
     if (showPins && pinsLayersApplied === 0) {
       [200, 400, 800, 1500, 3000, 5000].forEach(function (delay) {
@@ -459,7 +469,9 @@
       try {
         App.map.setLayoutProperty("geojson-points", "visibility", visibleConsolidated ? "visible" : "none");
         App.map.setFilter("geojson-points", filterPoints);
-      } catch (e) {}
+      } catch (e) {
+        if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[ui.buscador] setSelectedMoleculaForPins geojson-points", e?.message);
+      }
     }
     // Rutas guardadas (Firebase/local): filtrar por molécula como cables y cierres
     if (typeof App.applySavedRoutesMoleculaFilter === "function") {
@@ -476,7 +488,9 @@
           const filterNotas = buildFilterMolecula(molNorm);
           App.map.setFilter(layerId, filterNotas);
           App.map.setLayoutProperty(layerId, "visibility", showNotas ? "visible" : "none");
-        } catch (e) {}
+        } catch (e) {
+          if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[ui.buscador] setSelectedMoleculaForPins notas", e?.message);
+        }
       }
     });
   }
@@ -1582,7 +1596,9 @@
       try {
         if (App.map.getLayer(PIN_COORDS_LAYER_ID)) App.map.removeLayer(PIN_COORDS_LAYER_ID);
         if (App.map.getSource(PIN_COORDS_SOURCE_ID)) App.map.removeSource(PIN_COORDS_SOURCE_ID);
-      } catch (e) {}
+      } catch (e) {
+        if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[ui.buscador] selectResult cleanup pin", e?.message);
+      }
     }
 
     // Hacer zoom al resultado
@@ -1599,7 +1615,9 @@
         var c = App.map.getCenter();
         var z = App.map.getZoom();
         App.map.jumpTo({ center: c, zoom: z });
-      } catch (e) {}
+      } catch (e) {
+        if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[ui.buscador] movestart jumpTo", e?.message);
+      }
     });
 
     // Añadir pin como capa (círculo visible) cuando termine el movimiento
@@ -1609,7 +1627,9 @@
         try {
           if (App.map.getLayer(PIN_COORDS_LAYER_ID)) App.map.removeLayer(PIN_COORDS_LAYER_ID);
           if (App.map.getSource(PIN_COORDS_SOURCE_ID)) App.map.removeSource(PIN_COORDS_SOURCE_ID);
-        } catch (e) {}
+        } catch (e) {
+          if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[ui.buscador] moveend cleanup pin", e?.message);
+        }
         var geo = {
           type: "FeatureCollection",
           features: [{ type: "Feature", geometry: { type: "Point", coordinates: result.coordinates } }]

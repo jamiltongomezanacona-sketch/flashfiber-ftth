@@ -295,7 +295,9 @@ toolButtons.posteria?.addEventListener("click", () => toggleTool("posteria"));
     try {
       if (App.map?.getLayer("search-coordenadas-pin-layer")) App.map.removeLayer("search-coordenadas-pin-layer");
       if (App.map?.getSource("search-coordenadas-pin")) App.map.removeSource("search-coordenadas-pin");
-    } catch (e) {}
+    } catch (e) {
+      if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[ui.panel] cleanup search pin", e?.message);
+    }
 
     // 4. Cerrar sidebar y overlay
     if (sidebar) sidebar.classList.add("hidden");

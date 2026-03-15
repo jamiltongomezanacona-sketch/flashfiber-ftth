@@ -560,7 +560,9 @@
         let source = null;
         try {
           source = App.map.getSource(SOURCE_ID);
-        } catch (_) {}
+        } catch (e) {
+          if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[tool.eventos] getSource", e?.message);
+        }
         if (!source) {
           initLayer();
           try { source = App.map.getSource(SOURCE_ID); } catch (_) { return; }

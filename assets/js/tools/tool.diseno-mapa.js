@@ -180,7 +180,9 @@
       function doCapture() {
         try {
           if (map.triggerRepaint) map.triggerRepaint();
-        } catch (e) {}
+        } catch (e) {
+          if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[tool.diseno-mapa] triggerRepaint", e?.message);
+        }
         requestAnimationFrame(function () {
           requestAnimationFrame(function () {
             var dataUrl = null;

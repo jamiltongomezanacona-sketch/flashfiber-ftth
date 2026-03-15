@@ -698,15 +698,17 @@
       if (_refreshCierresTimeout) return;
       _refreshCierresTimeout = setTimeout(function () {
         _refreshCierresTimeout = null;
-        const source = App.map.getSource(SOURCE_ID);
+        let source = App.map.getSource(SOURCE_ID);
         if (!source) {
           initLayer();
-          return;
+          source = App.map.getSource(SOURCE_ID);
         }
-        source.setData({
-          type: "FeatureCollection",
-          features: App.data.cierres || []
-        });
+        if (source) {
+          source.setData({
+            type: "FeatureCollection",
+            features: App.data.cierres || []
+          });
+        }
         if (!App.map.getLayer(LAYER_ID)) initLayer();
       }, SETDATA_THROTTLE_MS);
     }
@@ -825,11 +827,15 @@
     // Inicializar listener (con retry automático)
     initFirebaseSync();
 
-    // ✅ Crear capa cuando el estilo del mapa esté cargado (evita fallo si se ejecuta antes de "load")
+    // ✅ Crear capa cuando el estilo del mapa esté cargado y rellenar con datos ya cargados de Supabase
     function runInitLayerWhenReady() {
       if (!App || !App.map) return;
-      if (App.map.isStyleLoaded()) initLayer();
-      else App.map.once("load", () => initLayer());
+      const run = () => {
+        initLayer();
+        if (typeof refreshLayer === "function") refreshLayer();
+      };
+      if (App.map.isStyleLoaded()) run();
+      else App.map.once("load", run);
     }
     runInitLayerWhenReady();
 

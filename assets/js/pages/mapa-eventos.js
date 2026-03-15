@@ -213,8 +213,11 @@ function showPopup(map, props, lngLat) {
 
 function initMap() {
   if (!TOKEN) {
-    document.getElementById("loading").classList.remove("hidden");
-    document.getElementById("loading").innerHTML = "Configura MAPBOX_TOKEN en config.";
+    const loadingEl = document.getElementById("loading");
+    if (loadingEl) {
+      loadingEl.classList.remove("hidden");
+      loadingEl.innerHTML = "Configura MAPBOX_TOKEN en config.";
+    }
     return null;
   }
 
@@ -336,7 +339,8 @@ function runMapaEventos() {
     onFiltrar();
   }
 
-  document.getElementById("btnFiltrar").addEventListener("click", onFiltrar);
+  const btnFiltrar = document.getElementById("btnFiltrar");
+  if (btnFiltrar) btnFiltrar.addEventListener("click", onFiltrar);
   const btnActualizar = document.getElementById("btnActualizar");
   if (btnActualizar) btnActualizar.addEventListener("click", onActualizar);
 

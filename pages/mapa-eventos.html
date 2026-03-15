@@ -210,25 +210,29 @@
     var CLAVE = (window.__FTTH_CONFIG__ && window.__FTTH_CONFIG__.MAPA_EVENTOS_PIN) || "7431";
     function desbloquear() {
       try { sessionStorage.setItem(STORAGE_KEY, "1"); } catch (e) {}
-      document.getElementById("bodyMapaEventos").classList.add("contenido-mapa-eventos--visible", "gate-mapa-eventos--oculto");
+      var bodyEl = document.getElementById("bodyMapaEventos");
+      if (bodyEl) bodyEl.classList.add("contenido-mapa-eventos--visible", "gate-mapa-eventos--oculto");
       window.dispatchEvent(new CustomEvent("mapa-eventos-unlocked"));
     }
     if (sessionStorage.getItem(STORAGE_KEY) === "1") {
       desbloquear();
     } else {
-      document.getElementById("gateBtnEntrar").addEventListener("click", function() {
+      var gateBtn = document.getElementById("gateBtnEntrar");
+      var gateClave = document.getElementById("gateClave");
+      var gateError = document.getElementById("gateError");
+      if (gateBtn) gateBtn.addEventListener("click", function() {
         var input = document.getElementById("gateClave");
-        var err = document.getElementById("gateError");
+        if (!input) return;
         if ((input.value || "").trim() === CLAVE) {
-          err.classList.add("hidden");
+          if (gateError) gateError.classList.add("hidden");
           desbloquear();
         } else {
-          err.classList.remove("hidden");
+          if (gateError) gateError.classList.remove("hidden");
           input.select();
         }
       });
-      document.getElementById("gateClave").addEventListener("keydown", function(e) {
-        if (e.key === "Enter") document.getElementById("gateBtnEntrar").click();
+      if (gateClave) gateClave.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" && gateBtn) gateBtn.click();
       });
     }
     window.dispatchEvent(new CustomEvent("mapa-eventos-gate-ready"));

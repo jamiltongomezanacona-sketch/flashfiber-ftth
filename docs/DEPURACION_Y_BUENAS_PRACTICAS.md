@@ -70,10 +70,10 @@ Documento de análisis **sin alterar el comportamiento del proyecto**. Sirve com
 - **Problema:** Acoplamiento implícito; orden de carga de scripts crítico.
 - **Recomendación:** Mantener por ahora (no alterar proyecto). A largo plazo, considerar un módulo de “context” o inyección explícita en puntos de entrada.
 
-### 3.5 Acceso a DOM sin comprobación de existencia
-- **Dónde:** En algunos sitios se hace `document.getElementById("...").value` o `.innerHTML` sin comprobar que el elemento exista (p. ej. `mapa-eventos.js` línea 217, `tool.cierres.js` múltiples getElementById).
+### 3.5 Acceso a DOM sin comprobación de existencia ✅ (parcial)
+- **Dónde:** `mapa-eventos.js`, `tool.cierres.js`, `mapa-eventos.html` (inline).
 - **Problema:** Si el HTML cambia o el id no existe, fallo en tiempo de ejecución.
-- **Recomendación:** Guardar referencia en variable y comprobar `if (el) { ... }` antes de usar.
+- **Estado:** Añadidas comprobaciones en `mapa-eventos.js` (loading, btnFiltrar), `tool.cierres.js` (optional chaining en campos del formulario de cierre), `mapa-eventos.html` (bodyMapaEventos, gateBtnEntrar, gateClave, gateError). Pendiente: otros archivos que usen getElementById sin guard.
 
 ### 3.6 Duplicación de lógica
 - **Dónde:** Patrones repetidos: “esperar estilo del mapa + reintentar”, “toggle visibility de geojson-lines + __cablesExplicitlyVisible”, construcción de filtros Mapbox similares en buscador y layers tree.

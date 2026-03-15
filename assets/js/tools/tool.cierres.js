@@ -1041,11 +1041,11 @@
       }
 
       const cierre = {
-        codigo: document.getElementById("cierreCodigo").value.trim(),
-        tipo: document.getElementById("cierreTipo").value,
-        central: document.getElementById("cierreCentral").value.trim(),
-        molecula: document.getElementById("cierreMolecula").value.trim(),
-        notas: document.getElementById("cierreNotas").value.trim(),
+        codigo: (document.getElementById("cierreCodigo")?.value || "").trim(),
+        tipo: document.getElementById("cierreTipo")?.value || "",
+        central: (document.getElementById("cierreCentral")?.value || "").trim(),
+        molecula: (document.getElementById("cierreMolecula")?.value || "").trim(),
+        notas: (document.getElementById("cierreNotas")?.value || "").trim(),
         lng: lng,
         lat: lat,
         createdAt: new Date().toISOString(),

@@ -110,7 +110,7 @@
               "text-field": ["coalesce", ["get", "texto"], "Comentario"],
               "text-size": 14,
               "text-anchor": "bottom",
-              "text-offset": [0, -1.2],
+              "text-offset": [0, -4.2],
               "text-max-width": 12,
               "text-allow-overlap": true,
               "text-ignore-placement": false

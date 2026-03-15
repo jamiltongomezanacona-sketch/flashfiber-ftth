@@ -356,7 +356,7 @@
     if (!map.isStyleLoaded() || !map.loaded()) {
       // Esperar a que el mapa esté listo
       map.once('load', () => {
-        setTimeout(() => zoomToSantaInes(), 100);
+        setTimeout(() => zoomToSantaInes(), CONFIG.MAP_TIMING?.ZOOM_RETRY_MS ?? 100);
       });
       return;
     }
@@ -402,7 +402,7 @@
       // Verificar que el mapa esté listo antes de aplicar zoom
       if (!map.isStyleLoaded() || !map.loaded()) {
         console.debug("ℹ️ Mapa no completamente cargado para zoom a Santa Inés. Reintentando...");
-        setTimeout(zoomToSantaInes, 500);
+        setTimeout(zoomToSantaInes, CONFIG.MAP_TIMING?.ZOOM_SANTA_INES_MS ?? 500);
         return;
       }
 
@@ -701,7 +701,7 @@
       const retry = () => {
         if (done) return;
         done = true;
-        setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), 100);
+        setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), CONFIG.MAP_TIMING?.RETRY_LOAD_MS ?? 100);
       };
       map.once("load", retry);
       map.once("style.load", retry);
@@ -731,7 +731,7 @@
       // ✅ Recomprobar estilo tras los await (evita "Style is not done loading")
       if (!map.isStyleLoaded()) {
         if (log) log("log", "⏳ Estilo dejó de estar listo tras cargar datos, esperando style.load...");
-        const retry = () => setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), 100);
+        const retry = () => setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), CONFIG.MAP_TIMING?.RETRY_LOAD_MS ?? 100);
         map.once("load", retry);
         map.once("style.load", retry);
         return;
@@ -743,7 +743,7 @@
         try {
           if (!map.isStyleLoaded()) {
             if (log) log("log", "⏳ Estilo no listo en idle, reintentando...");
-            map.once("style.load", () => setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), 50));
+            map.once("style.load", () => setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), CONFIG.MAP_TIMING?.RETRY_AFTER_STYLE_MS ?? 50));
             return;
           }
           if (map.getSource("geojson-consolidado")) {
@@ -823,25 +823,25 @@
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("ftth-consolidated-layers-ready"));
         }
-        setTimeout(enforceOnlyCentralesVisible, 150);
+        setTimeout(enforceOnlyCentralesVisible, CONFIG.MAP_TIMING?.ENFORCE_VISIBILITY_MS ?? 150);
         applied = true;
         } catch (e) {
           const msg = (e && e.message) ? String(e.message) : "";
           if (/style is not done loading/i.test(msg)) {
-            map.once("style.load", () => setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), 50));
+            map.once("style.load", () => setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), CONFIG.MAP_TIMING?.RETRY_AFTER_STYLE_MS ?? 50));
             return;
           }
           throw e;
         }
       };
       map.once("idle", applyToMap);
-      setTimeout(() => { if (!applied && map.isStyleLoaded()) applyToMap(); }, 400);
-      setTimeout(() => { if (!applied && map.isStyleLoaded()) applyToMap(); }, 1200);
+      setTimeout(() => { if (!applied && map.isStyleLoaded()) applyToMap(); }, CONFIG.MAP_TIMING?.APPLY_FALLBACK_MS ?? 400);
+      setTimeout(() => { if (!applied && map.isStyleLoaded()) applyToMap(); }, CONFIG.MAP_TIMING?.APPLY_FALLBACK2_MS ?? 1200);
     } catch (err) {
       const msg = (err && err.message) ? String(err.message) : "";
       if (/style is not done loading/i.test(msg)) {
         if (log) log("log", "⏳ Style no listo al añadir source/layer, reintentando tras style.load...");
-        const retry = () => setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), 100);
+        const retry = () => setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), CONFIG.MAP_TIMING?.RETRY_LOAD_MS ?? 100);
         if (map) {
           map.once("load", retry);
           map.once("style.load", retry);
@@ -877,7 +877,7 @@
 
       if (log) log("log", "🌳 Árbol FTTH procesado");
       // Forzar que solo centrales queden visibles tras cargar capas
-      setTimeout(enforceOnlyCentralesVisible, 150);
+      setTimeout(enforceOnlyCentralesVisible, CONFIG.MAP_TIMING?.ENFORCE_VISIBILITY_MS ?? 150);
     } catch (err) {
       console.error("❌ Error cargando árbol FTTH", err);
     } finally {
@@ -1092,7 +1092,7 @@
         // Los iconos se cargarán bajo demanda cuando el mapa los necesite
         // Usar Promise.race con timeout para no esperar indefinidamente
         try {
-          const timeoutPromise = new Promise(resolve => setTimeout(resolve, 2000)); // Max 2 segundos
+          const timeoutPromise = new Promise(resolve => setTimeout(resolve, CONFIG.MAP_TIMING?.ICON_LOAD_TIMEOUT_MS ?? 2000));
           const loadPromise = Promise.allSettled(iconPromises);
           
           await Promise.race([loadPromise, timeoutPromise]);
@@ -1489,7 +1489,7 @@
     if (!map) {
       if (log) log("warn", "⚠️ Mapa no disponible, reintentando...", retryCount);
       if (retryCount < MAX_RETRIES) {
-        setTimeout(() => loadCentralesFijas(retryCount + 1), 500);
+        setTimeout(() => loadCentralesFijas(retryCount + 1), CONFIG.MAP_TIMING?.CENTRALES_RETRY_MS ?? 500);
       }
       return;
     }
@@ -1499,7 +1499,7 @@
       if (log) log("log", "⏳ Esperando que el estilo del mapa esté cargado...", retryCount);
       if (retryCount < MAX_RETRIES) {
         map.once("style.load", () => {
-          setTimeout(() => loadCentralesFijas(0), 200);
+          setTimeout(() => loadCentralesFijas(0), CONFIG.MAP_TIMING?.CENTRALES_AFTER_STYLE_MS ?? 200);
         });
         // También intentar después de un timeout
         setTimeout(() => {
@@ -1646,7 +1646,7 @@
       console.error("❌ Error cargando centrales fijas:", err);
       if (retryCount < MAX_RETRIES) {
         if (log) log("log", "🔄 Reintentando carga de centrales...", retryCount + 1, "/", MAX_RETRIES);
-        setTimeout(() => loadCentralesFijas(retryCount + 1), 1000);
+        setTimeout(() => loadCentralesFijas(retryCount + 1), CONFIG.MAP_TIMING?.CENTRALES_ERROR_RETRY_MS ?? 1000);
       }
     }
   }
@@ -1679,13 +1679,13 @@
     loadFTTHTree().catch((err) => {
       if (!handleStyleNotReady(err, () => loadFTTHTree())) console.error("❌", err);
     });
-    setTimeout(enforceOnlyCentralesVisible, 2800);
+    setTimeout(enforceOnlyCentralesVisible, CONFIG.MAP_TIMING?.ENFORCE_AFTER_LOAD_MS ?? 2800);
     setTimeout(() => {
       if (App?.map && !App.map.getLayer("geojson-lines") && App.map.isStyleLoaded()) {
         if (log) log("log", "🔄 Capa geojson-lines ausente tras carga, reintentando...");
         loadConsolidatedGeoJSONToBaseMap().catch(() => {});
       }
-    }, 3500);
+    }, CONFIG.MAP_TIMING?.LAYER_MISSING_RETRY_MS ?? 3500);
   });
   App.map?.on("style.load", () => {
     restoreLayers();
@@ -1699,7 +1699,7 @@
           if (!handleStyleNotReady(err, () => loadConsolidatedGeoJSONToBaseMap())) console.error("❌", err);
         });
       }, 300);
-      setTimeout(enforceOnlyCentralesVisible, 1500);
+      setTimeout(enforceOnlyCentralesVisible, CONFIG.MAP_TIMING?.ENFORCE_AFTER_STYLE_LOAD_MS ?? 1500);
     }, 500);
   });
   

@@ -55,10 +55,10 @@ Documento de análisis **sin alterar el comportamiento del proyecto**. Sirve com
 - **Problema:** Se tragan errores sin registro; dificulta depuración.
 - **Estado:** Añadido en todos los catch un log condicional `if (CONFIG?.DEBUG)` o `if (window.__FTTH_CONFIG__?.DEBUG) console.debug("[módulo] descripción", e?.message)` para que en desarrollo se vea el error sin alterar el flujo ni la producción.
 
-### 3.2 Números mágicos (timeouts y constantes)
-- **Dónde:** Delays repartidos por el código: 50, 100, 150, 200, 300, 400, 500, 800, 1000, 1200, 1500, 2800, 3500 ms en `mapa.layers.js`; 100, 200, 400, 800, 1500, 3000, 5000 en `ui.buscador.js`; 4000 en `devtools-guard.js`.
+### 3.2 Números mágicos (timeouts y constantes) ✅ (parcial: mapa.layers)
+- **Dónde:** Delays en `mapa.layers.js`; 100, 200, 400, 800, 1500, 3000, 5000 en `ui.buscador.js`; 4000 en `devtools-guard.js`.
 - **Problema:** Difícil mantener y entender el propósito de cada valor.
-- **Recomendación:** Centralizar en `CONFIG` (como ya existe `DEBOUNCE`) o en constantes con nombre en cada módulo (p. ej. `RETRY_DELAY_MS`, `ENFORCE_VISIBILITY_DELAY_MS`).
+- **Estado:** Añadido `CONFIG.MAP_TIMING` en config.js con todos los delays de carga de capas/estilo (RETRY_LOAD_MS, ENFORCE_VISIBILITY_MS, APPLY_FALLBACK_MS, etc.) y `mapa.layers.js` los usa con fallback `?? valor`. Pendiente: `ui.buscador.js` y `devtools-guard.js`.
 
 ### 3.3 `document.write` para scripts
 - **Dónde:** `mapa-ftth.html`, `mapa-corporativo.html`, `mapa-eventos.html` – carga de `config.local.js` / `config.production.js` con `document.write`.

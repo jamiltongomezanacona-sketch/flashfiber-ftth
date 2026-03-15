@@ -23,6 +23,24 @@ window.__FTTH_CONFIG__ = {
     COPY_BUTTON_RESET_MS: 1500  // texto "Copiar coordenada" vuelve al original
   },
 
+  // Delays (ms) para carga de capas y estilo del mapa (evita números mágicos)
+  MAP_TIMING: {
+    RETRY_LOAD_MS: 100,
+    RETRY_AFTER_STYLE_MS: 50,
+    ENFORCE_VISIBILITY_MS: 150,
+    APPLY_FALLBACK_MS: 400,
+    APPLY_FALLBACK2_MS: 1200,
+    ICON_LOAD_TIMEOUT_MS: 2000,
+    CENTRALES_RETRY_MS: 500,
+    CENTRALES_AFTER_STYLE_MS: 200,
+    CENTRALES_ERROR_RETRY_MS: 1000,
+    ENFORCE_AFTER_LOAD_MS: 2800,
+    ENFORCE_AFTER_STYLE_LOAD_MS: 1500,
+    LAYER_MISSING_RETRY_MS: 3500,
+    ZOOM_RETRY_MS: 100,
+    ZOOM_SANTA_INES_MS: 500
+  },
+
   MAP: {
     STYLE_DEFAULT: "mapbox://styles/mapbox/dark-v11",
     // Estilos disponibles para el botón de base (panel)

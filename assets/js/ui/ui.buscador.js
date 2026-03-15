@@ -332,6 +332,7 @@
    */
   function setSelectedMoleculaForPins(moleculaOrNull, opts) {
     selectedMoleculaForPins = moleculaOrNull || null;
+    if (App) App._selectedMoleculaForPins = selectedMoleculaForPins;
     const filterCierres = document.getElementById("filterCierres");
     const filterEventos = document.getElementById("filterEventos");
     const filterOcultarPines = document.getElementById("filterOcultarPines");
@@ -374,6 +375,15 @@
     // Rutas guardadas (Firebase/local): filtrar por molécula como cables y cierres
     if (typeof App.applySavedRoutesMoleculaFilter === "function") {
       App.applySavedRoutesMoleculaFilter(selectedMoleculaForPins);
+    }
+    // Notas rápidas: mismo filtro por molécula
+    const NOTAS_LAYER = (window.__FTTH_CONFIG__?.LAYERS?.NOTAS) || "notas-layer";
+    if (App.map.getLayer(NOTAS_LAYER)) {
+      try {
+        const filterNotas = selectedMoleculaForPins ? ["==", ["get", "molecula"], selectedMoleculaForPins] : null;
+        App.map.setFilter(NOTAS_LAYER, filterNotas);
+        App.map.setLayoutProperty(NOTAS_LAYER, "visibility", showPins ? "visible" : "none");
+      } catch (e) {}
     }
   }
 

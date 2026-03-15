@@ -41,7 +41,8 @@ window.__FTTH_CONFIG__ = {
   LAYERS: {
     CENTRALES: "CORPORATIVO_CENTRALES_ETB",
     CIERRES: "cierres-layer",
-    EVENTOS: "eventos-layer"
+    EVENTOS: "eventos-layer",
+    NOTAS: "notas-layer"
   },
 
   // Buscador: debounce, reintentos, resultados máximos, geocodificación Bogotá

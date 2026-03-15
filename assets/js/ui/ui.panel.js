@@ -60,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
   gps: document.querySelector('[data-action="gps"]'),
   medir: document.querySelector('[data-action="medir"]'),
   navegar: document.querySelector('[data-action="navegar"]'),
+  notaRapida: document.querySelector('[data-action="notaRapida"]'),
   ruta: document.querySelector('[data-action="ruta"]'),
   corregirRuta: document.querySelector('[data-action="corregirRuta"]'),
   cierres: document.querySelector('[data-action="cierres"]'),
@@ -79,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
   gps: false,
   medir: false,
   navegar: false,
+  notaRapida: false,
   ruta: false,
   corregirRuta: false,
   cierres: false,
@@ -104,6 +106,7 @@ if (tool === "ruta") App.tools.rutas?.stop();
 if (tool === "corregirRuta") { window.__CORREGIR_RUTA_MODE__ = false; App.tools.rutas?.stop(); }
 if (tool === "cierres") App.tools.cierres?.stop();
 if (tool === "eventos") App.tools.eventos?.stop();
+if (tool === "notaRapida") App.tools.notaRapida?.stop();
 if (tool === "posteria") App.tools.posteria?.stop();
     } catch (e) {
       console.warn("⚠️ Error apagando tool:", tool);
@@ -123,6 +126,7 @@ if (tool === "posteria") App.tools.posteria?.stop();
     }
     if (tool === "medir") App.tools.medicion?.start();
     if (tool === "navegar") App.tools.navegacion?.start();
+    if (tool === "notaRapida") App.tools.notaRapida?.start();
     if (tool === "ruta") App.tools.rutas?.start();
     if (tool === "corregirRuta") {
       window.__CORREGIR_RUTA_MODE__ = true;
@@ -221,6 +225,7 @@ if (tool === "posteria") App.tools.posteria?.stop();
 toolButtons.gps?.addEventListener("click", () => toggleTool("gps"));
 toolButtons.medir?.addEventListener("click", () => toggleTool("medir"));
 toolButtons.navegar?.addEventListener("click", () => toggleTool("navegar"));
+toolButtons.notaRapida?.addEventListener("click", () => toggleTool("notaRapida"));
 toolButtons.ruta?.addEventListener("click", () => toggleTool("ruta"));
 toolButtons.corregirRuta?.addEventListener("click", () => toggleTool("corregirRuta"));
 toolButtons.cierres?.addEventListener("click", () => toggleTool("cierres"));

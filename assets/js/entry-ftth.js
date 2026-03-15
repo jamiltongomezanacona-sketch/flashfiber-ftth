@@ -24,6 +24,7 @@ import "./services/supabase.eventos.js";
 import "./services/supabase.eventosCorp.js";
 import "./services/supabase.rutas.js";
 import "./services/supabase.storage.js";
+import "./services/supabase.notas.js";
 
 // Utils (exponer para tools que no son ESM: cierres, eventos)
 import ErrorHandler from "./utils/errorHandler.js";
@@ -54,6 +55,7 @@ import "./tools/tool.capas.js";
 import "./tools/tool.rutas.js";
 import "./tools/tool.cierres.js";
 import "./tools/tool.eventos.js";
+import "./tools/tool.nota-rapida.js";
 import "./tools/tool.diseno-mapa.js";
 
 // UI

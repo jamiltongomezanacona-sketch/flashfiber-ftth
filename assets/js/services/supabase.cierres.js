@@ -29,11 +29,12 @@ async function guardarCierre(cierre) {
   if (Number.isNaN(lat) || Number.isNaN(lng)) {
     throw new Error("Coordenadas inválidas (lat/lng)");
   }
+  const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || (m) => (m != null && m !== "" ? String(m).trim().toUpperCase() : "");
   const payload = {
     codigo: cierre.codigo ?? "",
     tipo: cierre.tipo ?? "",
     central: cierre.central ?? "",
-    molecula: cierre.molecula ?? "",
+    molecula: normalizeMolecula(cierre.molecula ?? ""),
     notas: cierre.notas ?? "",
     lat,
     lng,
@@ -58,11 +59,12 @@ async function actualizarCierre(id, data) {
   // camelCase: PostgREST espera created_at/created_by y falla con "Could not find createdAt".
   const lat = data.lat != null ? Number(data.lat) : undefined;
   const lng = data.lng != null ? Number(data.lng) : undefined;
+  const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || (m) => (m != null && m !== "" ? String(m).trim().toUpperCase() : "");
   const clean = {
     codigo: data.codigo,
     tipo: data.tipo,
     central: data.central,
-    molecula: data.molecula,
+    molecula: data.molecula !== undefined ? normalizeMolecula(data.molecula) : undefined,
     notas: data.notas,
     updated_at: new Date().toISOString()
   };

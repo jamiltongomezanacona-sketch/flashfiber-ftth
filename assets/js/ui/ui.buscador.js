@@ -64,6 +64,34 @@
   const GEOCODE_LIMIT = CONFIG.SEARCH?.GEOCODE_LIMIT ?? 5;
   const MAPBOX_TOKEN = CONFIG.MAPBOX_TOKEN || "";
 
+  /** Normaliza código de molécula (mayúsculas, trim). Misma lógica en todo el proyecto. */
+  function normalizeMolecula(mol) {
+    const fn = window.__FTTH_CENTRALES__?.normalizeMolecula;
+    return typeof fn === "function" ? fn(mol) : (mol != null && mol !== "" ? String(mol).trim().toUpperCase() : "");
+  }
+  /** Filtro Mapbox case-insensitive para propiedad "molecula". */
+  function buildFilterMolecula(molNorm) {
+    return molNorm ? ["==", ["upcase", ["coalesce", ["get", "molecula"], ""]], molNorm] : null;
+  }
+  /** Filtro Mapbox case-insensitive para propiedad "_molecula". */
+  function buildFilterMoleculaUnderscore(molNorm) {
+    return molNorm ? ["==", ["upcase", ["coalesce", ["get", "_molecula"], ""]], molNorm] : null;
+  }
+
+  /** Normaliza código de molécula (mayúsculas, trim). Misma lógica en todo el proyecto. */
+  function normalizeMolecula(mol) {
+    const fn = window.__FTTH_CENTRALES__?.normalizeMolecula;
+    return typeof fn === "function" ? fn(mol) : (mol != null && mol !== "" ? String(mol).trim().toUpperCase() : "");
+  }
+  /** Filtro Mapbox case-insensitive para propiedad "molecula". */
+  function buildFilterMolecula(molNorm) {
+    return molNorm ? ["==", ["upcase", ["coalesce", ["get", "molecula"], ""]], molNorm] : null;
+  }
+  /** Filtro Mapbox case-insensitive para propiedad "_molecula". */
+  function buildFilterMoleculaUnderscore(molNorm) {
+    return molNorm ? ["==", ["upcase", ["coalesce", ["get", "_molecula"], ""]], molNorm] : null;
+  }
+
   /* =========================
      Coordenadas (decimal y DMS)
   ========================= */
@@ -288,8 +316,9 @@
     function applyPinsVisibility() {
       if (!App?.map) return;
       const hideAllPins = filterOcultarPines?.checked === true;
-      const showPins = !hideAllPins && selectedMoleculaForPins != null;
-      const filter = selectedMoleculaForPins ? ["==", ["get", "molecula"], selectedMoleculaForPins] : null;
+      const molNorm = normalizeMolecula(selectedMoleculaForPins);
+      const showPins = !hideAllPins && molNorm !== "";
+      const filter = buildFilterMolecula(molNorm);
       [LAYER_CIERRES, LAYER_EVENTOS].forEach((layerId, i) => {
         if (!App.map.getLayer(layerId)) return;
         const toggleChecked = i === 0 ? filterCierres.checked : filterEventos.checked;
@@ -299,11 +328,11 @@
           App.map.setFilter(layerId, showPins ? filter : null);
         } catch (e) {}
       });
-      // Cierres del consolidado (CUNI, etc.): capa geojson-points filtrada por _molecula
+      // Cierres del consolidado (CUNI, etc.): capa geojson-points filtrada por _molecula (misma lógica estándar)
       if (App.map.getLayer("geojson-points")) {
         const visibleConsolidated = showPins && filterCierres.checked;
-        const filterPoints = selectedMoleculaForPins
-          ? ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "_molecula"], selectedMoleculaForPins]]
+        const filterPoints = molNorm
+          ? ["all", ["==", ["geometry-type"], "Point"], buildFilterMoleculaUnderscore(molNorm)]
           : null;
         try {
           App.map.setLayoutProperty("geojson-points", "visibility", visibleConsolidated ? "visible" : "none");
@@ -364,9 +393,9 @@
     if (typeof App.enforceOnlyCentralesVisible === "function") App.enforceOnlyCentralesVisible();
     if (typeof App.syncTreeToSelectedMolecula === "function") App.syncTreeToSelectedMolecula(selectedMoleculaForPins);
     const hideAllPins = filterOcultarPines?.checked === true;
-    const showPins = !hideAllPins && selectedMoleculaForPins != null;
-    const molNorm = selectedMoleculaForPins ? String(selectedMoleculaForPins).trim().toUpperCase() : "";
-    const filter = molNorm ? ["==", ["upcase", ["coalesce", ["get", "molecula"], ""]], molNorm] : null;
+    const molNorm = normalizeMolecula(selectedMoleculaForPins);
+    const showPins = !hideAllPins && molNorm !== "";
+    const filter = buildFilterMolecula(molNorm);
     let pinsLayersApplied = 0;
     [LAYER_CIERRES, LAYER_EVENTOS].forEach((layerId, i) => {
       if (!App.map.getLayer(layerId)) return;
@@ -383,11 +412,11 @@
         setSelectedMoleculaForPins(moleculaOrNull, opts);
       }, 500);
     }
-    // Cierres del consolidado (CUNI): geojson-points con filtro por _molecula
+    // Cierres del consolidado (CUNI): geojson-points con filtro por _molecula (misma lógica estándar)
     if (App.map.getLayer("geojson-points")) {
       const visibleConsolidated = showPins && (filterCierres?.checked !== false);
       const filterPoints = molNorm
-        ? ["all", ["==", ["geometry-type"], "Point"], ["==", ["upcase", ["coalesce", ["get", "_molecula"], ""]], molNorm]]
+        ? ["all", ["==", ["geometry-type"], "Point"], buildFilterMoleculaUnderscore(molNorm)]
         : ["==", ["geometry-type"], "Point"];
       try {
         App.map.setLayoutProperty("geojson-points", "visibility", visibleConsolidated ? "visible" : "none");
@@ -405,7 +434,7 @@
     [NOTAS_LAYER, NOTAS_LABEL_LAYER].forEach((layerId) => {
       if (App.map.getLayer(layerId)) {
         try {
-          const filterNotas = molNorm ? ["==", ["upcase", ["coalesce", ["get", "molecula"], ""]], molNorm] : null;
+          const filterNotas = buildFilterMolecula(molNorm);
           App.map.setFilter(layerId, filterNotas);
           App.map.setLayoutProperty(layerId, "visibility", showNotas ? "visible" : "none");
         } catch (e) {}
@@ -1574,7 +1603,9 @@
             App.map.setLayoutProperty("ftth-cables", "visibility", "none");
           }
           if (App.map.getLayer("geojson-lines")) {
-            App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_molecula"], result.id]]);
+            const molNorm = normalizeMolecula(result.id);
+            const lineFilter = molNorm ? ["all", ["==", ["geometry-type"], "LineString"], buildFilterMoleculaUnderscore(molNorm)] : ["==", ["geometry-type"], "LineString"];
+            App.map.setFilter("geojson-lines", lineFilter);
             App.map.setLayoutProperty("geojson-lines", "visibility", "visible");
           }
         } catch (e) {
@@ -1622,7 +1653,8 @@
             if (layerId) {
               App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_layerId"], layerId]]);
             } else if (mol) {
-              App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], ["==", ["get", "_molecula"], mol]]);
+              const molNorm = normalizeMolecula(mol);
+              if (molNorm) App.map.setFilter("geojson-lines", ["all", ["==", ["geometry-type"], "LineString"], buildFilterMoleculaUnderscore(molNorm)]);
             }
             App.map.setLayoutProperty("geojson-lines", "visibility", "visible");
             return true;

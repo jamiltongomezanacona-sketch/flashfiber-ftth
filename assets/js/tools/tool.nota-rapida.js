@@ -138,12 +138,15 @@
       const src = map.getSource(SOURCE_ID);
       if (src) src.setData(notasToGeoJSON());
       const mol = App._selectedMoleculaForPins;
+      const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || (m) => (m != null && m !== "" ? String(m).trim().toUpperCase() : "");
+      const molNorm = normalizeMolecula(mol);
       const fromSearch = !!App._moleculaFromSearch;
-      const show = active && mol && !fromSearch;
+      const show = active && molNorm && !fromSearch;
+      const filterNotas = molNorm ? ["==", ["upcase", ["coalesce", ["get", "molecula"], ""]], molNorm] : null;
       [LAYER_ID, LAYER_LABEL_ID].forEach((lid) => {
         if (map.getLayer(lid)) {
           try {
-            map.setFilter(lid, mol ? ["==", ["get", "molecula"], mol] : null);
+            map.setFilter(lid, filterNotas);
             map.setLayoutProperty(lid, "visibility", show ? "visible" : "none");
           } catch (e) {}
         }

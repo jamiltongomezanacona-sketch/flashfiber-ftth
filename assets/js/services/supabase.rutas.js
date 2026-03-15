@@ -20,11 +20,12 @@ function rowToDoc(row) {
 }
 
 function toSafePayload(payload) {
+  const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || (m) => (m != null && m !== "" ? String(m).trim().toUpperCase() : "");
   return {
     nombre: String(payload.nombre ?? ""),
     tipo: String(payload.tipo ?? ""),
     central: String(payload.central ?? ""),
-    molecula: String(payload.molecula ?? ""),
+    molecula: normalizeMolecula(payload.molecula ?? ""),
     notas: String(payload.notas ?? ""),
     distancia: Number(payload.distancia ?? 0),
     geojson: String(payload.geojson ?? ""),

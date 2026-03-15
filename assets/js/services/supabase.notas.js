@@ -27,8 +27,9 @@ async function guardarNota(nota) {
   const lng = Number(nota.lng);
   if (Number.isNaN(lat) || Number.isNaN(lng)) throw new Error("Coordenadas inválidas");
   const userId = window.__USER__?.uid ?? null;
+  const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || (m) => (m != null && m !== "" ? String(m).trim().toUpperCase() : "");
   const payload = {
-    molecula: String(nota.molecula ?? "").trim(),
+    molecula: normalizeMolecula(nota.molecula ?? ""),
     central: nota.central ? String(nota.central).trim() : null,
     lng,
     lat,
@@ -47,7 +48,10 @@ async function actualizarNota(id, data) {
   if (data.texto !== undefined) clean.texto = String(data.texto).trim();
   if (data.lng !== undefined) clean.lng = Number(data.lng);
   if (data.lat !== undefined) clean.lat = Number(data.lat);
-  if (data.molecula !== undefined) clean.molecula = String(data.molecula).trim();
+  if (data.molecula !== undefined) {
+    const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || (m) => (m != null && m !== "" ? String(m).trim().toUpperCase() : "");
+    clean.molecula = normalizeMolecula(data.molecula);
+  }
   if (data.central !== undefined) clean.central = data.central ? String(data.central).trim() : null;
   const { error } = await supabase.from(TABLE).update(clean).eq("id", id);
   if (error) throw error;

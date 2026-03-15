@@ -37,6 +37,19 @@
     });
   }
 
+  /**
+   * Normaliza un código de molécula para comparaciones y filtros en todo el proyecto.
+   * Formato estándar: 2 letras + dígitos, en mayúsculas (ej. SI03, CO36).
+   * @param {string|null|undefined} mol - Valor de molécula (puede venir en cualquier capitalización).
+   * @returns {string} Código normalizado en mayúsculas o "" si no es válido.
+   */
+  function normalizeMolecula(mol) {
+    if (mol == null || typeof mol !== "string") return "";
+    var s = String(mol).trim();
+    if (s === "") return "";
+    return s.toUpperCase();
+  }
+
   /** Coordenadas [lng, lat] de cada central (para calcular distancia pin → central). Origen: centrales-etb.geojson */
   var CENTRAL_COORDS = {
     BACHUE: [-74.113013, 4.711564],
@@ -76,6 +89,7 @@
     CENTRAL_PREFIX: CENTRAL_PREFIX,
     CENTRAL_COORDS: CENTRAL_COORDS,
     generarMoleculas: generarMoleculas,
+    normalizeMolecula: normalizeMolecula,
     distanciaDesdeCentral: distanciaDesdeCentral
   };
 })();

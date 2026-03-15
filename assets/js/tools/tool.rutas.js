@@ -211,11 +211,13 @@
     if (!App?.map) return;
     App._lastSavedRoutesMoleculaFilter = moleculaOrNull ?? null;
     if (!App.map.getLayer(SAVED_ROUTES_LAYER)) return;
+    const normalizeMolecula = window.__FTTH_CENTRALES__?.normalizeMolecula || (m) => (m != null && m !== "" ? String(m).trim().toUpperCase() : "");
+    const molNorm = normalizeMolecula(moleculaOrNull);
     try {
-      if (moleculaOrNull == null || moleculaOrNull === "") {
+      if (!molNorm) {
         App.map.setFilter(SAVED_ROUTES_LAYER, null);
       } else {
-        App.map.setFilter(SAVED_ROUTES_LAYER, ["==", ["get", "molecula"], String(moleculaOrNull)]);
+        App.map.setFilter(SAVED_ROUTES_LAYER, ["==", ["upcase", ["coalesce", ["get", "molecula"], ""]], molNorm]);
       }
     } catch (e) {
       console.warn("⚠️ applySavedRoutesMoleculaFilter:", e);

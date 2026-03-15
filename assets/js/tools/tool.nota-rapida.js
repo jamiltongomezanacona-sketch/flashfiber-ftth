@@ -109,6 +109,7 @@
             layout: {
               "text-field": ["coalesce", ["get", "texto"], "Comentario"],
               "text-size": 14,
+              "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
               "text-anchor": "bottom",
               "text-offset": [0, -4.2],
               "text-max-width": 12,

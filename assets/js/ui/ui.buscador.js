@@ -306,13 +306,15 @@
     const filterCentrales = document.getElementById("filterCentrales");
     const filterCierres = document.getElementById("filterCierres");
     const filterEventos = document.getElementById("filterEventos");
+    const filterComentarios = document.getElementById("filterComentarios");
     const filterOcultarPines = document.getElementById("filterOcultarPines");
     if (!filterCierres || !filterEventos) return;
 
-    // Por defecto mostrar centrales, cierres y eventos cuando haya molécula seleccionada
+    // Por defecto mostrar centrales, cierres, eventos y comentarios cuando haya molécula seleccionada
     if (filterCentrales) filterCentrales.checked = true;
     filterCierres.checked = true;
     filterEventos.checked = true;
+    if (filterComentarios) filterComentarios.checked = true;
 
     function setCentralesVisibility() {
       if (!App?.map || !filterCentrales) return;
@@ -349,12 +351,29 @@
           App.map.setFilter("geojson-points", filterPoints || ["==", ["geometry-type"], "Point"]);
         } catch (e) {}
       }
+      // Comentarios (notas rápidas): visibles cuando Comentarios está activado en el sidebar
+      const NOTAS_LAYER = (window.__FTTH_CONFIG__?.LAYERS?.NOTAS) || "notas-layer";
+      const NOTAS_LABEL_LAYER = "notas-layer-label";
+      const showNotasSidebar = showPins && (filterComentarios?.checked === true);
+      if (showNotasSidebar && !App.map.getLayer(NOTAS_LAYER) && typeof App.tools?.notaRapida?.ensureLayer === "function") {
+        App.tools.notaRapida.ensureLayer();
+        setTimeout(applyPinsVisibility, 350);
+      }
+      [NOTAS_LAYER, NOTAS_LABEL_LAYER].forEach(function (layerId) {
+        if (App.map.getLayer(layerId)) {
+          try {
+            App.map.setFilter(layerId, showNotasSidebar ? buildFilterMolecula(molNorm) : null);
+            App.map.setLayoutProperty(layerId, "visibility", showNotasSidebar ? "visible" : "none");
+          } catch (e) {}
+        }
+      });
       setCentralesVisibility();
     }
 
     if (filterCentrales) filterCentrales.addEventListener("change", setCentralesVisibility);
     filterCierres.addEventListener("change", applyPinsVisibility);
     filterEventos.addEventListener("change", applyPinsVisibility);
+    if (filterComentarios) filterComentarios.addEventListener("change", applyPinsVisibility);
     if (filterOcultarPines) filterOcultarPines.addEventListener("change", applyPinsVisibility);
     setCentralesVisibility();
   }
@@ -386,10 +405,12 @@
     if (filterMoleculaSearch) {
       filterMoleculaSearch.value = moleculaOrNull || "";
     }
-    // Al seleccionar una molécula, marcar Cierres y Eventos para que se vean los pines de esa molécula
+    // Al seleccionar una molécula, marcar Cierres, Eventos y Comentarios para que se vean los pines
     if (moleculaOrNull != null && String(moleculaOrNull).trim() !== "") {
       if (filterCierres) filterCierres.checked = true;
       if (filterEventos) filterEventos.checked = true;
+      const filterComentarios = document.getElementById("filterComentarios");
+      if (filterComentarios) filterComentarios.checked = true;
       const filterOcultar = document.getElementById("filterOcultarPines");
       if (filterOcultar) filterOcultar.checked = false;
     }
@@ -440,10 +461,11 @@
     if (typeof App.applySavedRoutesMoleculaFilter === "function") {
       App.applySavedRoutesMoleculaFilter(selectedMoleculaForPins);
     }
-    // Notas rápidas: solo visibles cuando la molécula viene de Capas (no del buscador/filtro)
+    // Notas rápidas: visibles cuando Comentarios está activado en sidebar y la molécula viene de Capas (no del buscador)
+    const filterComentariosPins = document.getElementById("filterComentarios");
     const NOTAS_LAYER = (window.__FTTH_CONFIG__?.LAYERS?.NOTAS) || "notas-layer";
     const NOTAS_LABEL_LAYER = "notas-layer-label";
-    const showNotas = showPins && !opts?.fromSearch;
+    const showNotas = showPins && !opts?.fromSearch && (filterComentariosPins?.checked !== false);
     [NOTAS_LAYER, NOTAS_LABEL_LAYER].forEach((layerId) => {
       if (App.map.getLayer(layerId)) {
         try {

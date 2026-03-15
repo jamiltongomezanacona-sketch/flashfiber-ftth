@@ -211,6 +211,18 @@
   async function init() {
     setupEventListeners();
 
+    // Registrar desde el inicio para no perder el primer refresh de datos (pines al primer clic en molécula)
+    window.addEventListener("ftth-cierres-layer-refreshed", function reapplyCierres() {
+      if (App?._selectedMoleculaForPins && typeof setSelectedMoleculaForPins === "function") {
+        setSelectedMoleculaForPins(App._selectedMoleculaForPins, { keepCablesVisible: !!App.__cablesExplicitlyVisible, fromSearch: !!App._moleculaFromSearch });
+      }
+    });
+    window.addEventListener("ftth-eventos-layer-refreshed", function reapplyEventos() {
+      if (App?._selectedMoleculaForPins && typeof setSelectedMoleculaForPins === "function") {
+        setSelectedMoleculaForPins(App._selectedMoleculaForPins, { keepCablesVisible: !!App.__cablesExplicitlyVisible, fromSearch: !!App._moleculaFromSearch });
+      }
+    });
+
     // Un solo listener en document para cerrar al hacer clic fuera (resultados + dropdown molécula)
     document.addEventListener("click", function onDocumentClickCloseBuscadorPanels(e) {
       const mainInput = document.getElementById("searchInput");
@@ -244,16 +256,6 @@
       setupFilterToggles();
       setupMoleculaFilter();
       if (App) App.setSelectedMoleculaForPins = setSelectedMoleculaForPins;
-      window.addEventListener("ftth-cierres-layer-refreshed", function reapplyCierres() {
-        if (App?._selectedMoleculaForPins && typeof setSelectedMoleculaForPins === "function") {
-          setSelectedMoleculaForPins(App._selectedMoleculaForPins, { keepCablesVisible: !!App.__cablesExplicitlyVisible, fromSearch: !!App._moleculaFromSearch });
-        }
-      });
-      window.addEventListener("ftth-eventos-layer-refreshed", function reapplyEventos() {
-        if (App?._selectedMoleculaForPins && typeof setSelectedMoleculaForPins === "function") {
-          setSelectedMoleculaForPins(App._selectedMoleculaForPins, { keepCablesVisible: !!App.__cablesExplicitlyVisible, fromSearch: !!App._moleculaFromSearch });
-        }
-      });
       console.log("🔍 Buscador inicializado - cargando datos en segundo plano");
     }
   }
@@ -439,7 +441,7 @@
       } catch (e) {}
     });
     if (showPins && pinsLayersApplied === 0) {
-      [400, 900, 2000].forEach(function (delay, i) {
+      [200, 400, 800, 1500, 3000, 5000].forEach(function (delay) {
         setTimeout(function () {
           if (!App?.map || !App.map.getLayer(LAYER_CIERRES)) return;
           setSelectedMoleculaForPins(moleculaOrNull, opts);
@@ -1652,6 +1654,13 @@
         if (typeof App.showPinsWhenCableActivated === "function") {
           App.showPinsWhenCableActivated(null, result.id);
         }
+        if (App?.map && typeof App.setSelectedMoleculaForPins === "function") {
+          App.map.once("idle", function () {
+            setTimeout(function () {
+              App.setSelectedMoleculaForPins(result.id, { keepCablesVisible: true, fromSearch: true });
+            }, 100);
+          });
+        }
       }
     }
     // Mostrar capas del cable seleccionado (un solo método FTTH: geojson-lines por _molecula; MUZU ya va por aquí)
@@ -1716,7 +1725,15 @@
           App.showPinsWhenCableActivated(result.layerId, result.molecula || getMoleculaFromCable(result));
         }
         if (result.molecula && typeof App.setSelectedMoleculaForPins === "function") {
+          const molCable = result.molecula || getMoleculaFromCable(result);
           App.setSelectedMoleculaForPins(result.molecula, { keepCablesVisible: true, fromSearch: true });
+          if (App?.map && molCable) {
+            App.map.once("idle", function () {
+              setTimeout(function () {
+                App.setSelectedMoleculaForPins(molCable, { keepCablesVisible: true, fromSearch: true });
+              }, 100);
+            });
+          }
         }
       }
     }

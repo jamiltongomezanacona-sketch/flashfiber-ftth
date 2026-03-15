@@ -23,6 +23,9 @@ window.__FTTH_CONFIG__ = {
     COPY_BUTTON_RESET_MS: 1500  // texto "Copiar coordenada" vuelve al original
   },
 
+  // Render: defer setData a siguiente frame para reducir jank (requestAnimationFrame)
+  RENDER_DEFER_SETDATA_FRAME: true,
+
   // Delays (ms) para carga de capas y estilo del mapa (evita números mágicos)
   MAP_TIMING: {
     RETRY_LOAD_MS: 100,

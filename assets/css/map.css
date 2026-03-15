@@ -23,11 +23,13 @@
   will-change: transform;       /* ✅ Optimizar pan/zoom en GPU */
 }
 
-/* ✅ Forzar z-index bajo en el canvas de Mapbox */
+/* ✅ Forzar z-index bajo en el canvas de Mapbox y promover a capa GPU (mejor renderizado) */
 #map .mapboxgl-canvas-container,
 #map .mapboxgl-canvas {
   z-index: 1 !important;
   position: relative !important;
+  backface-visibility: hidden; /* capa propia para composición GPU */
+  transform: translateZ(0);
 }
 
 /* ✅ Asegurar que los controles de Mapbox no interfieran */
@@ -43,10 +45,13 @@ main.map-wrapper {
   overflow: visible !important;
 }
 
-/* ✅ En móvil, ajustar altura y reducir uso de memoria (will-change en desktop solo) */
+/* ✅ En móvil: menos memoria (will-change: auto), mantener capa GPU con translateZ(0) en canvas */
 @media (max-width: 767px) {
   #map {
     will-change: auto;
+  }
+  #map .mapboxgl-canvas {
+    transform: translateZ(0); /* mantener capa GPU sin will-change */
   }
   main.map-wrapper {
     height: calc(100svh - 56px) !important;

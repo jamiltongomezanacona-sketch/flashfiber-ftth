@@ -839,9 +839,16 @@
           throw e;
         }
       };
-      map.once("idle", applyToMap);
-      setTimeout(() => { if (!applied && map.isStyleLoaded()) applyToMap(); }, CONFIG.MAP_TIMING?.APPLY_FALLBACK_MS ?? 400);
-      setTimeout(() => { if (!applied && map.isStyleLoaded()) applyToMap(); }, CONFIG.MAP_TIMING?.APPLY_FALLBACK2_MS ?? 1200);
+      // ✅ Defer setData/addLayer al siguiente frame para no bloquear el paint (configurable)
+      const defer = CONFIG.RENDER_DEFER_SETDATA_FRAME !== false;
+      const scheduleApply = () => {
+        if (applied) return;
+        if (defer) requestAnimationFrame(() => { applyToMap(); });
+        else applyToMap();
+      };
+      map.once("idle", scheduleApply);
+      setTimeout(() => { if (!applied && map.isStyleLoaded()) scheduleApply(); }, CONFIG.MAP_TIMING?.APPLY_FALLBACK_MS ?? 400);
+      setTimeout(() => { if (!applied && map.isStyleLoaded()) scheduleApply(); }, CONFIG.MAP_TIMING?.APPLY_FALLBACK2_MS ?? 1200);
     } catch (err) {
       const msg = (err && err.message) ? String(err.message) : "";
       if (/style is not done loading/i.test(msg)) {

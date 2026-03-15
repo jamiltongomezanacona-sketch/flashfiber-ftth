@@ -365,9 +365,12 @@
     if (typeof App.syncTreeToSelectedMolecula === "function") App.syncTreeToSelectedMolecula(selectedMoleculaForPins);
     const hideAllPins = filterOcultarPines?.checked === true;
     const showPins = !hideAllPins && selectedMoleculaForPins != null;
-    const filter = selectedMoleculaForPins ? ["==", ["get", "molecula"], selectedMoleculaForPins] : null;
+    const molNorm = selectedMoleculaForPins ? String(selectedMoleculaForPins).trim().toUpperCase() : "";
+    const filter = molNorm ? ["==", ["upcase", ["coalesce", ["get", "molecula"], ""]], molNorm] : null;
+    let pinsLayersApplied = 0;
     [LAYER_CIERRES, LAYER_EVENTOS].forEach((layerId, i) => {
       if (!App.map.getLayer(layerId)) return;
+      pinsLayersApplied++;
       const toggleChecked = (i === 0 ? filterCierres?.checked : filterEventos?.checked) !== false;
       const visible = showPins && toggleChecked;
       try {
@@ -375,11 +378,16 @@
         App.map.setFilter(layerId, showPins ? filter : null);
       } catch (e) {}
     });
+    if (showPins && pinsLayersApplied === 0) {
+      setTimeout(function () {
+        setSelectedMoleculaForPins(moleculaOrNull, opts);
+      }, 500);
+    }
     // Cierres del consolidado (CUNI): geojson-points con filtro por _molecula
     if (App.map.getLayer("geojson-points")) {
       const visibleConsolidated = showPins && (filterCierres?.checked !== false);
-      const filterPoints = selectedMoleculaForPins
-        ? ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "_molecula"], selectedMoleculaForPins]]
+      const filterPoints = molNorm
+        ? ["all", ["==", ["geometry-type"], "Point"], ["==", ["upcase", ["coalesce", ["get", "_molecula"], ""]], molNorm]]
         : ["==", ["geometry-type"], "Point"];
       try {
         App.map.setLayoutProperty("geojson-points", "visibility", visibleConsolidated ? "visible" : "none");
@@ -397,7 +405,7 @@
     [NOTAS_LAYER, NOTAS_LABEL_LAYER].forEach((layerId) => {
       if (App.map.getLayer(layerId)) {
         try {
-          const filterNotas = selectedMoleculaForPins ? ["==", ["get", "molecula"], selectedMoleculaForPins] : null;
+          const filterNotas = molNorm ? ["==", ["upcase", ["coalesce", ["get", "molecula"], ""]], molNorm] : null;
           App.map.setFilter(layerId, filterNotas);
           App.map.setLayoutProperty(layerId, "visibility", showNotas ? "visible" : "none");
         } catch (e) {}

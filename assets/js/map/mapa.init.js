@@ -109,21 +109,17 @@
   map.on("load", () => {
     if (log) log("log", "🗺️ MAPA CARGADO CORRECTAMENTE");
 
-    // ✅ Capas de pines (cierres/eventos) se crean cuando el estilo está listo
-    if (App.reloadCierres) App.reloadCierres();
-    if (App.reloadEventos) App.reloadEventos();
-
-    // 🌍 Capas FTTH (ftth-cables, ftth-puntos) y índice
-    if (App.reloadFTTH) App.reloadFTTH();
-    App.layers?.loadIndex();
-
-    // ✅ Cola de carga con map idle (evita setTimeout 500/600/900 ms arbitrarios)
+    // ✅ Todas las capas se crean en idle para evitar "Style is not done loading"
     map.once("idle", () => {
+      if (!map.isStyleLoaded()) return;
+      if (App.reloadCierres) App.reloadCierres();
+      if (App.reloadEventos) App.reloadEventos();
+      if (App.reloadFTTH) App.reloadFTTH();
+      App.layers?.loadIndex();
       if (App.loadCentralesFijas) App.loadCentralesFijas();
       if (!window.__GEOJSON_INDEX__ && App.loadConsolidatedGeoJSONToBaseMap) {
         App.loadConsolidatedGeoJSONToBaseMap();
       }
-      map.once("idle", () => {});
     });
 
     // 💾 Rutas guardadas

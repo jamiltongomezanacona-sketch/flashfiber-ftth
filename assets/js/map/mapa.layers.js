@@ -697,9 +697,14 @@
     // ✅ Esperar a que el estilo esté completamente cargado
     if (!map.isStyleLoaded()) {
       if (log) log("log", "⏳ Esperando a que el estilo del mapa se cargue...");
-      map.once("style.load", () => {
+      let done = false;
+      const retry = () => {
+        if (done) return;
+        done = true;
         setTimeout(() => loadConsolidatedGeoJSONToBaseMap(), 100);
-      });
+      };
+      map.once("load", retry);
+      map.once("style.load", retry);
       return;
     }
     

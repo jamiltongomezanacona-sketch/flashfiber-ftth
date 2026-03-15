@@ -38,20 +38,29 @@ onUserChange(async (user) => {
 
   if (window.FTTH_CORE?.auth) window.FTTH_CORE.auth.currentUser = user;
 
+  const PERFIL_TIMEOUT_MS = 12000;
   let perfil = null;
-  if (window.FTTH_FIREBASE?.obtenerPerfilUsuario) {
-    perfil = await window.FTTH_FIREBASE.obtenerPerfilUsuario(user.id);
-  } else {
-    try {
-      const { data } = await supabase.from("usuarios").select("*").eq("id", user.id).maybeSingle();
-      perfil = data ?? null;
-    } catch (err) {
+  let perfilTimeout = false;
+  try {
+    if (window.FTTH_FIREBASE?.obtenerPerfilUsuario) {
+      perfil = await window.FTTH_FIREBASE.obtenerPerfilUsuario(user.id);
+    } else {
+      const perfilPromise = supabase.from("usuarios").select("*").eq("id", user.id).maybeSingle();
+      const timeoutPromise = new Promise((_, rej) => setTimeout(() => rej(new Error("TIMEOUT")), PERFIL_TIMEOUT_MS));
+      const result = await Promise.race([perfilPromise, timeoutPromise]);
+      perfil = result?.data ?? null;
+    }
+  } catch (err) {
+    if (err?.message === "TIMEOUT") {
+      perfilTimeout = true;
+      console.warn("⚠️ Tiempo de espera agotado al cargar perfil");
+    } else {
       console.warn("⚠️ No se pudo cargar perfil de usuario:", err);
     }
   }
 
   if (!perfil || perfil.activo !== true) {
-    alert("Usuario no autorizado");
+    alert(perfilTimeout ? "La carga del perfil tardó demasiado. Revisa tu conexión e intenta de nuevo." : "Usuario no autorizado");
     await logout();
     location.href = "/index.html";
     return;

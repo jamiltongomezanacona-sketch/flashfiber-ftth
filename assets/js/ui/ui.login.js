@@ -5,11 +5,23 @@
 (() => {
   "use strict";
 
-  // Esperar a que Supabase/Firebase esté listo
+  // Esperar a que Supabase/Firebase esté listo (máx 8s para no quedar pegados)
+  const LOGIN_CORE_TIMEOUT = 8000;
+  const startedAt = Date.now();
   const waitForFirebase = setInterval(() => {
     if (window.FTTH_CORE?.login) {
       clearInterval(waitForFirebase);
       initLogin();
+      return;
+    }
+    if (Date.now() - startedAt > LOGIN_CORE_TIMEOUT) {
+      clearInterval(waitForFirebase);
+      console.error("❌ FTTH_CORE no cargó a tiempo. Comprueba la consola y que supabase-env.js exista.");
+      var errEl = document.getElementById("errorMessage");
+      if (errEl) {
+        errEl.textContent = "La app no cargó a tiempo. Recarga la página o revisa tu conexión.";
+        errEl.classList.add("show");
+      }
     }
   }, 100);
 
@@ -83,21 +95,28 @@
       loginButton.disabled = true;
       loginButtonText.innerHTML = '<span class="loading"></span>Iniciando sesión...';
 
+      const LOGIN_TIMEOUT_MS = 15000;
+      function loginWithTimeout() {
+        return new Promise((resolve, reject) => {
+          const t = setTimeout(() => {
+            reject(new Error("TIMEOUT"));
+          }, LOGIN_TIMEOUT_MS);
+          window.FTTH_CORE.login(email, password).then((r) => { clearTimeout(t); resolve(r); }).catch((e) => { clearTimeout(t); reject(e); });
+        });
+      }
+
       try {
-        // Intentar login con Supabase
-        await window.FTTH_CORE.login(email, password);
-        
-        // El onAuthStateChange en supabase.core.js manejará la redirección
-        // Si llegamos aquí, el login fue exitoso
+        await loginWithTimeout();
         console.log("✅ Login exitoso");
-        
       } catch (error) {
         console.error("❌ Error en login:", error);
         
         // Mensaje amigable (Supabase usa error.message; Firebase usaba error.code)
         let errorMsg = "Error al iniciar sesión";
         const msg = (error && error.message) ? String(error.message).toLowerCase() : "";
-        if (msg.includes("invalid login") || msg.includes("invalid_credentials")) {
+        if (error?.message === "TIMEOUT" || msg.includes("timeout")) {
+          errorMsg = "La conexión tardó demasiado. Revisa tu internet e intenta de nuevo.";
+        } else if (msg.includes("invalid login") || msg.includes("invalid_credentials")) {
           errorMsg = "Correo o contraseña incorrectos";
         } else if (msg.includes("email") && msg.includes("invalid")) {
           errorMsg = "Correo electrónico inválido";
